@@ -7,83 +7,135 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id        String   @id @default(uuid()) @map("_id")
-  firebaseUid String   @unique @map("firebase_uid")
-  phone     String   @unique
-  phoneVerified Boolean @default(true) @map("phone_verified")
-  email     String?   @unique
-  emailVerified Boolean @default(false) @map("email_verified")
+  id              String  @id @default(uuid()) @map("_id")
+  firebaseUid     String  @unique @map("firebase_uid")
+  phone           String  @unique
+  phoneVerified   Boolean @default(true) @map("phone_verified")
+  email           String? @unique
+  emailVerified   Boolean @default(false) @map("email_verified")
   isEmailCodeSent Boolean @default(false) @map("is_email_code_sent")
-  name      String?
-  updatedAt DateTime @updatedAt
-  alternatePhone String? @unique
-  country  String? @default("IN")
-  state  String?
-  city  String?
-  dob String?
-  PrefExam String?
-  profilePic String?
-  Role String? @default("student")
-  RefSource String? @default("google")
-  Rank Int? @default(0)
-  Score Int? @default(0)
-  Category String? @default("general")
-  Gender String? @default("N/A")
-  isProfileComplete Boolean @default(false)
-  refralCode String? @unique
-  Theme String? @default("light")
-  refredUsers RefredUser[]
-  Sessions Session[]
-  userPackages UserPackage[]
-  Testimonial Testimonial?
-  createdAt DateTime @default(now())
+
+  // Email login fields
+  enableEmailLogin   Boolean   @default(false) @map("enable_email_login")
+  emailLoginVerified Boolean   @default(false) @map("email_login_verified")
+  passwordHash       String?   @map("password_hash")
+  lastEmailLoginAt   DateTime? @map("last_email_login_at")
+  emailLoginAttempts Int       @default(0) @map("email_login_attempts")
+
+  name                   String?
+  updatedAt              DateTime                @updatedAt
+  alternatePhone         String?
+  country                String?                 @default("IN")
+  state                  String?
+  city                   String?
+  dob                    String?
+  PrefExam               String?
+  profilePic             String?
+  Role                   String?                 @default("student")
+  RefSource              String?                 @default("google")
+  Rank                   Int?                    @default(0)
+  Score                  Int?                    @default(0)
+  Category               String?                 @default("general")
+  Gender                 String?                 @default("N/A")
+  isProfileComplete      Boolean                 @default(false)
+  refralCode             String?                 @unique
+  Theme                  String?                 @default("light")
+  refredUsers            RefredUser[]
+  Sessions               Session[]
+  emailVerificationCodes EmailVerificationCode[]
+  userPackages           UserPackage[]
+  payments               Payment[]
+  Testimonial            Testimonial?
+  ChoiceList             ChoiceList[]
+  createdAt              DateTime                @default(now())
+}
+
+model ChoiceList {
+  id          String @id @default(uuid()) @map("_id")
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String @map("user_id")
+  name        String @unique
+  Caunselling String
+
+  ChoiceListDetails ChoiceListDetails[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model ChoiceListDetails {
+  id           String     @id @default(uuid()) @map("_id")
+  choiceList   ChoiceList @relation(fields: [choiceListId], references: [id], onDelete: Cascade)
+  choiceListId String     @map("choice_list_id")
+  name         String     @unique
+  Caunselling  String
+  Institute    String
+  Course       String
+  Quota        String
+  Catagory     String
+  InsertAt     Int?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model RefredUser {
-  id String @id @default(uuid()) @map("_id")
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @map("user_id")
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid()) @map("_id")
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String   @map("user_id") // the referrer
+  referredUserId String   @map("referred_user_id") // the person who was referred
+  referredName   String?  @map("referred_name")
+  referredPhone  String?  @map("referred_phone")
+  isRewarded     Boolean  @default(false) @map("is_rewarded")
+  createdAt      DateTime @default(now())
 }
 
 model Session {
-  id String @id @default(uuid()) @map("_id")
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @map("user_id")
-  DeviceId String? @unique @map("device_id")
-  DeviceType String? @map("device_type")
-  deviceName String? @map("device_name")
-  IpAddress String? @map("ip_address")
-  LastSeen DateTime? @map("last_seen")
-  IsActive Boolean? @map("is_active")
+  id         String    @id @default(uuid()) @map("_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String    @map("user_id")
+  DeviceId   String?   @unique @map("device_id")
+  DeviceType String?   @map("device_type")
+  deviceName String?   @map("device_name")
+  IpAddress  String?   @map("ip_address")
+  LastSeen   DateTime? @map("last_seen")
+  IsActive   Boolean   @default(true) @map("is_active")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model EmailVerificationCode {
+  id        String   @id @default(uuid()) @map("_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  email     String
+  code      String
+  expiresAt DateTime @map("expires_at")
+  isUsed    Boolean  @default(false) @map("is_used")
   createdAt DateTime @default(now())
 }
 
-
 model Testimonial {
-  id          String   @id @default(uuid()) @map("_id")
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String   @unique  // 🔒 ensures ONE testimonial per user
-  title       String?
-  content     String?  // written review
-  rating      Int?     // optional (1–5)
-  media       TestimonialMedia[]
-  isApproved  Boolean  @default(false) // moderation
-  isFeatured  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String             @id @default(uuid()) @map("_id")
+  user       User               @relation(fields: [userId], references: [id])
+  userId     String             @unique // 🔒 ensures ONE testimonial per user
+  title      String?
+  content    String? // written review
+  rating     Int? // optional (1–5)
+  media      TestimonialMedia[]
+  isApproved Boolean            @default(false) // moderation
+  isFeatured Boolean            @default(false)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
 }
 
 model TestimonialMedia {
-  id             String   @id @default(uuid()) @map("_id")
-  testimonial    Testimonial @relation(fields: [testimonialId], references: [id])
-  testimonialId  String
-  type           MediaType
-  url            String
-  thumbnailUrl   String?   // useful for videos
-  createdAt      DateTime @default(now())
+  id            String      @id @default(uuid()) @map("_id")
+  testimonial   Testimonial @relation(fields: [testimonialId], references: [id])
+  testimonialId String
+  type          MediaType
+  url           String
+  thumbnailUrl  String? // useful for videos
+  createdAt     DateTime    @default(now())
 }
 
 enum MediaType {
@@ -91,110 +143,132 @@ enum MediaType {
   IMAGE
 }
 
-
 model Package {
-  id            String      @id @default(uuid()) @map("_id")
-  name          String      // e.g. "NEET PG 2025"
-  tier          Tier        // PRO | STANDARD
-  price         Int         // in INR (₹4499 → 4499)
-  currency      String      @default("INR")
-  validTill     DateTime
-  availability  Availability
+  id           String       @id @default(uuid()) @map("_id")
+  name         String // e.g. "NEET PG 2025"
+  tier         Tier // PRO | STANDARD
+  price        Int // in INR (₹4499 → 4499)
+  currency     String       @default("INR")
+  validTill    DateTime
+  availability Availability
 
-  coverage      Coverage    @relation(fields: [coverageId], references: [id])
-  coverageId    String
+  coverage   Coverage @relation(fields: [coverageId], references: [id])
+  coverageId String
 
-  features      PackageFeature[]
-  tools         PackageTool[]
-  insights      PackageInsight[]
-  explores      PackageExplore[]
-  CouponCode     String?     @map("coupon_code")
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  features   PackageFeature[]
+  tools      PackageTool[]
+  insights   PackageInsight[]
+  explores   PackageExplore[]
+  CouponCode String?          @map("coupon_code")
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 
   userPackages UserPackage[]
 }
 
 model UserPackage {
-  id        String   @id @default(uuid()) @map("_id")
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @map("user_id")
-  package   Package  @relation(fields: [packageId], references: [id])
-  packageId String   @map("package_id")
-  createdAt DateTime @default(now())
+  id        String    @id @default(uuid()) @map("_id")
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String    @map("user_id")
+  package   Package   @relation(fields: [packageId], references: [id])
+  packageId String    @map("package_id")
+  payment   Payment?  @relation(fields: [paymentId], references: [id])
+  paymentId String?   @map("payment_id")
+  expiresAt DateTime? @map("expires_at")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now())
+}
+
+model Payment {
+  id                String        @id @default(uuid()) @map("_id")
+  user              User          @relation(fields: [userId], references: [id])
+  userId            String        @map("user_id")
+  packageId         String        @map("package_id")
+  razorpayOrderId   String        @unique @map("razorpay_order_id")
+  razorpayPaymentId String?       @map("razorpay_payment_id")
+  razorpaySignature String?       @map("razorpay_signature")
+  amount            Int // in paise (₹449900 = ₹4499)
+  currency          String        @default("INR")
+  status            PaymentStatus @default(CREATED)
+  couponCode        String?       @map("coupon_code")
+  discountAmount    Int?          @map("discount_amount") // in paise
+  receipt           String        @unique
+  userPackages      UserPackage[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 model Coupon {
   id          String   @id @default(uuid()) @map("_id")
   code        String   @unique
   description String?
-  discount    Int      // in percentage (20% → 20)
+  discount    Int // in percentage (20% → 20)
   validTill   DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Coverage {
-  id          String   @id @default(uuid()) @map("_id")
+  id          String       @id @default(uuid()) @map("_id")
   type        CoverageType // ALL_INDIA | ALL_INDIA_AND_STATES
-  description String?      // "All India & 40+ State Counsellings"
+  description String? // "All India & 40+ State Counsellings"
   packages    Package[]
 }
 
 model Feature {
-  id        String         @id @default(uuid()) @map("_id")
-  name      String
-  packages  PackageFeature[]
+  id       String           @id @default(uuid()) @map("_id")
+  name     String
+  packages PackageFeature[]
 }
 
 model Tool {
-  id        String         @id @default(uuid()) @map("_id")
-  name      String
-  packages  PackageTool[]
+  id       String        @id @default(uuid()) @map("_id")
+  name     String
+  packages PackageTool[]
 }
 
 model Insight {
-  id        String         @id @default(uuid()) @map("_id")
-  name      String
-  packages  PackageInsight[]
+  id       String           @id @default(uuid()) @map("_id")
+  name     String
+  packages PackageInsight[]
 }
 
 model Explore {
-  id        String         @id @default(uuid()) @map("_id")
-  name      String
-  packages  PackageExplore[]
+  id       String           @id @default(uuid()) @map("_id")
+  name     String
+  packages PackageExplore[]
 }
 
 model PackageFeature {
-  id        String   @id @default(uuid()) @map("_id")
-  package   Package  @relation(fields: [packageId], references: [id])
-  packageId String   @map("package_id")
-  feature   Feature  @relation(fields: [featureId], references: [id])
-  featureId String   @map("feature_id")
+  id        String  @id @default(uuid()) @map("_id")
+  package   Package @relation(fields: [packageId], references: [id])
+  packageId String  @map("package_id")
+  feature   Feature @relation(fields: [featureId], references: [id])
+  featureId String  @map("feature_id")
 }
 
 model PackageTool {
-  id        String   @id @default(uuid()) @map("_id")
-  package   Package  @relation(fields: [packageId], references: [id])
-  packageId String   @map("package_id")
-  tool      Tool     @relation(fields: [toolId], references: [id])
-  toolId    String   @map("tool_id")
+  id        String  @id @default(uuid()) @map("_id")
+  package   Package @relation(fields: [packageId], references: [id])
+  packageId String  @map("package_id")
+  tool      Tool    @relation(fields: [toolId], references: [id])
+  toolId    String  @map("tool_id")
 }
 
 model PackageInsight {
-  id         String   @id @default(uuid()) @map("_id")
-  package    Package  @relation(fields: [packageId], references: [id])
-  packageId  String   @map("package_id")
-  insight    Insight  @relation(fields: [insightId], references: [id])
-  insightId  String   @map("insight_id")
+  id        String  @id @default(uuid()) @map("_id")
+  package   Package @relation(fields: [packageId], references: [id])
+  packageId String  @map("package_id")
+  insight   Insight @relation(fields: [insightId], references: [id])
+  insightId String  @map("insight_id")
 }
 
 model PackageExplore {
-  id         String   @id @default(uuid()) @map("_id")
-  package    Package  @relation(fields: [packageId], references: [id])
-  packageId  String   @map("package_id")
-  explore    Explore  @relation(fields: [exploreId], references: [id])
-  exploreId  String   @map("explore_id")
+  id        String  @id @default(uuid()) @map("_id")
+  package   Package @relation(fields: [packageId], references: [id])
+  packageId String  @map("package_id")
+  explore   Explore @relation(fields: [exploreId], references: [id])
+  exploreId String  @map("explore_id")
 }
 
 enum Tier {
@@ -207,54 +281,360 @@ enum Availability {
   UNAVAILABLE
 }
 
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
 enum CoverageType {
   ALL_INDIA
   ALL_INDIA_AND_STATES
 }
 
-
 model Blogs {
-  id        String   @id @default(uuid()) @map("_id")
-  title     String
-  description String?
-  content   String?
-  author    Author   @relation(fields: [authorId], references: [id])
-  authorId  String   @map("author_id")
-  slug      String?  @unique
-  imageUrl  String?
+  id            String   @id @default(uuid()) @map("_id")
+  title         String
+  description   String?
+  content       String?
+  author        Author   @relation(fields: [authorId], references: [id])
+  authorId      String   @map("author_id")
+  slug          String?  @unique
+  imageUrl      String?
   coverImageUrl String?
-  tags      String[] // e.g. ["NEET", "Exam Tips", "Study Plan"]
-  faqs      FAQ[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tags          String[] // e.g. ["NEET", "Exam Tips", "Study Plan"]
+  faqs          FAQ[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model FAQ {
-  id        String   @id @default(uuid()) @map("_id")
-  question  String
-  answer    String
-  blog      Blogs    @relation(fields: [blogId], references: [id])
-  blogId    String   @map("blog_id")
+  id       String @id @default(uuid()) @map("_id")
+  question String
+  answer   String
+  blog     Blogs  @relation(fields: [blogId], references: [id])
+  blogId   String @map("blog_id")
 }
 
-
 model Author {
-  id        String   @id @default(uuid()) @map("_id")
-  name      String
-  tag       String?
-  bio       String?
-  avatarUrl String?
-  expertise String?
-  Blogs     Blogs[]
+  id          String       @id @default(uuid()) @map("_id")
+  name        String
+  tag         String?
+  bio         String?
+  avatarUrl   String?
+  expertise   String?
+  Blogs       Blogs[]
   socialLinks SocialLink[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model SocialLink {
+  id       String @id @default(uuid()) @map("_id")
+  platform String @default("linkedin") // e.g. "linkedin", "twitter", "facebook", youtube", "instagram"
+  url      String
+  author   Author @relation(fields: [authorId], references: [id])
+  authorId String @map("author_id")
+}
+
+model CounsellingOption {
+  id    String  @id @default(auto()) @map("_id") @db.ObjectId
+  value String  @unique
+  label String
+  desc  String?
+  icon  String?
+
+  bodies Body[]
+}
+
+model Body {
+  id   String  @id @default(auto()) @map("_id") @db.ObjectId
+  key  String?
+  name String
+
+  counsellingType     String? @map("counselling_type")
+  state               String?
+  websiteGoto         String? @map("website_goto")
+  websiteRegistration String? @map("website_registration")
+  websiteProspectus   String? @map("website_prospectus")
+  isPinned            Boolean @default(false) @map("is_pinned")
+
+  allotmentSessions      String[] @map("allotment_sessions")
+  closingRankSessions    String[] @map("closing_rank_sessions")
+  seatMatrixSessions     String[] @map("seat_matrix_sessions")
+  feeStipendBondSessions String[] @map("fee_stipend_bond_sessions")
+
+  quotas BodyQuota[]
+
+  optionId String            @db.ObjectId
+  option   CounsellingOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+}
+
+model BodyQuota {
+  id                 String  @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  shortName          String? @map("short_name")
+  tooltipContent     String? @map("tooltip_content")
+  tooltipContentHtml String? @map("tooltip_content_html")
+  masterQuota        String? @map("master_quota")
+
+  bodyId String @db.ObjectId
+  body   Body   @relation(fields: [bodyId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// UNIFIED ALLOTMENT & CUTOFF SCHEMA
+// -----------------------------------------------------------------------------
+
+model State {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  stateCode String   @unique // 'UP', 'GJ', 'MH', 'ALL_INDIA'
+  stateName String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorities Authority[]
+  institutes  Institute[]
+  cutoffs     Cutoff[]
+  allotments  Allotment[]
+  categories  Category[]
+  quotas      Quota[]
+}
+
+model Authority {
+  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  authorityCode   String  @unique
+  authorityName   String
+  authorityType   String // MCC, STATE, PRIVATE
+  officialWebsite String?
+
+  stateId String? @db.ObjectId
+  state   State?  @relation(fields: [stateId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions   CounsellingSession[]
+  allotments Allotment[]
+  cutoffs    Cutoff[]
+}
+
+model CounsellingSession {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  authorityId String    @db.ObjectId
+  authority   Authority @relation(fields: [authorityId], references: [id])
+  sessionYear String
+  examYear    Int
+  examName    String    @default("NEET")
+  examType    String    @default("UG")
+  sessionName String
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  rounds     Round[]
+  allotments Allotment[]
+  cutoffs    Cutoff[]
+}
+
+model Round {
+  id         String             @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId  String             @db.ObjectId
+  session    CounsellingSession @relation(fields: [sessionId], references: [id])
+  roundNo    Int
+  roundCode  String
+  roundName  String
+  roundType  String? // MOCK, ROUND, MOPUP, STRAY
+  resultType String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  allotments Allotment[]
+  cutoffs    Cutoff[]
+}
+
+model Institute {
+  id                 String  @id @default(auto()) @map("_id") @db.ObjectId
+  instituteCode      String?
+  instituteName      String
+  instituteNameClean String?
+  city               String?
+  district           String?
+  pincode            String?
+  instituteType      String? // GOVERNMENT, PRIVATE, DEEMED
+  ownershipType      String?
+
+  stateId String? @db.ObjectId
+  state   State?  @relation(fields: [stateId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  allotments Allotment[]
+  cutoffs    Cutoff[]
+}
+
+model Course {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseCode  String   @unique
+  courseName  String
+  courseGroup String? // MEDICAL, DENTAL, AYUSH
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  allotments Allotment[]
+  cutoffs    Cutoff[]
+}
+
+model Category {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  stateId       String?  @db.ObjectId
+  state         State?   @relation(fields: [stateId], references: [id])
+  categoryCode  String
+  categoryName  String
+  categoryGroup String?
+  isPwd         Boolean  @default(false)
+  isReserved    Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  allottedAllotments  Allotment[] @relation("AllottedCategory")
+  candidateAllotments Allotment[] @relation("CandidateCategory")
+  candidateCutoffs    Cutoff[]    @relation("CandidateCutoffCategory")
+  allottedCutoffs     Cutoff[]    @relation("AllottedCutoffCategory")
+}
+
+model Quota {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  stateId    String?  @db.ObjectId
+  state      State?   @relation(fields: [stateId], references: [id])
+  quotaCode  String
+  quotaName  String
+  quotaGroup String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  allotments Allotment[]
+  cutoffs    Cutoff[]
+}
+
+model Allotment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  counsellingType String @default("ALL_INDIA") // e.g., 'ALL_INDIA', 'UP', 'MH', 'GJ'
+
+  stateId     String             @db.ObjectId
+  state       State              @relation(fields: [stateId], references: [id])
+  authorityId String             @db.ObjectId
+  authority   Authority          @relation(fields: [authorityId], references: [id])
+  sessionId   String             @db.ObjectId
+  session     CounsellingSession @relation(fields: [sessionId], references: [id])
+  roundId     String             @db.ObjectId
+  round       Round              @relation(fields: [roundId], references: [id])
+
+  rankNum     Int?
+  rankText    String?
+  meritNo     Float? // Gujarat
+  meritNoText String?
+  neetScore   Int?
+  air         Int? // Maharashtra
+
+  candidateRollNo String?
+  applicationNo   String?
+  cetFormNo       String?
+  candidateName   String?
+  gender          String?
+
+  candidateCategoryId  String?   @db.ObjectId
+  candidateCategory    Category? @relation("CandidateCategory", fields: [candidateCategoryId], references: [id])
+  candidateCategoryRaw String?
+
+  allottedCategoryId  String?   @db.ObjectId
+  allottedCategory    Category? @relation("AllottedCategory", fields: [allottedCategoryId], references: [id])
+  allottedCategoryRaw String?
+
+  quotaId  String? @db.ObjectId
+  quota    Quota?  @relation(fields: [quotaId], references: [id])
+  quotaRaw String?
+
+  instituteId      String?    @db.ObjectId
+  institute        Institute? @relation(fields: [instituteId], references: [id])
+  instituteNameRaw String?
+  collegeCodeRaw   String?
+
+  courseId      String? @db.ObjectId
+  course        Course? @relation(fields: [courseId], references: [id])
+  courseNameRaw String?
+
+  seatReservationTypeCode String?
+  seatReservationTypeName String?
+  otherReservationCode    String?
+  isWomenQuota            Boolean @default(false)
+  isPwd                   Boolean @default(false)
+
+  allotmentStatus         String? @default("ALLOTTED")
+  recordStatus            String? @default("ACTIVE_OR_VALID_SEAT")
+  isCurrentRoundAllotment Boolean @default(true)
+
+  sourceSerialNo Int?
+  sourceFile     String?
+  sourcePageNo   Int?
+
+  extraDetails Json? // Added as per plan to store state-specific variables (e.g. nri_priority)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model SocialLink {
-  id        String   @id @default(uuid()) @map("_id")
-  platform  String @default("linkedin") // e.g. "linkedin", "twitter", "facebook", youtube", "instagram"
-  url       String
-  author    Author   @relation(fields: [authorId], references: [id])
-  authorId  String   @map("author_id")
+model Cutoff {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  counsellingType String @default("ALL_INDIA")
+
+  stateId     String             @db.ObjectId
+  state       State              @relation(fields: [stateId], references: [id])
+  authorityId String?            @db.ObjectId
+  authority   Authority?         @relation(fields: [authorityId], references: [id])
+  sessionId   String             @db.ObjectId
+  session     CounsellingSession @relation(fields: [sessionId], references: [id])
+  roundId     String?            @db.ObjectId
+  round       Round?             @relation(fields: [roundId], references: [id])
+  roundNo     Int?
+
+  instituteId String    @db.ObjectId
+  institute   Institute @relation(fields: [instituteId], references: [id])
+  collegeCode String?
+
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id])
+
+  quotaId String? @db.ObjectId
+  quota   Quota?  @relation(fields: [quotaId], references: [id])
+
+  allottedCategoryId String?   @db.ObjectId
+  allottedCategory   Category? @relation("AllottedCutoffCategory", fields: [allottedCategoryId], references: [id])
+
+  candidateCategoryId String?   @db.ObjectId
+  candidateCategory   Category? @relation("CandidateCutoffCategory", fields: [candidateCategoryId], references: [id])
+
+  seatReservationTypeCode String?
+
+  openingRank       Int?
+  closingRank       Int?
+  nearestRankSample Int?
+
+  openingMeritNo Float?
+  closingMeritNo Float?
+  minNeetScore   Int?
+  maxNeetScore   Int?
+
+  totalAllotments Int? @default(0)
+
+  extraDetails Json? // Added to store unexpected state-specific cutoff data
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

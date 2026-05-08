@@ -2,14 +2,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import { readFile, readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
 @Injectable()
 export class FirebaseService {
   constructor() {
     if (!admin.apps.length) {
-
       const serviceAccount = JSON.parse(
         readFileSync(join(process.cwd(), 'fb-service-acc.json'), 'utf-8'),
       );
@@ -19,6 +18,10 @@ export class FirebaseService {
       });
     }
   }
+
+  /**
+   * Verify Firebase ID token
+   */
   async verifyToken(token: string): Promise<DecodedIdToken> {
     try {
       return await admin.auth().verifyIdToken(token);
@@ -26,6 +29,10 @@ export class FirebaseService {
       throw new UnauthorizedException('Invalid Firebase token');
     }
   }
+
+  /**
+   * Extract bearer token from Authorization header
+   */
   extractTokenFromHeader(authHeader?: string): string {
     if (!authHeader) {
       throw new UnauthorizedException('Missing Authorization header');
@@ -39,34 +46,40 @@ export class FirebaseService {
 
     return token;
   }
+
+  /**
+   * Get user from Authorization header (extract + verify)
+   */
+  async getUserFromAuthHeader(authHeader: string): Promise<DecodedIdToken> {
+    const token = this.extractTokenFromHeader(authHeader);
+    return this.verifyToken(token);
+  }
+
+  /**
+   * Extract UID from decoded token
+   */
   getUid(decoded: DecodedIdToken): string {
     return decoded.uid;
   }
+
+  /**
+   * Extract phone from decoded token
+   */
   getPhone(decoded: DecodedIdToken): string | null {
     return decoded.phone_number ?? null;
   }
+
+  /**
+   * Extract email from decoded token
+   */
   getEmail(decoded: DecodedIdToken): string | null {
     return decoded.email ?? null;
   }
+
+  /**
+   * Extract email verified status from decoded token
+   */
   isEmailVerified(decoded: DecodedIdToken): boolean {
     return decoded.email_verified ?? false;
-  }
-  async getUserFromAuthHeader(authHeader?: string) {
-    const token = this.extractTokenFromHeader(authHeader);
-    const decoded = await this.verifyToken(token);
-
-    return {
-      uid: this.getUid(decoded),
-      phone: this.getPhone(decoded),
-      email: this.getEmail(decoded),
-      emailVerified: this.isEmailVerified(decoded),
-      raw: decoded,
-    };
-  }
-  async revokeUser(uid: string) {
-    await admin.auth().revokeRefreshTokens(uid);
-  }
-  async getFirebaseUser(uid: string) {
-    return admin.auth().getUser(uid);
   }
 }

@@ -11,7 +11,11 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-
+neetal_db_2026-04-27_130510.sql
+setup_mysql.py
+api-cors.py
+mysql_portable
+cache
 # OS
 .DS_Store
 
