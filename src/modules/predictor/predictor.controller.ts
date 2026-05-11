@@ -24,24 +24,19 @@ export class PredictorController {
   // ==========================================
   // Options (Dropdowns) APIs
   // ==========================================
+  @Get('states')
+  getStates() {
+    return this.predictorService.getStates();
+  }
+
   @Get('ai/options')
   getAiOptions(@Query() query: any) {
     return this.predictorService.getAiOptions(query);
   }
 
-  @Get('mh/options')
-  getMhOptions(@Query() query: any) {
-    return this.predictorService.getMhOptions(query);
-  }
-
-  @Get('gj/options')
-  getGjOptions(@Query() query: any) {
-    return this.predictorService.getGjOptions(query);
-  }
-
-  @Get('up/options')
-  getUpOptions(@Query() query: any) {
-    return this.predictorService.getUpOptions(query);
+  @Get('state/:stateSlug/options')
+  getStateOptions(@Param('stateSlug') stateSlug: string, @Query() query: any) {
+    return this.predictorService.getStateOptions(stateSlug, query);
   }
 
   // ==========================================
@@ -52,18 +47,8 @@ export class PredictorController {
     return this.predictorService.predictAi(body);
   }
 
-  @Post('mh/predict')
-  predictMh(@Body() body: any) {
-    return this.predictorService.predictMh(body);
-  }
-
-  @Post('gj/predict')
-  predictGj(@Body() body: any) {
-    return this.predictorService.predictGj(body);
-  }
-
-  @Post('up/predict')
-  predictUp(@Body() body: any) {
-    return this.predictorService.predictUp(body);
+  @Post('state/:stateSlug/predict')
+  predictState(@Param('stateSlug') stateSlug: string, @Body() body: any) {
+    return this.predictorService.predictState(stateSlug, body);
   }
 }

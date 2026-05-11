@@ -2,10 +2,12 @@
 /dist
 /node_modules
 /build
+/prisma/zynerd_statewise_output
 
 # Logs
 logs
 *.log
+*.md
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
@@ -15,6 +17,7 @@ neetal_db_2026-04-27_130510.sql
 setup_mysql.py
 api-cors.py
 mysql_portable
+fb-service-acc.json
 cache
 # OS
 .DS_Store

@@ -5,389 +5,36 @@
     <title>NEET UG Unified Predictor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#f8fafc',
+                        card: '#ffffff',
+                        border: '#e2e8f0',
+                        text: '#0f172a',
+                        muted: '#64748b',
+                        subtle: '#94a3b8',
+                        primary: '#2563eb',
+                        'primary-dark': '#1d4ed8',
+                        safe: '#059669',
+                        target: '#d97706',
+                        dream: '#7c3aed',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --bg:#f8fafc;
-            --card:#ffffff;
-            --border:#e2e8f0;
-            --text:#0f172a;
-            --muted:#64748b;
-            --subtle:#94a3b8;
-            --primary:#2563eb;
-            --primary-dark:#1d4ed8;
-            --safe:#059669;
-            --target:#d97706;
-            --dream:#7c3aed;
-        }
-
-        * {
-            box-sizing:border-box;
-            font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-
         body {
-            margin:0;
-            background:
-                radial-gradient(circle at top left, rgba(37,99,235,0.12), transparent 35%),
-                radial-gradient(circle at bottom right, rgba(124,58,237,0.09), transparent 35%),
-                var(--bg);
-            color:var(--text);
-            min-height:100vh;
+            background: radial-gradient(circle at top left, rgba(37,99,235,0.12), transparent 35%), radial-gradient(circle at bottom right, rgba(124,58,237,0.09), transparent 35%), #f8fafc;
         }
-
-        .page { min-height:100vh; display:flex; flex-direction:column; }
-
-        .topbar { padding:18px 32px 8px; }
-
-        .eyebrow {
-            display:flex;
-            align-items:center;
-            gap:10px;
-            color:var(--muted);
-            text-transform:uppercase;
-            letter-spacing:.13em;
-            font-size:11px;
-            font-weight:900;
-        }
-
-        .eyebrow:before {
-            content:"";
-            width:30px;
-            height:1px;
-            background:var(--muted);
-        }
-
-        .title-row {
-            margin-top:8px;
-            display:flex;
-            justify-content:space-between;
-            align-items:flex-end;
-            gap:18px;
-        }
-
-        h1 {
-            margin:0;
-            font-size:34px;
-            letter-spacing:-.045em;
-        }
-
-        h1 span { color:var(--primary); }
-
-        .subtitle {
-            margin:7px 0 0;
-            color:var(--muted);
-            font-size:14px;
-        }
-
-        .live-pill {
-            background:#ecfdf5;
-            color:var(--safe);
-            border:1px solid rgba(5,150,105,.2);
-            padding:8px 13px;
-            border-radius:999px;
-            font-size:12px;
-            font-weight:900;
-            white-space:nowrap;
-        }
-
-        .main {
-            flex:1;
-            padding:18px 32px 32px;
-            display:grid;
-            grid-template-columns:390px 1fr;
-            gap:20px;
-            max-width:1540px;
-            width:100%;
-            margin:0 auto;
-            min-height:0;
-        }
-
-        .filter-panel,
-        .welcome,
-        .empty,
-        .loader,
-        .college-card,
-        .summary-card {
-            background:rgba(255,255,255,.96);
-            border:1px solid var(--border);
-            border-radius:24px;
-            box-shadow:0 10px 28px rgba(15,23,42,.06);
-        }
-
-        .filter-panel {
-            overflow:hidden;
-            height:calc(100vh - 130px);
-            display:flex;
-            flex-direction:column;
-            position:sticky;
-            top:18px;
-        }
-
-        .filter-head {
-            padding:18px;
-            border-bottom:1px solid var(--border);
-            background:rgba(248,250,252,.85);
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
-
-        .filter-title h2 { margin:0; font-size:15px; }
-        .filter-title p { margin:3px 0 0; color:var(--muted); font-size:11px; }
-
-        .reset-btn {
-            background:transparent;
-            border:0;
-            color:var(--muted);
-            font-size:12px;
-            font-weight:900;
-            cursor:pointer;
-        }
-
-        .filter-body {
-            padding:18px;
-            overflow-y:auto;
-            flex:1;
-        }
-
-        .section-label {
-            display:flex;
-            align-items:center;
-            gap:8px;
-            margin:5px 0 14px;
-        }
-
-        .section-label .num {
-            color:var(--subtle);
-            font-size:10px;
-            font-family:monospace;
-            font-weight:900;
-        }
-
-        .section-label .line {
-            height:1px;
-            flex:1;
-            background:var(--border);
-        }
-
-        .section-label .txt {
-            font-size:11px;
-            font-weight:900;
-            text-transform:uppercase;
-            letter-spacing:.11em;
-        }
-
-        .field { margin-bottom:14px; }
-
-        label {
-            display:block;
-            margin-bottom:6px;
-            color:var(--muted);
-            font-size:12px;
-            font-weight:900;
-        }
-
-        input,
-        select {
-            width:100%;
-            height:42px;
-            border-radius:12px;
-            border:1px solid #cbd5e1;
-            background:white;
-            color:var(--text);
-            padding:0 12px;
-            font-size:14px;
-            font-weight:750;
-            outline:none;
-        }
-
-        select[multiple] {
-            height:112px;
-            padding:8px;
-        }
-
-        input:focus,
-        select:focus {
-            border-color:var(--primary);
-            box-shadow:0 0 0 4px rgba(37,99,235,.12);
-        }
-
-        .mode-toggle,
-        .scope-toggle {
-            display:grid;
-            grid-template-columns:1fr 1fr;
-            background:#f1f5f9;
-            border-radius:12px;
-            padding:4px;
-            gap:4px;
-            margin-bottom:14px;
-        }
-
-        .mode-toggle button,
-        .scope-toggle button {
-            border:0;
-            border-radius:9px;
-            height:34px;
-            font-size:12px;
-            font-weight:900;
-            color:var(--muted);
-            background:transparent;
-            cursor:pointer;
-        }
-
-        .mode-toggle button.active,
-        .scope-toggle button.active {
-            background:white;
-            color:var(--text);
-            box-shadow:0 2px 8px rgba(15,23,42,.08);
-        }
-
-        .hint {
-            font-size:11px;
-            color:var(--muted);
-            margin:-5px 0 12px;
-            line-height:1.5;
-        }
-
-        .divider {
-            height:1px;
-            background:var(--border);
-            margin:18px 0;
-        }
-
-        .predict-area {
-            padding:16px;
-            border-top:1px solid var(--border);
-            background:rgba(248,250,252,.9);
-        }
-
-        .predict-btn {
-            width:100%;
-            border:0;
-            height:48px;
-            border-radius:14px;
-            background:var(--primary);
-            color:white;
-            font-size:14px;
-            font-weight:950;
-            cursor:pointer;
-            box-shadow:0 10px 22px rgba(37,99,235,.23);
-        }
-
-        .predict-btn:hover { background:var(--primary-dark); }
-
-        .results-panel { min-width:0; }
-
-        .welcome,
-        .empty,
-        .loader {
-            padding:58px;
-            text-align:center;
-        }
-
-        .welcome-icon {
-            width:74px;
-            height:74px;
-            border-radius:24px;
-            margin:0 auto 18px;
-            background:linear-gradient(135deg, var(--primary), var(--primary-dark));
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            color:white;
-            font-size:34px;
-        }
-
-        .welcome h2,
-        .empty h2 {
-            margin:0;
-            font-size:24px;
-        }
-
-        .welcome p,
-        .empty p {
-            color:var(--muted);
-            max-width:560px;
-            margin:10px auto 0;
-            line-height:1.65;
-        }
-
-        .loader {
-            color:var(--muted);
-            font-weight:900;
-        }
-
-        .summary {
-            display:grid;
-            grid-template-columns:repeat(5, 1fr);
-            gap:12px;
-            margin-bottom:16px;
-        }
-
-        .summary-card {
-            border-radius:18px;
-            padding:16px;
-        }
-
-        .summary-card span {
-            display:block;
-            font-size:10px;
-            color:var(--muted);
-            text-transform:uppercase;
-            letter-spacing:.08em;
-            font-weight:950;
-        }
-
-        .summary-card strong {
-            display:block;
-            margin-top:5px;
-            font-size:24px;
-        }
-
-        .sort-row {
-            background:rgba(255,255,255,.82);
-            border:1px solid var(--border);
-            border-radius:18px;
-            padding:13px 16px;
-            display:flex;
-            justify-content:space-between;
-            gap:12px;
-            margin-bottom:14px;
-            color:var(--muted);
-            font-weight:800;
-            font-size:13px;
-        }
-
-        .sort-row p { margin:0; }
-        .sort-row b { color:var(--primary); }
-
-        .cards {
-            display:grid;
-            gap:14px;
-        }
-
-        .college-card {
-            overflow:hidden;
-            transition:.2s ease;
-        }
-
-        .college-card:hover {
-            transform:translateY(-2px);
-            box-shadow:0 14px 32px rgba(15,23,42,.08);
-        }
-
-        .college-flex { display:flex; }
-
-        .cover {
-            width:220px;
-            min-height:275px;
-            color:white;
-            flex-shrink:0;
-            position:relative;
-            overflow:hidden;
-        }
-
-        .cover:before {
+        .cover-pattern:before {
             content:"";
             position:absolute;
             inset:0;
@@ -397,305 +44,95 @@
             background-size:24px 24px, 32px 32px;
             opacity:.45;
         }
-
-        .cover-letter {
-            position:absolute;
-            inset:0;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:105px;
-            font-weight:950;
-            color:rgba(255,255,255,.13);
-            user-select:none;
-        }
-
-        .bucket-pill {
-            position:absolute;
-            top:13px;
-            right:13px;
-            background:rgba(255,255,255,.96);
-            border-radius:999px;
-            padding:6px 11px;
-            font-size:12px;
-            font-weight:950;
-        }
-
-        .cover-name {
-            position:absolute;
-            bottom:14px;
-            left:14px;
-            right:14px;
-            display:flex;
-            align-items:flex-end;
-            gap:10px;
-        }
-
-        .logo {
-            width:46px;
-            height:46px;
-            border-radius:14px;
-            background:white;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-weight:950;
-            box-shadow:0 8px 18px rgba(0,0,0,.18);
-        }
-
-        .cover-name p {
-            margin:0;
-            font-size:13px;
-            font-weight:950;
-            text-shadow:0 2px 8px rgba(0,0,0,.3);
-        }
-
-        .cover-name small { color:rgba(255,255,255,.82); }
-
-        .card-content {
-            padding:18px;
-            flex:1;
-            min-width:0;
-        }
-
-        .college-name {
-            margin:0;
-            font-size:18px;
-            letter-spacing:-.02em;
-        }
-
-        .meta {
-            margin-top:7px;
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-            color:var(--muted);
-            font-size:12px;
-            font-weight:750;
-        }
-
-        .tag-row,
-        .breakdown {
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-            margin-top:12px;
-        }
-
-        .tag {
-            padding:6px 9px;
-            border-radius:999px;
-            font-size:11px;
-            font-weight:950;
-            background:#f1f5f9;
-            color:#334155;
-        }
-
-        .tag-blue { background:#eff6ff; color:#1d4ed8; }
-        .tag-purple { background:#f5f3ff; color:#6d28d9; }
-        .tag-green { background:#ecfdf5; color:#047857; }
-        .tag-orange { background:#fff7ed; color:#c2410c; }
-
-        .metrics,
-        .rank-boxes {
-            display:grid;
-            grid-template-columns:repeat(4, 1fr);
-            gap:10px;
-            margin:16px 0;
-        }
-
-        .metric,
-        .rank-box,
-        .round-box {
-            border:1px solid var(--border);
-            border-radius:14px;
-            padding:11px;
-            background:#f8fafc;
-            min-width:0;
-        }
-
-        .metric span,
-        .rank-box span,
-        .round-box span {
-            display:block;
-            font-size:10px;
-            color:var(--muted);
-            text-transform:uppercase;
-            letter-spacing:.08em;
-            font-weight:950;
-        }
-
-        .metric strong,
-        .rank-box strong,
-        .round-box b {
-            display:block;
-            margin-top:4px;
-            font-size:14px;
-            overflow-wrap:anywhere;
-        }
-
-        .round-strip {
-            margin-top:12px;
-            border-top:1px solid var(--border);
-            padding-top:12px;
-            display:grid;
-            grid-template-columns:repeat(3, 1fr);
-            gap:8px;
-        }
-
-        .evidence {
-            margin-top:14px;
-            border-top:1px solid var(--border);
-            padding-top:14px;
-        }
-
-        .evidence h4 {
-            margin:0 0 10px;
-            font-size:13px;
-        }
-
-        .evidence-table-wrap {
-            width:100%;
-            overflow-x:auto;
-            border:1px solid var(--border);
-            border-radius:12px;
-            background:#fff;
-        }
-
-        .evidence-table {
-            width:100%;
-            border-collapse:collapse;
-            font-size:12px;
-            min-width:760px;
-        }
-
-        .evidence-table th {
-            text-align:left;
-            color:var(--muted);
-            text-transform:uppercase;
-            letter-spacing:.06em;
-            font-size:10px;
-            background:#f8fafc;
-            border-bottom:1px solid var(--border);
-            padding:9px;
-            white-space:nowrap;
-        }
-
-        .evidence-table td {
-            border-bottom:1px solid #f1f5f9;
-            padding:9px;
-            vertical-align:top;
-            font-weight:700;
-            white-space:nowrap;
-        }
-
-        .hidden { display:none !important; }
-        .safe { color:var(--safe); }
-        .target { color:var(--target); }
-        .dream { color:var(--dream); }
-
-        @media(max-width:1100px) {
-            .main { grid-template-columns:1fr; }
-            .filter-panel { height:auto; position:static; }
-            .summary { grid-template-columns:repeat(2, 1fr); }
-            .college-flex { flex-direction:column; }
-            .cover { width:100%; min-height:165px; }
-            .metrics,
-            .rank-boxes,
-            .round-strip { grid-template-columns:repeat(2, 1fr); }
-        }
     </style>
 </head>
 
 <body>
-<div class="page">
-    <header class="topbar">
-        <div class="eyebrow" id="eyebrowText">NEET UG · Unified Predictor</div>
-        <div class="title-row">
+<div class="min-h-screen flex flex-col">
+    <header class="px-8 py-4 pb-2 max-[600px]:px-[18px] max-[600px]:py-[14px] max-[600px]:pb-[4px]">
+        <div class="flex items-center gap-2 text-slate-500 uppercase tracking-[.13em] text-[11px] font-[900] before:content-[''] before:w-[30px] before:h-[1px] before:bg-slate-500" id="eyebrowText">NEET UG · Unified Predictor</div>
+        <div class="mt-2 flex justify-between items-end gap-[18px]">
             <div>
-                <h1>NEET UG <span>College Predictor</span></h1>
-                <p class="subtitle" id="subtitleText">Switch between All India MCC, Maharashtra, Gujarat, and Uttar Pradesh counselling.</p>
+                <h1 class="m-0 text-[34px] tracking-[-.045em] text-slate-900 font-bold">NEET UG <span class="text-blue-600">College Predictor</span></h1>
+                <p class="m-0 mt-[7px] text-slate-500 text-[14px]" id="subtitleText">Switch between All India MCC and State counsellings.</p>
             </div>
-            <div class="live-pill">● MongoDB live data</div>
+            <div class="bg-emerald-50 text-emerald-600 border border-emerald-600/20 px-[13px] py-[8px] rounded-full text-[12px] font-[900] whitespace-nowrap">● MongoDB live data</div>
         </div>
     </header>
 
-    <main class="main">
-        <aside class="filter-panel">
-            <div class="filter-head">
-                <div class="filter-title">
-                    <h2 id="filterTitle">Refine prediction</h2>
-                    <p id="filterSubtitle">Select counselling type first</p>
+    <main class="flex-1 px-8 py-[18px] pb-8 grid grid-cols-[390px_1fr] gap-[20px] max-w-[1540px] w-full mx-auto min-h-0 max-[1100px]:grid-cols-1 max-[600px]:p-[14px] max-[600px]:pb-[18px] max-[600px]:px-[18px]">
+        <aside class="bg-white/95 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] overflow-hidden h-[calc(100vh-130px)] flex flex-col sticky top-[18px] max-[1100px]:h-auto max-[1100px]:static">
+            <div class="p-[18px] border-b border-slate-200 bg-slate-50/85 flex justify-between items-center">
+                <div>
+                    <h2 class="m-0 text-[15px] font-bold text-slate-900" id="filterTitle">Refine prediction</h2>
+                    <p class="m-0 mt-[3px] text-slate-500 text-[11px]" id="filterSubtitle">Select counselling type first</p>
                 </div>
-                <button class="reset-btn" onclick="resetFilters()">Reset</button>
+                <button class="bg-transparent border-0 text-slate-500 text-[12px] font-[900] cursor-pointer" onclick="resetFilters()">Reset</button>
             </div>
 
-            <div class="filter-body">
-                <div class="section-label">
-                    <span class="num">00</span><span class="line"></span><span class="txt">Counselling scope</span>
+            <div class="p-[18px] overflow-y-auto flex-1">
+                <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
+                    <span class="text-slate-400 text-[10px] font-mono font-[900]">00</span><span class="flex-1 h-[1px] bg-slate-200"></span><span class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">Counselling scope</span>
                 </div>
 
-                <div class="field">
-                    <label>Choose counselling</label>
-                    <select id="scopeSelect" onchange="switchScope(this.value)">
+                <div class="mb-[14px]">
+                    <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Choose counselling</label>
+                    <select id="scopeSelect" onchange="switchScope(this.value)" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
                         <option value="ai">All India MCC</option>
-                        <option value="mh">Maharashtra State</option>
-                        <option value="gj">Gujarat State</option>
-                        <option value="up">Uttar Pradesh State</option>
                     </select>
                 </div>
 
-                <div class="divider"></div>
+                <div class="h-[1px] bg-slate-200 my-[18px]"></div>
 
-                <div class="section-label">
-                    <span class="num">01</span><span class="line"></span><span class="txt">Your score</span>
+                <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
+                    <span class="text-slate-400 text-[10px] font-mono font-[900]">01</span><span class="flex-1 h-[1px] bg-slate-200"></span><span class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">Your score</span>
                 </div>
 
-                <div class="mode-toggle">
-                    <button id="marksModeBtn" class="active" onclick="setInputMode('marks')">Marks</button>
-                    <button id="rankModeBtn" onclick="setInputMode('rank')">Rank</button>
+                <div class="grid grid-cols-2 bg-slate-100 rounded-[12px] p-[4px] gap-[4px] mb-[14px]">
+                    <button id="marksModeBtn" class="border-0 rounded-[9px] h-[34px] text-[12px] font-[900] text-slate-500 bg-transparent cursor-pointer [&.active]:bg-white [&.active]:text-slate-900 [&.active]:shadow-[0_2px_8px_rgba(15,23,42,0.08)] active" onclick="setInputMode('marks')">Marks</button>
+                    <button id="rankModeBtn" class="border-0 rounded-[9px] h-[34px] text-[12px] font-[900] text-slate-500 bg-transparent cursor-pointer [&.active]:bg-white [&.active]:text-slate-900 [&.active]:shadow-[0_2px_8px_rgba(15,23,42,0.08)]" onclick="setInputMode('rank')">Rank</button>
                 </div>
 
-                <div class="field" id="marksBox">
-                    <label>Enter marks <span style="color:#94a3b8;">approx rank generated</span></label>
-                    <input id="marksInput" type="number" min="0" max="720" placeholder="e.g. 645">
+                <div class="mb-[14px]" id="marksBox">
+                    <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Enter marks <span class="text-slate-400 font-normal">approx rank generated</span></label>
+                    <input id="marksInput" type="number" min="0" max="720" placeholder="e.g. 645" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
                 </div>
 
-                <div class="field" id="rankBox" style="display:none;">
-                    <label>Enter NEET AIR rank</label>
-                    <input id="rankInput" type="number" min="1" placeholder="e.g. 45000">
+                <div class="mb-[14px] hidden" id="rankBox">
+                    <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Enter NEET AIR rank</label>
+                    <input id="rankInput" type="number" min="1" placeholder="e.g. 45000" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
                 </div>
 
-                <div class="divider"></div>
+                <div class="h-[1px] bg-slate-200 my-[18px]"></div>
 
                 <div id="aiFilters">
-                    <div class="section-label">
-                        <span class="num">02</span><span class="line"></span><span class="txt">All India filters</span>
+                    <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
+                        <span class="text-slate-400 text-[10px] font-mono font-[900]">02</span><span class="flex-1 h-[1px] bg-slate-200"></span><span class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">All India filters</span>
                     </div>
 
-                    <div class="field">
-                        <label>Round</label>
-                        <select id="aiRoundSelect"></select>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Round</label>
+                        <select id="aiRoundSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="field">
-                        <label>Course</label>
-                        <select id="aiCourseSelect"></select>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Course</label>
+                        <select id="aiCourseSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="field">
-                        <label>Candidate category</label>
-                        <select id="aiCategorySelect"></select>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Candidate category</label>
+                        <select id="aiCategorySelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="field">
-                        <label>Quota</label>
-                        <select id="aiQuotaSelect"></select>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Quota</label>
+                        <select id="aiQuotaSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="field">
-                        <label>Nearby evidence range</label>
-                        <select id="aiRangeSelect">
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Nearby evidence range</label>
+                        <select id="aiRangeSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
                             <option value="10000">±10K ranks</option>
                             <option value="25000" selected>±25K ranks</option>
                             <option value="50000">±50K ranks</option>
@@ -703,179 +140,70 @@
                         </select>
                     </div>
 
-                    <div class="field">
-                        <label>College card limit</label>
-                        <input id="aiLimitInput" type="number" min="5" max="80" value="30">
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">College card limit</label>
+                        <input id="aiLimitInput" type="number" min="5" max="80" value="30" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
                     </div>
                 </div>
 
-                <div id="mhFilters" class="hidden">
-                    <div class="section-label">
-                        <span class="num">02</span><span class="line"></span><span class="txt">Maharashtra filters</span>
+                <div id="stateFilters" class="hidden">
+                    <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
+                        <span class="text-slate-400 text-[10px] font-mono font-[900]">02</span><span class="flex-1 h-[1px] bg-slate-200"></span><span class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">State filters</span>
                     </div>
 
-                    <div class="field">
-                        <label>State</label>
-                        <select id="mhStateSelect"></select>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Round</label>
+                        <select id="stateRoundSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="field">
-                        <label>Course</label>
-                        <select id="mhCourseSelect"></select>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Course</label>
+                        <select id="stateCourseSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="field">
-                        <label>Session</label>
-                        <select id="mhSessionSelect"></select>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Candidate category</label>
+                        <select id="stateCategorySelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="field">
-                        <label>Candidate category</label>
-                        <select id="mhCandidateCategorySelect"></select>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Quota / Type</label>
+                        <select id="stateQuotaSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="divider"></div>
-
-                    <div class="section-label">
-                        <span class="num">03</span><span class="line"></span><span class="txt">Seat-style filters</span>
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Institute</label>
+                        <select id="stateInstituteSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
                     </div>
 
-                    <div class="field">
-                        <label>Filter 1: State reservation/category</label>
-                        <select id="mhStateCatSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Filter 2: Other reservation</label>
-                        <select id="mhOtherResSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Filter 3: Seat reservation type</label>
-                        <select id="mhSeatTypeSelect" multiple></select>
-                        <p class="hint">Hold Ctrl and click to select 2 options, for example General + Women.</p>
-                    </div>
-
-                    <div class="field">
-                        <label>Nearby rank range</label>
-                        <select id="mhRangeSelect">
-                            <option value="5000">±5,000</option>
-                            <option value="10000" selected>±10,000</option>
-                            <option value="20000">±20,000</option>
-                            <option value="50000">±50,000</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="gjFilters" class="hidden">
-                    <div class="section-label">
-                        <span class="num">02</span><span class="line"></span><span class="txt">Gujarat filters</span>
-                    </div>
-
-                    <div class="field">
-                        <label>Actual admission round</label>
-                        <select id="gjRoundSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Candidate category</label>
-                        <select id="gjCandidateCategorySelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Admission / allotted category</label>
-                        <select id="gjAdmCategorySelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Quota</label>
-                        <select id="gjQuotaSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Institute code</label>
-                        <select id="gjInstituteSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Nearby evidence range</label>
-                        <select id="gjRangeSelect">
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Nearby evidence range</label>
+                        <select id="stateRangeSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
+                            <option value="5000">±5K ranks</option>
                             <option value="10000">±10K ranks</option>
                             <option value="25000" selected>±25K ranks</option>
                             <option value="50000">±50K ranks</option>
-                            <option value="100000">±100K ranks</option>
                         </select>
                     </div>
 
-                    <div class="field">
-                        <label>College card limit</label>
-                        <input id="gjLimitInput" type="number" min="5" max="80" value="30">
-                    </div>
-                </div>
-
-                <div id="upFilters" class="hidden">
-                    <div class="section-label">
-                        <span class="num">02</span><span class="line"></span><span class="txt">Uttar Pradesh filters</span>
-                    </div>
-
-                    <div class="field">
-                        <label>Round</label>
-                        <select id="upRoundSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Course</label>
-                        <select id="upCourseSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Base category</label>
-                        <select id="upBaseCategorySelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Seat reservation type</label>
-                        <select id="upSeatTypeSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Full allotted category</label>
-                        <select id="upAllottedCategorySelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Institute</label>
-                        <select id="upInstituteSelect"></select>
-                    </div>
-
-                    <div class="field">
-                        <label>Nearby evidence range</label>
-                        <select id="upRangeSelect">
-                            <option value="10000">±10K ranks</option>
-                            <option value="25000" selected>±25K ranks</option>
-                            <option value="50000">±50K ranks</option>
-                            <option value="100000">±100K ranks</option>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label>College card limit</label>
-                        <input id="upLimitInput" type="number" min="5" max="80" value="30">
+                    <div class="mb-[14px]">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">College card limit</label>
+                        <input id="stateLimitInput" type="number" min="5" max="80" value="30" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
                     </div>
                 </div>
             </div>
 
-            <div class="predict-area">
-                <button class="predict-btn" onclick="predictColleges()">✨ Predict colleges →</button>
+            <div class="p-[16px] border-t border-slate-200 bg-slate-50/90">
+                <button class="w-full border-0 h-[48px] rounded-[14px] bg-blue-600 text-white text-[14px] font-[950] cursor-pointer shadow-[0_10px_22px_rgba(37,99,235,0.23)] hover:bg-blue-700 transition-colors" onclick="predictColleges()">✨ Predict colleges →</button>
             </div>
         </aside>
 
-        <section class="results-panel">
+        <section class="min-w-0">
             <div id="resultsRoot">
-                <div class="welcome">
-                    <div class="welcome-icon">🎓</div>
-                    <h2>Unified predictor ready</h2>
-                    <p>Select counselling type: All India MCC, Maharashtra, Gujarat, or Uttar Pradesh. The filter panel will change automatically.</p>
+                <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
+                    <div class="w-[74px] h-[74px] rounded-[24px] mx-auto mb-[18px] bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-[34px]">🎓</div>
+                    <h2 class="m-0 mb-[12px] text-[20px]">Unified predictor ready</h2>
+                    <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">Select counselling type: All India MCC or a State. The filter panel will change automatically.</p>
                 </div>
             </div>
         </section>
@@ -931,9 +259,7 @@ function switchScope(scope) {
     currentScope = scope;
 
     document.getElementById("aiFilters").classList.toggle("hidden", scope !== "ai");
-    document.getElementById("mhFilters").classList.toggle("hidden", scope !== "mh");
-    document.getElementById("gjFilters").classList.toggle("hidden", scope !== "gj");
-    document.getElementById("upFilters").classList.toggle("hidden", scope !== "up");
+    document.getElementById("stateFilters").classList.toggle("hidden", scope === "ai");
 
     if (scope === "ai") {
         document.getElementById("eyebrowText").textContent = "MCC All India · NEET UG";
@@ -941,39 +267,35 @@ function switchScope(scope) {
         document.getElementById("filterSubtitle").textContent = "Rank + round + category + quota";
         showWelcome("All India MCC predictor ready", "Use round, course, candidate category, and quota filters.");
         loadAiOptions();
-    } else if (scope === "mh") {
-        document.getElementById("eyebrowText").textContent = "Maharashtra State · NEET UG";
-        document.getElementById("subtitleText").textContent = "Uses Maharashtra state allotment table with seat-style filters.";
-        document.getElementById("filterSubtitle").textContent = "Rank + state category + other reservation + seat type";
-        showWelcome("Maharashtra predictor ready", "Use state category, other reservation, and seat reservation type filters.");
-        loadMhOptions();
-    } else if (scope === "gj") {
-        document.getElementById("eyebrowText").textContent = "Gujarat State · NEET UG";
-        document.getElementById("subtitleText").textContent = "Uses Gujarat final deduped allotments with actual admission round logic.";
-        document.getElementById("filterSubtitle").textContent = "Rank + actual round + category + quota";
-        showWelcome("Gujarat predictor ready", "Use actual admission round, candidate category, admission category, and quota filters.");
-        loadGjOptions();
     } else {
-        document.getElementById("eyebrowText").textContent = "Uttar Pradesh State · NEET UG";
-        document.getElementById("subtitleText").textContent = "Uses UP institute-wise final allotments and cutoff cache.";
-        document.getElementById("filterSubtitle").textContent = "Rank + round + base category + seat type";
-        showWelcome("Uttar Pradesh predictor ready", "Use round, base category, seat type, and institute filters.");
-        loadUpOptions();
+        const stateSelect = document.getElementById("scopeSelect");
+        const stateName = stateSelect.options[stateSelect.selectedIndex].text;
+        document.getElementById("eyebrowText").textContent = `${stateName} · NEET UG`;
+        document.getElementById("subtitleText").textContent = `Unified prediction based on ${stateName} allotments.`;
+        document.getElementById("filterSubtitle").textContent = "Rank + round + course + category + quota";
+        showWelcome(`${stateName} predictor ready`, "Use round, course, candidate category, quota, and institute filters.");
+        loadStateOptions(scope);
     }
 }
 
 function showWelcome(title, message) {
     document.getElementById("resultsRoot").innerHTML = `
-        <div class="welcome">
-            <div class="welcome-icon">🎓</div>
-            <h2>${escapeHtml(title)}</h2>
-            <p>${escapeHtml(message)}</p>
+        <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
+            <div class="w-[74px] h-[74px] rounded-[24px] mx-auto mb-[18px] bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-[34px]">🎓</div>
+            <h2 class="m-0 mb-[12px] text-[20px] font-bold text-slate-900">${escapeHtml(title)}</h2>
+            <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">${escapeHtml(message)}</p>
         </div>
     `;
 }
 
 function renderLoading(message = "Generating college-wise prediction from MongoDB...") {
-    document.getElementById("resultsRoot").innerHTML = `<div class="loader">${escapeHtml(message)}</div>`;
+    document.getElementById("resultsRoot").innerHTML = `
+        <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
+            <div class="w-[42px] h-[42px] border-[4px] border-slate-200 border-t-blue-600 rounded-full animate-spin mb-[24px]"></div>
+            <h2 class="m-0 mb-[12px] text-[20px] font-bold text-slate-900">Loading...</h2>
+            <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5] font-[900]">${escapeHtml(message)}</p>
+        </div>
+    `;
 }
 
 async function loadAiOptions() {
@@ -1033,124 +355,53 @@ async function loadAiOptions() {
     }
 }
 
-async function loadMhOptions() {
-    const state = document.getElementById("mhStateSelect").value || "";
-    const course = document.getElementById("mhCourseSelect").value || "";
-    const session = document.getElementById("mhSessionSelect").value || "";
-    const stateCat = document.getElementById("mhStateCatSelect").value || "";
-    const otherRes = document.getElementById("mhOtherResSelect").value || "";
+async function loadStateOptions(stateSlug) {
+    const round = document.getElementById("stateRoundSelect").value || "latest";
+    const course = document.getElementById("stateCourseSelect").value || "";
+    const category = document.getElementById("stateCategorySelect").value || "";
+    const quota = document.getElementById("stateQuotaSelect").value || "";
+    const institute = document.getElementById("stateInstituteSelect").value || "";
 
     const params = new URLSearchParams();
-    if (state) params.set("state_code", state);
-    if (course) params.set("course_name", course);
-    if (session) params.set("session_year", session);
-    if (stateCat) params.set("state_cat", stateCat);
-    if (otherRes) params.set("other_res", otherRes);
-
-    try {
-        const res = await fetch(`/api/mh/options?${params.toString()}`);
-        const json = await res.json();
-
-        if (!json.success) throw new Error(json.message || "Maharashtra options failed.");
-
-        const data = json.data;
-
-        document.getElementById("mhStateSelect").innerHTML =
-            optionHtml("", "All States", state) +
-            data.states.map(s => optionHtml(s.state_code, s.state_code, state)).join("");
-
-        document.getElementById("mhCourseSelect").innerHTML =
-            optionHtml("", "All Courses", course) +
-            data.courses.map(c => optionHtml(c.course_name, c.course_name, course)).join("");
-
-        document.getElementById("mhSessionSelect").innerHTML =
-            optionHtml("", "All Sessions", session) +
-            data.sessions.map(s => optionHtml(s.session_year, s.session_year, session)).join("");
-
-        const currentCandidateCategory = document.getElementById("mhCandidateCategorySelect").value || "";
-        document.getElementById("mhCandidateCategorySelect").innerHTML =
-            optionHtml("", "All Candidate Categories", currentCandidateCategory) +
-            (data.candidateCategories || []).map(c =>
-                optionHtml(c.code, `${c.code}`, currentCandidateCategory)
-            ).join("");
-
-        document.getElementById("mhStateCatSelect").innerHTML =
-            optionHtml("", "All State Categories", stateCat) +
-            data.stateCategories.map(c =>
-                optionHtml(c.code, `${c.code}`, stateCat)
-            ).join("");
-
-        document.getElementById("mhOtherResSelect").innerHTML =
-            optionHtml("", "All Other Reservations", otherRes) +
-            data.otherReservations.map(o =>
-                optionHtml(o.code, `${o.code}`, otherRes)
-            ).join("");
-
-        const selectedSeatTypes = selectedValues("mhSeatTypeSelect");
-        document.getElementById("mhSeatTypeSelect").innerHTML =
-            data.seatTypes.map(t => {
-                const selected = selectedSeatTypes.includes(t.code) ? "selected" : "";
-                return `<option value="${escapeHtml(t.code)}" ${selected}>${escapeHtml(t.code)}</option>`;
-            }).join("");
-
-    } catch (error) {
-        console.error(error);
-        alert(error.message);
-    }
-}
-
-async function loadGjOptions() {
-    const round = document.getElementById("gjRoundSelect").value || "latest";
-    const candidateCategory = document.getElementById("gjCandidateCategorySelect").value || "";
-    const admCategory = document.getElementById("gjAdmCategorySelect").value || "";
-    const quota = document.getElementById("gjQuotaSelect").value || "";
-    const institute = document.getElementById("gjInstituteSelect").value || "";
-
-    const params = new URLSearchParams();
-    if (round) params.set("actual_round_no", round);
-    if (candidateCategory) params.set("candidate_category_code", candidateCategory);
-    if (admCategory) params.set("adm_category_code", admCategory);
+    if (round) params.set("round_no", round);
+    if (course) params.set("course_code", course);
+    if (category) params.set("candidate_category_code", category);
     if (quota) params.set("quota_code", quota);
+    if (institute) params.set("institute_name", institute);
 
     try {
-        const res = await fetch(`/api/gj/options?${params.toString()}`);
+        const res = await fetch(`/api/state/${stateSlug}/options?${params.toString()}`);
         const json = await res.json();
 
-        if (!json.success) throw new Error(json.message || "Gujarat options failed.");
+        if (!json.success) throw new Error(json.message || "State options failed.");
 
         const data = json.data;
 
-        document.getElementById("gjRoundSelect").innerHTML = data.rounds.map(r =>
+        document.getElementById("stateRoundSelect").innerHTML = data.rounds.map(r =>
             optionHtml(r.round_no, r.label, round)
         ).join("");
 
-        document.getElementById("gjCandidateCategorySelect").innerHTML =
-            optionHtml("", "All Candidate Categories", candidateCategory) +
-            data.candidateCategories.map(c =>
-                optionHtml(c.candidate_category_code, `${c.candidate_category_code}`, candidateCategory)
-            ).join("");
+        document.getElementById("stateCourseSelect").innerHTML =
+            optionHtml("", "All Courses", course) +
+            data.courses.map(c => optionHtml(c.course_code, `${c.course_code}`, course)).join("");
 
-        document.getElementById("gjAdmCategorySelect").innerHTML =
-            optionHtml("", "All Admission Categories", admCategory) +
-            data.admCategories.map(c =>
-                optionHtml(c.adm_category_code, `${c.adm_category_code}`, admCategory)
-            ).join("");
+        document.getElementById("stateCategorySelect").innerHTML =
+            optionHtml("", "All Candidate Categories", category) +
+            data.categories.map(c => optionHtml(c.candidate_category_code, `${c.candidate_category_code}`, category)).join("");
 
-        document.getElementById("gjQuotaSelect").innerHTML =
-            optionHtml("", "All Quotas", quota) +
-            data.quotas.map(q =>
-                optionHtml(q.quota_code, `${q.quota_code}`, quota)
-            ).join("");
+        document.getElementById("stateQuotaSelect").innerHTML =
+            optionHtml("", "All Quotas/Types", quota) +
+            data.quotas.map(q => optionHtml(q.quota_code, `${q.quota_code}`, quota)).join("");
 
-        document.getElementById("gjInstituteSelect").innerHTML =
+        document.getElementById("stateInstituteSelect").innerHTML =
             optionHtml("", "All Institutes", institute) +
-            data.institutes.map(i => optionHtml(i.institute_code, i.institute_code, institute)).join("");
+            data.institutes.map(i => optionHtml(i.institute_name, i.institute_name, institute)).join("");
 
-        if (![...document.getElementById("gjRoundSelect").options].some(o => o.value === round)) document.getElementById("gjRoundSelect").value = "latest";
-        if (![...document.getElementById("gjCandidateCategorySelect").options].some(o => o.value === candidateCategory)) document.getElementById("gjCandidateCategorySelect").value = "";
-        if (![...document.getElementById("gjAdmCategorySelect").options].some(o => o.value === admCategory)) document.getElementById("gjAdmCategorySelect").value = "";
-        if (![...document.getElementById("gjQuotaSelect").options].some(o => o.value === quota)) document.getElementById("gjQuotaSelect").value = "";
-        if (![...document.getElementById("gjInstituteSelect").options].some(o => o.value === institute)) document.getElementById("gjInstituteSelect").value = "";
+        if (![...document.getElementById("stateRoundSelect").options].some(o => o.value === round)) document.getElementById("stateRoundSelect").value = "latest";
+        if (![...document.getElementById("stateCourseSelect").options].some(o => o.value === course)) document.getElementById("stateCourseSelect").value = "";
+        if (![...document.getElementById("stateCategorySelect").options].some(o => o.value === category)) document.getElementById("stateCategorySelect").value = "";
+        if (![...document.getElementById("stateQuotaSelect").options].some(o => o.value === quota)) document.getElementById("stateQuotaSelect").value = "";
+        if (![...document.getElementById("stateInstituteSelect").options].some(o => o.value === institute)) document.getElementById("stateInstituteSelect").value = "";
 
     } catch (error) {
         console.error(error);
@@ -1170,103 +421,15 @@ function resetFilters() {
         document.getElementById("aiLimitInput").value = "30";
         showWelcome("All India MCC predictor ready", "Use round, course, candidate category, and quota filters.");
         loadAiOptions();
-    } else if (currentScope === "mh") {
-        document.getElementById("mhRangeSelect").value = "10000";
-        document.getElementById("mhStateSelect").value = "";
-        document.getElementById("mhCourseSelect").value = "";
-        document.getElementById("mhSessionSelect").value = "";
-        document.getElementById("mhCandidateCategorySelect").value = "";
-        document.getElementById("mhStateCatSelect").value = "";
-        document.getElementById("mhOtherResSelect").value = "";
-        showWelcome("Maharashtra predictor ready", "Use state category, other reservation, and seat reservation type filters.");
-        loadMhOptions();
-    } else if (currentScope === "gj") {
-        document.getElementById("gjRoundSelect").value = "latest";
-        document.getElementById("gjCandidateCategorySelect").value = "";
-        document.getElementById("gjAdmCategorySelect").value = "";
-        document.getElementById("gjQuotaSelect").value = "";
-        document.getElementById("gjInstituteSelect").value = "";
-        document.getElementById("gjRangeSelect").value = "25000";
-        document.getElementById("gjLimitInput").value = "30";
-        showWelcome("Gujarat predictor ready", "Use actual admission round, candidate category, admission category, and quota filters.");
-        loadGjOptions();
     } else {
-        document.getElementById("upRoundSelect").value = "latest";
-        document.getElementById("upCourseSelect").value = "";
-        document.getElementById("upBaseCategorySelect").value = "";
-        document.getElementById("upSeatTypeSelect").value = "";
-        document.getElementById("upAllottedCategorySelect").value = "";
-        document.getElementById("upInstituteSelect").value = "";
-        document.getElementById("upRangeSelect").value = "25000";
-        document.getElementById("upLimitInput").value = "30";
-        showWelcome("Uttar Pradesh predictor ready", "Use round, base category, seat type, and institute filters.");
-        loadUpOptions();
-    }
-}
-
-
-async function loadUpOptions() {
-    const round = document.getElementById("upRoundSelect").value || "latest";
-    const course = document.getElementById("upCourseSelect").value || "";
-    const baseCategory = document.getElementById("upBaseCategorySelect").value || "";
-    const seatType = document.getElementById("upSeatTypeSelect").value || "";
-    const fullCategory = document.getElementById("upAllottedCategorySelect").value || "";
-    const institute = document.getElementById("upInstituteSelect").value || "";
-
-    const params = new URLSearchParams();
-    if (round) params.set("round_no", round);
-    if (baseCategory) params.set("allotted_category_base_code", baseCategory);
-    if (seatType) params.set("seat_reservation_type_code", seatType);
-    if (fullCategory) params.set("allotted_category_code", fullCategory);
-
-    try {
-        const res = await fetch(`/api/up/options?${params.toString()}`);
-        const json = await res.json();
-
-        if (!json.success) throw new Error(json.message || "UP options failed.");
-
-        const data = json.data;
-
-        document.getElementById("upRoundSelect").innerHTML = data.rounds.map(r =>
-            optionHtml(r.round_no, r.label, round)
-        ).join("");
-
-        document.getElementById("upCourseSelect").innerHTML =
-            optionHtml("", "All Courses", course) +
-            data.courses.map(c => optionHtml(c.course_code, `${c.course_code}`, course)).join("");
-
-        document.getElementById("upBaseCategorySelect").innerHTML =
-            optionHtml("", "All Base Categories", baseCategory) +
-            data.baseCategories.map(c => optionHtml(c.allotted_category_base_code, `${c.allotted_category_base_code}`, baseCategory)).join("");
-
-        document.getElementById("upSeatTypeSelect").innerHTML =
-            optionHtml("", "All Seat Types", seatType) +
-            data.seatTypes.map(t => optionHtml(t.seat_reservation_type_code, `${t.seat_reservation_type_code}`, seatType)).join("");
-
-        document.getElementById("upAllottedCategorySelect").innerHTML =
-            optionHtml("", "All Full Categories", fullCategory) +
-            data.categories.map(c =>
-                optionHtml(
-                    c.allotted_category_code,
-                    c.allotted_category_display || c.allotted_category_code,
-                    fullCategory
-                )
-            ).join("");
-
-        document.getElementById("upInstituteSelect").innerHTML =
-            optionHtml("", "All Institutes", institute) +
-            data.institutes.map(i => optionHtml(i.institute_code, `${i.institute_name} (${i.institute_code})`, institute)).join("");
-
-        if (![...document.getElementById("upRoundSelect").options].some(o => o.value === round)) document.getElementById("upRoundSelect").value = "latest";
-        if (![...document.getElementById("upCourseSelect").options].some(o => o.value === course)) document.getElementById("upCourseSelect").value = "";
-        if (![...document.getElementById("upBaseCategorySelect").options].some(o => o.value === baseCategory)) document.getElementById("upBaseCategorySelect").value = "";
-        if (![...document.getElementById("upSeatTypeSelect").options].some(o => o.value === seatType)) document.getElementById("upSeatTypeSelect").value = "";
-        if (![...document.getElementById("upAllottedCategorySelect").options].some(o => o.value === fullCategory)) document.getElementById("upAllottedCategorySelect").value = "";
-        if (![...document.getElementById("upInstituteSelect").options].some(o => o.value === institute)) document.getElementById("upInstituteSelect").value = "";
-
-    } catch (error) {
-        console.error(error);
-        alert(error.message);
+        document.getElementById("stateRoundSelect").value = "latest";
+        document.getElementById("stateCourseSelect").value = "";
+        document.getElementById("stateCategorySelect").value = "";
+        document.getElementById("stateQuotaSelect").value = "";
+        document.getElementById("stateInstituteSelect").value = "";
+        document.getElementById("stateRangeSelect").value = "25000";
+        document.getElementById("stateLimitInput").value = "30";
+        switchScope(currentScope);
     }
 }
 
@@ -1309,47 +472,21 @@ async function predictColleges() {
             limit: document.getElementById("aiLimitInput").value,
         };
         renderLoading("Generating All India MCC prediction from MongoDB...");
-    } else if (currentScope === "mh") {
-        url = "/api/mh/predict";
-        payload = {
-            ...base,
-            state_code: document.getElementById("mhStateSelect").value,
-            course_name: document.getElementById("mhCourseSelect").value,
-            session_year: document.getElementById("mhSessionSelect").value,
-            candidate_category_code: document.getElementById("mhCandidateCategorySelect").value,
-            state_reservation_category_code: document.getElementById("mhStateCatSelect").value,
-            other_reservation_code: document.getElementById("mhOtherResSelect").value,
-            seat_reservation_type_codes: selectedValues("mhSeatTypeSelect"),
-            rank_range: document.getElementById("mhRangeSelect").value || 10000,
-        };
-        renderLoading("Generating Maharashtra state prediction from MongoDB...");
-    } else if (currentScope === "gj") {
-        url = "/api/gj/predict";
-        payload = {
-            ...base,
-            actual_round_no: document.getElementById("gjRoundSelect").value,
-            candidate_category_code: document.getElementById("gjCandidateCategorySelect").value,
-            adm_category_code: document.getElementById("gjAdmCategorySelect").value,
-            quota_code: document.getElementById("gjQuotaSelect").value,
-            institute_code: document.getElementById("gjInstituteSelect").value,
-            nearby_range: document.getElementById("gjRangeSelect").value,
-            limit: document.getElementById("gjLimitInput").value,
-        };
-        renderLoading("Generating Gujarat state prediction from MongoDB...");
     } else {
-        url = "/api/up/predict";
+        url = `/api/state/${currentScope}/predict`;
+        const stateSelect = document.getElementById("scopeSelect");
+        const stateName = stateSelect.options[stateSelect.selectedIndex].text;
         payload = {
             ...base,
-            round_no: document.getElementById("upRoundSelect").value,
-            course_code: document.getElementById("upCourseSelect").value,
-            allotted_category_base_code: document.getElementById("upBaseCategorySelect").value,
-            seat_reservation_type_code: document.getElementById("upSeatTypeSelect").value,
-            allotted_category_code: document.getElementById("upAllottedCategorySelect").value,
-            institute_code: document.getElementById("upInstituteSelect").value,
-            nearby_range: document.getElementById("upRangeSelect").value,
-            limit: document.getElementById("upLimitInput").value,
+            round_no: document.getElementById("stateRoundSelect").value,
+            course_code: document.getElementById("stateCourseSelect").value,
+            candidate_category_code: document.getElementById("stateCategorySelect").value,
+            quota_code: document.getElementById("stateQuotaSelect").value,
+            institute_name: document.getElementById("stateInstituteSelect").value,
+            nearby_range: document.getElementById("stateRangeSelect").value,
+            limit: document.getElementById("stateLimitInput").value,
         };
-        renderLoading("Generating Uttar Pradesh state prediction from MongoDB...");
+        renderLoading(`Generating ${stateName} prediction from MongoDB...`);
     }
 
     try {
@@ -1369,9 +506,9 @@ async function predictColleges() {
 
     } catch (error) {
         document.getElementById("resultsRoot").innerHTML = `
-            <div class="empty">
-                <h2>Prediction failed</h2>
-                <p>${escapeHtml(error.message)}</p>
+            <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
+                <h2 class="m-0 mb-[12px] text-[20px] font-bold text-slate-900">Prediction failed</h2>
+                <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">${escapeHtml(error.message)}</p>
             </div>
         `;
     }
@@ -1385,36 +522,34 @@ function renderResults(json) {
 
     if (!data.length) {
         root.innerHTML = `
-            <div class="empty">
-                <h2>No college cards found</h2>
-                <p>Try increasing rank range or reducing filters.</p>
+            <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
+                <h2 class="m-0 mb-[12px] text-[20px] font-bold text-slate-900">No college cards found</h2>
+                <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">Try increasing rank range or reducing filters.</p>
             </div>
         `;
         return;
     }
 
     const cardCount = summary.totalCards ?? summary.total ?? 0;
-    const evidenceLabel = (mode === "ai" || mode === "gj" || mode === "up")
-        ? `Evidence range: ±${formatRank(summary.nearbyRange)}`
-        : `Rank range: ${escapeHtml(summary.rankRange || "-")}`;
+    const evidenceLabel = `Evidence range: ±${formatRank(summary.nearbyRange || summary.rankRange)}`;
 
     const summaryHtml = `
-        <div class="summary">
-            <div class="summary-card"><span>Cards</span><strong>${cardCount}</strong></div>
-            <div class="summary-card"><span>Safe</span><strong class="safe">${summary.safe || 0}</strong></div>
-            <div class="summary-card"><span>Target</span><strong class="target">${summary.target || 0}</strong></div>
-            <div class="summary-card"><span>Dream</span><strong class="dream">${summary.dream || 0}</strong></div>
-            <div class="summary-card"><span>User rank</span><strong>${formatRank(summary.userRank)}</strong></div>
+        <div class="grid grid-cols-5 gap-[12px] mb-[16px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
+            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center max-[1100px]:col-span-2 max-[600px]:col-span-1"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Cards</span><strong class="block mt-[5px] text-[24px] text-slate-900">${cardCount}</strong></div>
+            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Safe</span><strong class="block mt-[5px] text-[24px] text-emerald-600">${summary.safe || 0}</strong></div>
+            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Target</span><strong class="block mt-[5px] text-[24px] text-amber-600">${summary.target || 0}</strong></div>
+            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Dream</span><strong class="block mt-[5px] text-[24px] text-violet-600">${summary.dream || 0}</strong></div>
+            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">User rank</span><strong class="block mt-[5px] text-[24px] text-slate-900">${formatRank(summary.userRank)}</strong></div>
         </div>
 
-        <div class="sort-row">
-            <p><b>${escapeHtml(summary.title || "Prediction")}</b> around rank <b>${formatRank(summary.userRank)}</b></p>
-            <p>${evidenceLabel}</p>
+        <div class="bg-white/80 border border-slate-200 rounded-[18px] p-[13px_16px] flex justify-between gap-[12px] mb-[14px] text-slate-500 font-[800] text-[13px]">
+            <p class="m-0"><b class="text-blue-600 font-[900]">${escapeHtml(summary.title || "Prediction")}</b> around rank <b class="text-slate-900 font-[900]">${formatRank(summary.userRank)}</b></p>
+            <p class="m-0">${evidenceLabel}</p>
         </div>
     `;
 
     const cardsHtml = data.map(college => renderCollegeCard(college, summary, mode)).join("");
-    root.innerHTML = summaryHtml + `<div class="cards">${cardsHtml}</div>`;
+    root.innerHTML = summaryHtml + `<div class="grid gap-[14px]">${cardsHtml}</div>`;
 }
 
 function renderCollegeCard(college, summary, mode) {
@@ -1431,37 +566,35 @@ function renderCollegeCard(college, summary, mode) {
     const image = college.image || "linear-gradient(135deg, #2563eb 0%, #172554 100%)";
     const logoColor = college.logoColor || "#2563eb";
 
-    const aiMiddle = mode === "ai" ? renderAiMiddle(college, summary) : (mode === "gj" ? renderGjMiddle(college, summary) : (mode === "up" ? renderUpMiddle(college, summary) : renderMhMiddle(college, summary)));
-    const evidence = mode === "ai" ? renderAiEvidence(college) : (mode === "gj" ? renderGjEvidence(college) : (mode === "up" ? renderUpEvidence(college) : renderMhEvidence(college)));
+    const aiMiddle = mode === "ai" ? renderAiMiddle(college, summary) : renderStateMiddle(college, summary);
+    const evidence = mode === "ai" ? renderAiEvidence(college) : renderStateEvidence(college);
 
     return `
-        <article class="college-card">
-            <div class="college-flex">
-                <div class="cover" style="background:${image};">
-                    <div class="cover-letter">${escapeHtml(initials[0] || "C")}</div>
+        <article class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] overflow-hidden transition-all duration-200 hover:translate-y-[-2px] hover:shadow-[0_14px_32px_rgba(15,23,42,0.08)]">
+            <div class="flex max-[1100px]:flex-col">
+                <div class="w-[220px] min-h-[275px] max-[1100px]:w-full max-[1100px]:min-h-[165px] text-white shrink-0 relative overflow-hidden bg-cover bg-center cover-pattern" style="background:${image};">
+                    <div class="absolute inset-0 flex items-center justify-center text-[105px] font-[950] text-white/10 select-none">${escapeHtml(initials[0] || "C")}</div>
 
-                    <div class="bucket-pill ${escapeHtml(college.bucket)}" style="color:${logoColor};">
+                    <div class="absolute top-[13px] right-[13px] bg-white/95 rounded-full px-[11px] py-[6px] text-[12px] font-[950]" style="color:${logoColor};">
                         ● ${bucketLabel(college.bucket)}
                     </div>
 
-                    <div class="cover-name">
-                        <div class="logo" style="color:${logoColor};">${escapeHtml(initials)}</div>
+                    <div class="absolute bottom-[14px] left-[14px] right-[14px] flex items-end gap-[10px]">
+                        <div class="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center font-[950] shadow-[0_8px_18px_rgba(0,0,0,0.18)]" style="color:${logoColor};">${escapeHtml(initials)}</div>
                         <div>
-                            <p>${escapeHtml(college.shortName || name)}</p>
-                            <small>${escapeHtml(mode === "ai" ? (college.courseCode || "-") : ((mode === "gj" || mode === "up") ? (college.instituteCode || college.collegeCode || "-") : (college.collegeCode || "-")))}</small>
+                            <p class="m-0 text-[13px] font-[950] drop-shadow-md text-white">${escapeHtml(college.shortName || name)}</p>
+                            <small class="text-white/80">${escapeHtml(mode === "ai" ? (college.courseCode || "-") : (college.instituteCode || college.collegeCode || "-"))}</small>
                         </div>
                     </div>
                 </div>
 
-                <div class="card-content">
-                    <h3 class="college-name">${escapeHtml(name)}</h3>
+                <div class="p-[18px] flex-1 min-w-0">
+                    <h3 class="m-0 text-[18px] tracking-[-.02em] text-slate-900 font-bold">${escapeHtml(name)}</h3>
 
-                    <div class="meta">
+                    <div class="mt-[7px] flex flex-wrap gap-[8px] text-slate-500 text-[12px] font-[750]">
                         <span>🎓 ${escapeHtml(course)}</span>
-                        ${mode === "ai" ? `<span>·</span><span>Rounds: ${escapeHtml(college.rounds || "-")}</span>` : ""}
-                        ${mode === "mh" ? `<span>·</span><span>📍 ${escapeHtml(college.state || "-")}</span><span>·</span><span>${escapeHtml(college.sessionYear || "-")}</span>` : ""}
-                        ${mode === "gj" ? `<span>·</span><span>📍 Gujarat</span><span>·</span><span>Rounds: ${escapeHtml(college.rounds || "-")}</span>` : ""}
-                        ${mode === "up" ? `<span>·</span><span>📍 Uttar Pradesh</span><span>·</span><span>Rounds: ${escapeHtml(college.rounds || "-")}</span>` : ""}
+                        <span>·</span><span>Rounds: ${escapeHtml(college.rounds || "-")}</span>
+                        ${mode !== "ai" ? `<span>·</span><span>📍 ${escapeHtml(college.state || "State")}</span>` : ""}
                     </div>
 
                     ${aiMiddle}
@@ -1474,203 +607,96 @@ function renderCollegeCard(college, summary, mode) {
 
 function renderAiMiddle(college, summary) {
     const cutoffHtml = (college.roundCutoffs || []).map(r => `
-        <div class="round-box">
-            <span>Round ${escapeHtml(r.round_no)}</span>
-            <b>${formatRank(r.opening_rank)} → ${formatRank(r.closing_rank)}</b>
+        <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0">
+            <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Round ${escapeHtml(r.round_no)}</span>
+            <b class="block mt-[4px] text-[14px] break-words">${formatRank(r.opening_rank)} → ${formatRank(r.closing_rank)}</b>
         </div>
     `).join("");
 
     return `
-        <div class="tag-row">
-            <span class="tag tag-blue">Quota: ${escapeHtml(college.quotaCodes || "-")}</span>
-            <span class="tag tag-green">Candidate: ${escapeHtml(college.candidateCategoryCodes || "-")}</span>
-            <span class="tag tag-purple">Allotted: ${escapeHtml(college.allottedCategoryCodes || "-")}</span>
+        <div class="flex flex-wrap gap-[8px] mt-[12px]">
+            <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-blue-50 text-blue-700">Quota: ${escapeHtml(college.quotaCodes || "-")}</span>
+            <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-emerald-50 text-emerald-700">Candidate: ${escapeHtml(college.candidateCategoryCodes || "-")}</span>
+            <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-purple-50 text-purple-700">Allotted: ${escapeHtml(college.allottedCategoryCodes || "-")}</span>
         </div>
 
-        <div class="metrics">
-            <div class="metric"><span>Your rank</span><strong>${formatRank(summary.userRank)}</strong></div>
-            <div class="metric"><span>Opening rank</span><strong>${formatRank(college.openingRank)}</strong></div>
-            <div class="metric"><span>Closing rank</span><strong>${formatRank(college.closingRank)}</strong></div>
-            <div class="metric"><span>Rank gap</span><strong>${formatRank(college.rankGap)}</strong></div>
+        <div class="grid grid-cols-4 gap-[10px] my-[16px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Your rank</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(summary.userRank)}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Opening rank</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(college.openingRank)}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Closing rank</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(college.closingRank)}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Rank gap</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(college.rankGap)}</strong></div>
         </div>
 
-        <div class="round-strip">
-            ${cutoffHtml || `<div class="round-box"><span>Cutoff</span><b>-</b></div>`}
+        <div class="mt-[12px] border-t border-slate-200 pt-[12px] grid grid-cols-3 gap-[8px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
+            ${cutoffHtml || `<div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Cutoff</span><b class="block mt-[4px] text-[14px] break-words">-</b></div>`}
         </div>
     `;
 }
 
-function renderMhMiddle(college, summary) {
-    const filterChips = (college.matchedFilters || []).slice(0, 10).map(f => `
-        <span class="tag tag-green">
-            ${escapeHtml(f.stateCategory || "-")} / ${escapeHtml(f.otherReservation || "-")} / ${escapeHtml(f.seatType || "-")} · ${f.count}
-        </span>
-    `).join("");
-
-    const breakdown = (college.seatTypeBreakdown || []).map(x => `
-        <span class="tag tag-orange">${escapeHtml(x.code)}: ${escapeHtml(x.count)}</span>
-    `).join("");
-
-    return `
-        <div class="metrics">
-            <div class="metric"><span>Your rank</span><strong>${formatRank(summary.userRank)}</strong></div>
-            <div class="metric"><span>Closest rank</span><strong>${formatRank(college.nearestRank)}</strong></div>
-            <div class="metric"><span>Rank gap</span><strong>${formatRank(college.rankGap)}</strong></div>
-            <div class="metric"><span>Similar rows</span><strong>${college.totalSimilarRows || 0}</strong></div>
-        </div>
-
-        <div class="rank-boxes">
-            <div class="rank-box"><span>Best similar rank</span><strong>${formatRank(college.bestSimilarRank)}</strong></div>
-            <div class="rank-box"><span>Worst similar rank</span><strong>${formatRank(college.worstSimilarRank)}</strong></div>
-            <div class="rank-box"><span>Closest similar rank</span><strong>${formatRank(college.nearestRank)}</strong></div>
-            <div class="rank-box"><span>College code</span><strong>${escapeHtml(college.collegeCode || "-")}</strong></div>
-        </div>
-
-        <div class="breakdown">${breakdown}</div>
-        <div class="tag-row">${filterChips}</div>
-    `;
-}
-
-function renderGjMiddle(college, summary) {
+function renderStateMiddle(college, summary) {
     const cutoffHtml = (college.roundCutoffs || []).map(r => `
-        <div class="round-box">
-            <span>Round ${escapeHtml(r.round_no)}</span>
-            <b>${formatRank(r.opening_rank)} → ${formatRank(r.closing_rank)}</b>
+        <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0">
+            <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Round ${escapeHtml(r.round_no)}</span>
+            <b class="block mt-[4px] text-[14px] break-words">${formatRank(r.opening_rank)} → ${formatRank(r.closing_rank)}</b>
         </div>
     `).join("");
 
     return `
-        <div class="tag-row">
-            <span class="tag tag-blue">Quota: ${escapeHtml(college.quotaCodes || "-")}</span>
-            <span class="tag tag-green">Candidate: ${escapeHtml(college.candidateCategoryCodes || "-")}</span>
-            <span class="tag tag-purple">Admission Cat.: ${escapeHtml(college.admCategoryCodes || "-")}</span>
+        <div class="flex flex-wrap gap-[8px] mt-[12px]">
+            <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-blue-50 text-blue-700">Quota: ${escapeHtml(college.quotaCodes || "-")}</span>
+            <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-emerald-50 text-emerald-700">Candidate: ${escapeHtml(college.candidateCategoryCodes || "-")}</span>
+            <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-purple-50 text-purple-700">Allotted: ${escapeHtml(college.allottedCategoryCodes || "-")}</span>
         </div>
 
-        <div class="metrics">
-            <div class="metric"><span>Your rank</span><strong>${formatRank(summary.userRank)}</strong></div>
-            <div class="metric"><span>Opening AIQ rank</span><strong>${formatRank(college.openingRank)}</strong></div>
-            <div class="metric"><span>Closing AIQ rank</span><strong>${formatRank(college.closingRank)}</strong></div>
-            <div class="metric"><span>Rank gap</span><strong>${formatRank(college.rankGap)}</strong></div>
+        <div class="grid grid-cols-4 gap-[10px] my-[16px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Your rank</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(summary.userRank)}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Opening rank</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(college.openingRank)}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Closing rank</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(college.closingRank)}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Rank gap</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(college.rankGap)}</strong></div>
         </div>
 
-        <div class="rank-boxes">
-            <div class="rank-box"><span>Opening merit no.</span><strong>${escapeHtml(college.openingMeritNo || "-")}</strong></div>
-            <div class="rank-box"><span>Closing merit no.</span><strong>${escapeHtml(college.closingMeritNo || "-")}</strong></div>
-            <div class="rank-box"><span>Max NEET score</span><strong>${formatRank(college.maxNeetScore)}</strong></div>
-            <div class="rank-box"><span>Min NEET score</span><strong>${formatRank(college.minNeetScore)}</strong></div>
+        <div class="grid grid-cols-4 gap-[10px] my-[16px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Total allotments</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(college.totalAllotments || college.totalSimilarRows || "-")}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Institute code</span><strong class="block mt-[4px] text-[14px] break-words">${escapeHtml(college.instituteCode || college.collegeCode || "-")}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Course</span><strong class="block mt-[4px] text-[14px] break-words">${escapeHtml(college.courseCode || "-")}</strong></div>
+            <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Rounds</span><strong class="block mt-[4px] text-[14px] break-words">${escapeHtml(college.rounds || "-")}</strong></div>
         </div>
 
-        <div class="round-strip">
-            ${cutoffHtml || `<div class="round-box"><span>Cutoff</span><b>-</b></div>`}
-        </div>
-    `;
-}
-
-
-function renderUpMiddle(college, summary) {
-    const cutoffHtml = (college.roundCutoffs || []).map(r => `
-        <div class="round-box">
-            <span>Round ${escapeHtml(r.round_no)}</span>
-            <b>${formatRank(r.opening_rank)} → ${formatRank(r.closing_rank)}</b>
-        </div>
-    `).join("");
-
-    return `
-        <div class="tag-row">
-            <span class="tag tag-blue">Full Cat.: ${escapeHtml(college.allottedCategoryDisplay || college.allottedCategoryCodes || "-")}</span>
-            <span class="tag tag-green">Base Cat.: ${escapeHtml(college.baseCategoryCodes || "-")}</span>
-            <span class="tag tag-purple">Seat Type: ${escapeHtml(college.seatTypeCodes || "-")}</span>
-        </div>
-
-        <div class="metrics">
-            <div class="metric"><span>Your rank</span><strong>${formatRank(summary.userRank)}</strong></div>
-            <div class="metric"><span>Opening rank</span><strong>${formatRank(college.openingRank)}</strong></div>
-            <div class="metric"><span>Closing rank</span><strong>${formatRank(college.closingRank)}</strong></div>
-            <div class="metric"><span>Rank gap</span><strong>${formatRank(college.rankGap)}</strong></div>
-        </div>
-
-        <div class="rank-boxes">
-            <div class="rank-box"><span>Total allotments</span><strong>${formatRank(college.totalAllotments)}</strong></div>
-            <div class="rank-box"><span>Institute code</span><strong>${escapeHtml(college.instituteCode || "-")}</strong></div>
-            <div class="rank-box"><span>Course</span><strong>${escapeHtml(college.courseCode || "-")}</strong></div>
-            <div class="rank-box"><span>Rounds</span><strong>${escapeHtml(college.rounds || "-")}</strong></div>
-        </div>
-
-        <div class="round-strip">
-            ${cutoffHtml || `<div class="round-box"><span>Cutoff</span><b>-</b></div>`}
+        <div class="mt-[12px] border-t border-slate-200 pt-[12px] grid grid-cols-3 gap-[8px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
+            ${cutoffHtml || `<div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Cutoff</span><b class="block mt-[4px] text-[14px] break-words">-</b></div>`}
         </div>
     `;
 }
 
-function renderUpEvidence(college) {
+function renderStateEvidence(college) {
     const evidenceRows = (college.similarCandidates || []).map(row => `
         <tr>
-            <td>${formatRank(row.rank_num)}</td>
-            <td>R${escapeHtml(row.round_no || "-")}</td>
-            <td>${escapeHtml(row.allotted_category_display || row.allotted_category_code || "-")}</td>
-            <td>${escapeHtml(row.allotted_category_base_code || "-")}</td>
-            <td>${escapeHtml(row.seat_reservation_type_code || "-")}</td>
-            <td>${escapeHtml(row.institute_code || "-")}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${formatRank(row.rank_num)}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">R${escapeHtml(row.round_no || "-")}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${escapeHtml(row.candidate_category_code || "-")}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${escapeHtml(row.allotted_category_code || "-")}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${escapeHtml(row.quota_code || "-")}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${escapeHtml(row.institute_code || row.college_code || "-")}</td>
         </tr>
     `).join("");
 
     return `
-        <div class="evidence">
-            <h4>Similar allotted student evidence</h4>
-            <div class="evidence-table-wrap">
-                <table class="evidence-table">
+        <div class="mt-[14px] border-t border-slate-200 pt-[14px]">
+            <h4 class="m-0 mb-[10px] text-[13px] font-bold text-slate-800">Similar allotted student evidence</h4>
+            <div class="w-full overflow-x-auto border border-slate-200 rounded-[12px] bg-white">
+                <table class="w-full border-collapse text-[12px] min-w-[760px]">
                     <thead>
                         <tr>
-                            <th>Rank</th>
-                            <th>Round</th>
-                            <th>Full Cat.</th>
-                            <th>Base Cat.</th>
-                            <th>Seat Type</th>
-                            <th>Institute</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Rank</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Round</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Cand. Cat.</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Allotted Cat.</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Quota/Type</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Institute</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${evidenceRows || `<tr><td colspan="6">No nearby UP evidence found.</td></tr>`}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-function renderGjEvidence(college) {
-    const evidenceRows = (college.similarCandidates || []).map(row => `
-        <tr>
-            <td>${formatRank(row.rank_num)}</td>
-            <td>${escapeHtml(row.merit_no || "-")}</td>
-            <td>${formatRank(row.neet_score)}</td>
-            <td>R${escapeHtml(row.round_no || "-")}</td>
-            <td>${escapeHtml(row.candidate_category_code || "-")}</td>
-            <td>${escapeHtml(row.adm_category_code || "-")}</td>
-            <td>${escapeHtml(row.quota_code || "-")}</td>
-            <td>${escapeHtml(row.college_code || "-")}</td>
-        </tr>
-    `).join("");
-
-    return `
-        <div class="evidence">
-            <h4>Similar allotted student evidence</h4>
-            <div class="evidence-table-wrap">
-                <table class="evidence-table">
-                    <thead>
-                        <tr>
-                            <th>AIQ Rank</th>
-                            <th>Merit No.</th>
-                            <th>NEET Score</th>
-                            <th>Round</th>
-                            <th>Candidate Cat.</th>
-                            <th>Adm Cat.</th>
-                            <th>Quota</th>
-                            <th>College Code</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${evidenceRows || `<tr><td colspan="8">No nearby Gujarat evidence found.</td></tr>`}
+                        ${evidenceRows || `<tr><td colspan="6" class="p-[9px] text-slate-500 font-bold">No nearby evidence found.</td></tr>`}
                     </tbody>
                 </table>
             </div>
@@ -1681,30 +707,30 @@ function renderGjEvidence(college) {
 function renderAiEvidence(college) {
     const evidenceRows = (college.similarCandidates || []).map(row => `
         <tr>
-            <td>${formatRank(row.rank_num)}</td>
-            <td>R${escapeHtml(row.round_no)}</td>
-            <td>${escapeHtml(row.candidate_category_code || "-")}</td>
-            <td>${escapeHtml(row.allotted_category_code || "-")}</td>
-            <td>${escapeHtml(row.quota_code || "-")}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${formatRank(row.rank_num)}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">R${escapeHtml(row.round_no)}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${escapeHtml(row.candidate_category_code || "-")}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${escapeHtml(row.allotted_category_code || "-")}</td>
+            <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${escapeHtml(row.quota_code || "-")}</td>
         </tr>
     `).join("");
 
     return `
-        <div class="evidence">
-            <h4>Similar allotted student evidence</h4>
-            <div class="evidence-table-wrap">
-                <table class="evidence-table">
+        <div class="mt-[14px] border-t border-slate-200 pt-[14px]">
+            <h4 class="m-0 mb-[10px] text-[13px] font-bold text-slate-800">Similar allotted student evidence</h4>
+            <div class="w-full overflow-x-auto border border-slate-200 rounded-[12px] bg-white">
+                <table class="w-full border-collapse text-[12px] min-w-[760px]">
                     <thead>
                         <tr>
-                            <th>Rank</th>
-                            <th>Round</th>
-                            <th>Candidate Cat.</th>
-                            <th>Allotted Cat.</th>
-                            <th>Quota</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Rank</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Round</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Candidate Cat.</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Allotted Cat.</th>
+                            <th class="text-left text-slate-500 uppercase tracking-[.06em] text-[10px] bg-slate-50 border-b border-slate-200 p-[9px] whitespace-nowrap">Quota</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${evidenceRows || `<tr><td colspan="5">No nearby AIQ evidence found.</td></tr>`}
+                        ${evidenceRows || `<tr><td colspan="5" class="p-[9px] text-slate-500 font-bold">No nearby AIQ evidence found.</td></tr>`}
                     </tbody>
                 </table>
             </div>
@@ -1712,41 +738,29 @@ function renderAiEvidence(college) {
     `;
 }
 
-function renderMhEvidence(college) {
-    const evidenceRows = (college.similarCandidates || []).map(row => `
-        <tr>
-            <td>${formatRank(row.rank_num)}</td>
-            <td>R${escapeHtml(row.round_no || "-")}</td>
-            <td>${escapeHtml(row.state_reservation_category_code || "-")}</td>
-            <td>${escapeHtml(row.other_reservation_code || "-")}</td>
-            <td>${escapeHtml(row.seat_reservation_type_code || "-")}</td>
-        </tr>
-    `).join("");
-
-    return `
-        <div class="evidence">
-            <h4>Similar allotted student evidence</h4>
-            <div class="evidence-table-wrap">
-                <table class="evidence-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Round</th>
-                            <th>State Cat.</th>
-                            <th>Other Res.</th>
-                            <th>Seat Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${evidenceRows || `<tr><td colspan="5">No nearby MH evidence found.</td></tr>`}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
+async function initApp() {
+    try {
+        const res = await fetch("/api/states");
+        const json = await res.json();
+        
+        if (json.success && json.data && json.data.length > 0) {
+            const scopeSelect = document.getElementById("scopeSelect");
+            const existingAiOption = scopeSelect.innerHTML;
+            
+            const stateOptions = json.data.map(state => 
+                optionHtml(state.slug, `${state.name} State`)
+            ).join("");
+            
+            scopeSelect.innerHTML = existingAiOption + stateOptions;
+        }
+    } catch (error) {
+        console.error("Failed to load states:", error);
+    }
+    
+    switchScope('ai');
 }
 
-window.onload = () => switchScope('ai');
+window.onload = initApp;
 </script>
 </body>
 </html>

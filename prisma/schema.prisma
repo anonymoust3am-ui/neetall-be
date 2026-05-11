@@ -48,6 +48,7 @@ model User {
   payments               Payment[]
   Testimonial            Testimonial?
   ChoiceList             ChoiceList[]
+  PredictionQuery        PredictionQuery[]
   createdAt              DateTime                @default(now())
 }
 
@@ -383,258 +384,420 @@ model BodyQuota {
   body   Body   @relation(fields: [bodyId], references: [id], onDelete: Cascade)
 }
 
-// -----------------------------------------------------------------------------
-// UNIFIED ALLOTMENT & CUTOFF SCHEMA
-// -----------------------------------------------------------------------------
+enum CounsellingLevel {
+  ALL_INDIA
+  STATE
+  DEEMED
+  CENTRAL
+  PRIVATE_MANAGEMENT
+  OTHER
+}
+
+enum CourseType {
+  MBBS
+  BDS
+  BAMS
+  BHMS
+  BUMS
+  BVSC
+  OTHER
+}
+
+enum SeatOwnership {
+  GOVERNMENT
+  PRIVATE
+  DEEMED
+  AIIMS
+  JIPMER
+  CENTRAL_UNIVERSITY
+  MINORITY
+  MANAGEMENT
+  NRI
+  ESI
+  OTHER
+}
+
+enum PredictionChance {
+  SAFE
+  POSSIBLE
+  RISKY
+  VERY_RISKY
+  NOT_MATCHED
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
 
 model State {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  stateCode String   @unique // 'UP', 'GJ', 'MH', 'ALL_INDIA'
-  stateName String   @unique
+  id   String  @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  code String?
+  slug String
+
+  institutes   Institute[]
+  counsellings Counselling[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  authorities Authority[]
-  institutes  Institute[]
-  cutoffs     Cutoff[]
-  allotments  Allotment[]
-  categories  Category[]
-  quotas      Quota[]
+  @@index([name])
 }
 
-model Authority {
-  id              String  @id @default(auto()) @map("_id") @db.ObjectId
-  authorityCode   String  @unique
-  authorityName   String
-  authorityType   String // MCC, STATE, PRIVATE
-  officialWebsite String?
+model Counselling {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  sourceCounsellingId String?
+  name                String
+  slug                String
+  level               CounsellingLevel
 
   stateId String? @db.ObjectId
   state   State?  @relation(fields: [stateId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  sourceStateName String?
+  year            Int?
+  isActive        Boolean @default(true)
 
-  sessions   CounsellingSession[]
-  allotments Allotment[]
-  cutoffs    Cutoff[]
-}
+  quotas     Quota[]
+  allotments AllotmentRecord[]
 
-model CounsellingSession {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  authorityId String    @db.ObjectId
-  authority   Authority @relation(fields: [authorityId], references: [id])
-  sessionYear String
-  examYear    Int
-  examName    String    @default("NEET")
-  examType    String    @default("UG")
-  sessionName String
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  categoryMaps CategoryMap[]
 
-  rounds     Round[]
-  allotments Allotment[]
-  cutoffs    Cutoff[]
-}
-
-model Round {
-  id         String             @id @default(auto()) @map("_id") @db.ObjectId
-  sessionId  String             @db.ObjectId
-  session    CounsellingSession @relation(fields: [sessionId], references: [id])
-  roundNo    Int
-  roundCode  String
-  roundName  String
-  roundType  String? // MOCK, ROUND, MOPUP, STRAY
-  resultType String?
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-
-  allotments Allotment[]
-  cutoffs    Cutoff[]
+  @@index([sourceCounsellingId, year])
+  @@index([level])
+  @@index([stateId])
+  @@index([name])
+  @@index([year])
 }
 
 model Institute {
-  id                 String  @id @default(auto()) @map("_id") @db.ObjectId
-  instituteCode      String?
-  instituteName      String
-  instituteNameClean String?
-  city               String?
-  district           String?
-  pincode            String?
-  instituteType      String? // GOVERNMENT, PRIVATE, DEEMED
-  ownershipType      String?
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  sourceInstituteId String?
+  name              String
+  shortName         String?
+  slug              String
 
   stateId String? @db.ObjectId
   state   State?  @relation(fields: [stateId], references: [id])
 
+  district  String?
+  ownership SeatOwnership?
+  isActive  Boolean        @default(true)
+
+  allotments AllotmentRecord[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  allotments Allotment[]
-  cutoffs    Cutoff[]
+  @@index([sourceInstituteId])
+  @@index([name])
+  @@index([shortName])
+  @@index([stateId])
+  @@index([slug])
+  @@index([ownership])
 }
 
 model Course {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  courseCode  String   @unique
-  courseName  String
-  courseGroup String? // MEDICAL, DENTAL, AYUSH
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  allotments Allotment[]
-  cutoffs    Cutoff[]
-}
+  sourceCourseId String?
+  name           String
+  shortName      String?
+  slug           String
+  type           CourseType @default(OTHER)
+  isActive       Boolean    @default(true)
 
-model Category {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  stateId       String?  @db.ObjectId
-  state         State?   @relation(fields: [stateId], references: [id])
-  categoryCode  String
-  categoryName  String
-  categoryGroup String?
-  isPwd         Boolean  @default(false)
-  isReserved    Boolean  @default(false)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  allotments AllotmentRecord[]
 
-  allottedAllotments  Allotment[] @relation("AllottedCategory")
-  candidateAllotments Allotment[] @relation("CandidateCategory")
-  candidateCutoffs    Cutoff[]    @relation("CandidateCutoffCategory")
-  allottedCutoffs     Cutoff[]    @relation("AllottedCutoffCategory")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([sourceCourseId])
+  @@index([name])
+  @@index([type])
 }
 
 model Quota {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  stateId    String?  @db.ObjectId
-  state      State?   @relation(fields: [stateId], references: [id])
-  quotaCode  String
-  quotaName  String
-  quotaGroup String?
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  allotments Allotment[]
-  cutoffs    Cutoff[]
-}
-
-model Allotment {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  counsellingType String @default("ALL_INDIA") // e.g., 'ALL_INDIA', 'UP', 'MH', 'GJ'
+  sourceQuotaId  String?
+  name           String
+  shortName      String?
+  masterQuota    String?
+  normalizedCode String?
+  ownership      SeatOwnership?
 
-  stateId     String             @db.ObjectId
-  state       State              @relation(fields: [stateId], references: [id])
-  authorityId String             @db.ObjectId
-  authority   Authority          @relation(fields: [authorityId], references: [id])
-  sessionId   String             @db.ObjectId
-  session     CounsellingSession @relation(fields: [sessionId], references: [id])
-  roundId     String             @db.ObjectId
-  round       Round              @relation(fields: [roundId], references: [id])
+  counsellingId String?      @db.ObjectId
+  counselling   Counselling? @relation(fields: [counsellingId], references: [id])
 
-  rankNum     Int?
-  rankText    String?
-  meritNo     Float? // Gujarat
-  meritNoText String?
-  neetScore   Int?
-  air         Int? // Maharashtra
-
-  candidateRollNo String?
-  applicationNo   String?
-  cetFormNo       String?
-  candidateName   String?
-  gender          String?
-
-  candidateCategoryId  String?   @db.ObjectId
-  candidateCategory    Category? @relation("CandidateCategory", fields: [candidateCategoryId], references: [id])
-  candidateCategoryRaw String?
-
-  allottedCategoryId  String?   @db.ObjectId
-  allottedCategory    Category? @relation("AllottedCategory", fields: [allottedCategoryId], references: [id])
-  allottedCategoryRaw String?
-
-  quotaId  String? @db.ObjectId
-  quota    Quota?  @relation(fields: [quotaId], references: [id])
-  quotaRaw String?
-
-  instituteId      String?    @db.ObjectId
-  institute        Institute? @relation(fields: [instituteId], references: [id])
-  instituteNameRaw String?
-  collegeCodeRaw   String?
-
-  courseId      String? @db.ObjectId
-  course        Course? @relation(fields: [courseId], references: [id])
-  courseNameRaw String?
-
-  seatReservationTypeCode String?
-  seatReservationTypeName String?
-  otherReservationCode    String?
-  isWomenQuota            Boolean @default(false)
-  isPwd                   Boolean @default(false)
-
-  allotmentStatus         String? @default("ALLOTTED")
-  recordStatus            String? @default("ACTIVE_OR_VALID_SEAT")
-  isCurrentRoundAllotment Boolean @default(true)
-
-  sourceSerialNo Int?
-  sourceFile     String?
-  sourcePageNo   Int?
-
-  extraDetails Json? // Added as per plan to store state-specific variables (e.g. nri_priority)
+  allotments AllotmentRecord[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([sourceQuotaId, counsellingId])
+  @@index([name])
+  @@index([shortName])
+  @@index([masterQuota])
+  @@index([normalizedCode])
+  @@index([ownership])
+  @@index([counsellingId])
 }
 
-model Cutoff {
+model CategoryMap {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  counsellingType String @default("ALL_INDIA")
+  // Example rawName values from your files: Open, UR-OP, OP, GM, GMP, CAT B-GEN, SCG, MBC, EWS, CAT C(NRI)
+  rawName         String
+  displayName     String
+  normalizedGroup String
 
-  stateId     String             @db.ObjectId
-  state       State              @relation(fields: [stateId], references: [id])
-  authorityId String?            @db.ObjectId
-  authority   Authority?         @relation(fields: [authorityId], references: [id])
-  sessionId   String             @db.ObjectId
-  session     CounsellingSession @relation(fields: [sessionId], references: [id])
-  roundId     String?            @db.ObjectId
-  round       Round?             @relation(fields: [roundId], references: [id])
-  roundNo     Int?
+  isPwd        Boolean @default(false)
+  isFemale     Boolean @default(false)
+  isNri        Boolean @default(false)
+  isMinority   Boolean @default(false)
+  isManagement Boolean @default(false)
+  isDefence    Boolean @default(false)
+  isEws        Boolean @default(false)
 
-  instituteId String    @db.ObjectId
-  institute   Institute @relation(fields: [instituteId], references: [id])
-  collegeCode String?
+  counsellingId String?      @db.ObjectId
+  counselling   Counselling? @relation(fields: [counsellingId], references: [id])
 
-  courseId String @db.ObjectId
-  course   Course @relation(fields: [courseId], references: [id])
-
-  quotaId String? @db.ObjectId
-  quota   Quota?  @relation(fields: [quotaId], references: [id])
-
-  allottedCategoryId String?   @db.ObjectId
-  allottedCategory   Category? @relation("AllottedCutoffCategory", fields: [allottedCategoryId], references: [id])
-
-  candidateCategoryId String?   @db.ObjectId
-  candidateCategory   Category? @relation("CandidateCutoffCategory", fields: [candidateCategoryId], references: [id])
-
-  seatReservationTypeCode String?
-
-  openingRank       Int?
-  closingRank       Int?
-  nearestRankSample Int?
-
-  openingMeritNo Float?
-  closingMeritNo Float?
-  minNeetScore   Int?
-  maxNeetScore   Int?
-
-  totalAllotments Int? @default(0)
-
-  extraDetails Json? // Added to store unexpected state-specific cutoff data
+  allotments AllotmentRecord[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([rawName, counsellingId])
+  @@index([rawName])
+  @@index([displayName])
+  @@index([normalizedGroup])
+  @@index([counsellingId])
+}
+
+model AllotmentRecord {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Generate this in import script to stop duplicate imports.
+  // Example: `${session}_${counselling_id}_${round_no}_${zynerd_allotment_id}`
+  sourceKey String @unique
+
+  // Raw source IDs from CSV are strings because some future sources may not be numeric.
+  zynerdAllotmentId   String?
+  sourceCounsellingId String?
+  sourceInstituteId   String?
+  sourceCourseId      String?
+  sourceQuotaId       String?
+  sourceFeeId         String?
+
+  // Year/session and counselling
+  sessionYear      Int
+  counsellingLevel CounsellingLevel
+
+  counsellingId String?      @db.ObjectId
+  counselling   Counselling? @relation(fields: [counsellingId], references: [id])
+
+  sourceStateName       String?
+  sourceCounsellingName String?
+  counsellingName       String?
+
+  // Round and rank: keep raw + parsed
+  roundRaw String?
+  roundNo  Float?
+
+  rankRaw String?
+  rank    Int?
+
+  aiRankRaw          String?
+  aiRank             Int?
+  counsellingRankRaw String?
+  counsellingRank    Int?
+
+  // Institute reference + fast display snapshot
+  instituteId String?    @db.ObjectId
+  institute   Institute? @relation(fields: [instituteId], references: [id])
+
+  instituteStateSnapshot     String?
+  instituteStateSlugSnapshot String?
+  instituteNameSnapshot      String
+  instituteShortNameSnapshot String?
+  instituteDistrictSnapshot  String?
+
+  // Course reference + snapshot
+  courseId String? @db.ObjectId
+  course   Course? @relation(fields: [courseId], references: [id])
+
+  courseNameSnapshot      String
+  courseShortNameSnapshot String?
+  courseTypeSnapshot      CourseType?
+
+  // Quota reference + snapshot
+  quotaIdRef String? @db.ObjectId
+  quota      Quota?  @relation(fields: [quotaIdRef], references: [id])
+
+  quotaNameSnapshot       String?
+  quotaShortNameSnapshot  String?
+  masterQuotaSnapshot     String?
+  quotaNormalizedSnapshot String?
+  ownershipSnapshot       SeatOwnership?
+
+  // Category reference + normalized values
+  categoryMapId String?      @db.ObjectId
+  categoryMap   CategoryMap? @relation(fields: [categoryMapId], references: [id])
+
+  categoryRaw        String?
+  categoryDisplay    String?
+  categoryNormalized String?
+
+  isPwd        Boolean @default(false)
+  isFemale     Boolean @default(false)
+  isNri        Boolean @default(false)
+  isMinority   Boolean @default(false)
+  isManagement Boolean @default(false)
+
+  predictionResults PredictionResult[]
+
+  // Fee/college decision fields: raw + parsed numeric for filters
+  feeRaw    String?
+  feeAmount Int?
+
+  bedsRaw   String?
+  bedsCount Int?
+
+  bondYearsRaw    String?
+  bondYearsNumber Float?
+
+  bondPenaltyRaw    String?
+  bondPenaltyAmount Int?
+
+  stipendYear1Raw    String?
+  stipendYear1Amount Int?
+
+  inserviceCandidate Boolean @default(false)
+  candidateFlag      String?
+  choiceListCount    Int?
+
+  importBatchId String? @db.ObjectId
+
+  // Store the complete original CSV row for future debugging.
+  rawRow Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Single-field indexes
+  @@index([sessionYear])
+  @@index([counsellingLevel])
+  @@index([roundNo])
+  @@index([rank])
+  @@index([aiRank])
+  @@index([counsellingRank])
+  @@index([courseNameSnapshot])
+  @@index([courseTypeSnapshot])
+  @@index([categoryNormalized])
+  @@index([categoryRaw])
+  @@index([masterQuotaSnapshot])
+  @@index([quotaNameSnapshot])
+  @@index([quotaNormalizedSnapshot])
+  @@index([ownershipSnapshot])
+  @@index([instituteStateSnapshot])
+  @@index([instituteNameSnapshot])
+  @@index([feeAmount])
+  @@index([bondYearsNumber])
+  @@index([bedsCount])
+  // Predictor query indexes
+  @@index([sessionYear, counsellingLevel, courseNameSnapshot, categoryNormalized, roundNo, rank])
+  @@index([sessionYear, counsellingLevel, instituteStateSnapshot, courseNameSnapshot, rank])
+  @@index([sessionYear, counsellingLevel, masterQuotaSnapshot, courseNameSnapshot, categoryNormalized, rank])
+  @@index([sessionYear, counsellingId, courseNameSnapshot, categoryNormalized, rank])
+  @@index([sessionYear, counsellingId, roundNo])
+  // Relation indexes
+  @@index([counsellingId])
+  @@index([instituteId])
+  @@index([courseId])
+  @@index([quotaIdRef])
+  @@index([categoryMapId])
+  @@index([importBatchId])
+}
+
+model PredictionQuery {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  sessionYear      Int
+  counsellingLevel CounsellingLevel
+
+  counsellingId String? @db.ObjectId
+
+  inputRank Int
+
+  courseName         String?
+  categoryRaw        String?
+  categoryNormalized String?
+
+  statePreference String?
+  masterQuota     String?
+  quotaName       String?
+  roundNo         Float?
+
+  feeMax       Int?
+  bondYearsMax Float?
+
+  filters Json?
+
+  results PredictionResult[]
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([sessionYear])
+  @@index([counsellingLevel])
+  @@index([counsellingId])
+  @@index([inputRank])
+}
+
+model PredictionResult {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  predictionQueryId String          @db.ObjectId
+  predictionQuery   PredictionQuery @relation(fields: [predictionQueryId], references: [id])
+
+  allotmentRecordId String?          @db.ObjectId
+  allotmentRecord   AllotmentRecord? @relation(fields: [allotmentRecordId], references: [id])
+
+  chance PredictionChance
+
+  userRank       Int
+  previousRank   Int?
+  rankDifference Int?
+  rankRatio      Float?
+
+  explanation String?
+
+  instituteName String
+  courseName    String
+  stateName     String?
+  quotaName     String?
+  masterQuota   String?
+  category      String?
+  roundNo       Float?
+  feeRaw        String?
+  bondYearsRaw  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([predictionQueryId])
+  @@index([allotmentRecordId])
+  @@index([chance])
+  @@index([previousRank])
 }
