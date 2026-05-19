@@ -10,15 +10,11 @@ async function bootstrap() {
     prefix: '/data/',
   });
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'http://192.168.29.243:3000',
-    ],
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
   app.setGlobalPrefix('api');
-  await app.listen(process.env.PORT ?? 8080);
+  await app.listen(process.env.PORT ?? 4000);
 }
 bootstrap();
