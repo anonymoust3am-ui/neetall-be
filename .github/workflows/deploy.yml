@@ -16,6 +16,9 @@ jobs:
           username: ${{ secrets.SSH_NEET }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            source "$NVM_DIR/nvm.sh"
+
             cd /home/neetell/neetall-be
 
             echo "Pulling latest code..."
