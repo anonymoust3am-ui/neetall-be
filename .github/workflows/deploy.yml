@@ -2,7 +2,7 @@ name: Deploy NestJS Backend
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   deploy:
@@ -23,6 +23,12 @@ jobs:
 
             echo "Installing dependencies..."
             npm install
+
+            echo "Generating Prisma Client..."
+            npx prisma generate
+
+            echo "Generating Prisma Schema..."
+            npx prisma db push
 
             echo "Building NestJS..."
             npm run build
