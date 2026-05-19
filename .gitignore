@@ -3,7 +3,13 @@
 /node_modules
 /build
 /prisma/zynerd_statewise_output
-
+/prisma/zynerd_remainings
+/prisma/zynerd_complete
+/prisma/import-neet-full-relations.ts
+/prisma/institutes.json
+/prisma/migrate.ts
+/prisma/seed.ts
+/test
 # Logs
 logs
 *.log
@@ -18,6 +24,7 @@ setup_mysql.py
 api-cors.py
 mysql_portable
 fb-service-acc.json
+/data
 cache
 # OS
 .DS_Store

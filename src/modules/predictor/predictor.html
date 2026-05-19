@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>NEET UG Unified Predictor</title>
@@ -32,545 +33,630 @@
     </script>
     <style>
         body {
-            background: radial-gradient(circle at top left, rgba(37,99,235,0.12), transparent 35%), radial-gradient(circle at bottom right, rgba(124,58,237,0.09), transparent 35%), #f8fafc;
+            background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 35%), radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.09), transparent 35%), #f8fafc;
         }
+
         .cover-pattern:before {
-            content:"";
-            position:absolute;
-            inset:0;
+            content: "";
+            position: absolute;
+            inset: 0;
             background-image:
-                radial-gradient(circle at 20% 30%, rgba(255,255,255,.35) 1px, transparent 1px),
-                radial-gradient(circle at 80% 70%, rgba(255,255,255,.3) 1px, transparent 1px);
-            background-size:24px 24px, 32px 32px;
-            opacity:.45;
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, .35) 1px, transparent 1px),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, .3) 1px, transparent 1px);
+            background-size: 24px 24px, 32px 32px;
+            opacity: .45;
         }
     </style>
 </head>
 
 <body>
-<div class="min-h-screen flex flex-col">
-    <header class="px-8 py-4 pb-2 max-[600px]:px-[18px] max-[600px]:py-[14px] max-[600px]:pb-[4px]">
-        <div class="flex items-center gap-2 text-slate-500 uppercase tracking-[.13em] text-[11px] font-[900] before:content-[''] before:w-[30px] before:h-[1px] before:bg-slate-500" id="eyebrowText">NEET UG · Unified Predictor</div>
-        <div class="mt-2 flex justify-between items-end gap-[18px]">
-            <div>
-                <h1 class="m-0 text-[34px] tracking-[-.045em] text-slate-900 font-bold">NEET UG <span class="text-blue-600">College Predictor</span></h1>
-                <p class="m-0 mt-[7px] text-slate-500 text-[14px]" id="subtitleText">Switch between All India MCC and State counsellings.</p>
-            </div>
-            <div class="bg-emerald-50 text-emerald-600 border border-emerald-600/20 px-[13px] py-[8px] rounded-full text-[12px] font-[900] whitespace-nowrap">● MongoDB live data</div>
-        </div>
-    </header>
-
-    <main class="flex-1 px-8 py-[18px] pb-8 grid grid-cols-[390px_1fr] gap-[20px] max-w-[1540px] w-full mx-auto min-h-0 max-[1100px]:grid-cols-1 max-[600px]:p-[14px] max-[600px]:pb-[18px] max-[600px]:px-[18px]">
-        <aside class="bg-white/95 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] overflow-hidden h-[calc(100vh-130px)] flex flex-col sticky top-[18px] max-[1100px]:h-auto max-[1100px]:static">
-            <div class="p-[18px] border-b border-slate-200 bg-slate-50/85 flex justify-between items-center">
+    <div class="min-h-screen flex flex-col">
+        <header class="px-8 py-4 pb-2 max-[600px]:px-[18px] max-[600px]:py-[14px] max-[600px]:pb-[4px]">
+            <div class="flex items-center gap-2 text-slate-500 uppercase tracking-[.13em] text-[11px] font-[900] before:content-[''] before:w-[30px] before:h-[1px] before:bg-slate-500"
+                id="eyebrowText">NEET UG · Unified Predictor</div>
+            <div class="mt-2 flex justify-between items-end gap-[18px]">
                 <div>
-                    <h2 class="m-0 text-[15px] font-bold text-slate-900" id="filterTitle">Refine prediction</h2>
-                    <p class="m-0 mt-[3px] text-slate-500 text-[11px]" id="filterSubtitle">Select counselling type first</p>
+                    <h1 class="m-0 text-[34px] tracking-[-.045em] text-slate-900 font-bold">NEET UG <span
+                            class="text-blue-600">College Predictor</span></h1>
+                    <p class="m-0 mt-[7px] text-slate-500 text-[14px]" id="subtitleText">Switch between All India MCC
+                        and State counsellings.</p>
                 </div>
-                <button class="bg-transparent border-0 text-slate-500 text-[12px] font-[900] cursor-pointer" onclick="resetFilters()">Reset</button>
+                <div
+                    class="bg-emerald-50 text-emerald-600 border border-emerald-600/20 px-[13px] py-[8px] rounded-full text-[12px] font-[900] whitespace-nowrap">
+                    ● MongoDB live data</div>
             </div>
+        </header>
 
-            <div class="p-[18px] overflow-y-auto flex-1">
-                <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
-                    <span class="text-slate-400 text-[10px] font-mono font-[900]">00</span><span class="flex-1 h-[1px] bg-slate-200"></span><span class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">Counselling scope</span>
+        <main
+            class="flex-1 px-8 py-[18px] pb-8 grid grid-cols-[390px_1fr] gap-[20px] max-w-[1540px] w-full mx-auto min-h-0 max-[1100px]:grid-cols-1 max-[600px]:p-[14px] max-[600px]:pb-[18px] max-[600px]:px-[18px]">
+            <aside
+                class="bg-white/95 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] overflow-hidden h-[calc(100vh-130px)] flex flex-col sticky top-[18px] max-[1100px]:h-auto max-[1100px]:static">
+                <div class="p-[18px] border-b border-slate-200 bg-slate-50/85 flex justify-between items-center">
+                    <div>
+                        <h2 class="m-0 text-[15px] font-bold text-slate-900" id="filterTitle">Refine prediction</h2>
+                        <p class="m-0 mt-[3px] text-slate-500 text-[11px]" id="filterSubtitle">Select counselling type
+                            first</p>
+                    </div>
+                    <button class="bg-transparent border-0 text-slate-500 text-[12px] font-[900] cursor-pointer"
+                        onclick="resetFilters()">Reset</button>
                 </div>
 
-                <div class="mb-[14px]">
-                    <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Choose counselling</label>
-                    <select id="scopeSelect" onchange="switchScope(this.value)" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
-                        <option value="ai">All India MCC</option>
-                    </select>
-                </div>
-
-                <div class="h-[1px] bg-slate-200 my-[18px]"></div>
-
-                <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
-                    <span class="text-slate-400 text-[10px] font-mono font-[900]">01</span><span class="flex-1 h-[1px] bg-slate-200"></span><span class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">Your score</span>
-                </div>
-
-                <div class="grid grid-cols-2 bg-slate-100 rounded-[12px] p-[4px] gap-[4px] mb-[14px]">
-                    <button id="marksModeBtn" class="border-0 rounded-[9px] h-[34px] text-[12px] font-[900] text-slate-500 bg-transparent cursor-pointer [&.active]:bg-white [&.active]:text-slate-900 [&.active]:shadow-[0_2px_8px_rgba(15,23,42,0.08)] active" onclick="setInputMode('marks')">Marks</button>
-                    <button id="rankModeBtn" class="border-0 rounded-[9px] h-[34px] text-[12px] font-[900] text-slate-500 bg-transparent cursor-pointer [&.active]:bg-white [&.active]:text-slate-900 [&.active]:shadow-[0_2px_8px_rgba(15,23,42,0.08)]" onclick="setInputMode('rank')">Rank</button>
-                </div>
-
-                <div class="mb-[14px]" id="marksBox">
-                    <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Enter marks <span class="text-slate-400 font-normal">approx rank generated</span></label>
-                    <input id="marksInput" type="number" min="0" max="720" placeholder="e.g. 645" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
-                </div>
-
-                <div class="mb-[14px] hidden" id="rankBox">
-                    <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Enter NEET AIR rank</label>
-                    <input id="rankInput" type="number" min="1" placeholder="e.g. 45000" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
-                </div>
-
-                <div class="h-[1px] bg-slate-200 my-[18px]"></div>
-
-                <div id="aiFilters">
+                <div class="p-[18px] overflow-y-auto flex-1">
                     <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
-                        <span class="text-slate-400 text-[10px] font-mono font-[900]">02</span><span class="flex-1 h-[1px] bg-slate-200"></span><span class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">All India filters</span>
+                        <span class="text-slate-400 text-[10px] font-mono font-[900]">00</span><span
+                            class="flex-1 h-[1px] bg-slate-200"></span><span
+                            class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">Counselling
+                            scope</span>
                     </div>
 
                     <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Round</label>
-                        <select id="aiRoundSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
-                    </div>
-
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Course</label>
-                        <select id="aiCourseSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
-                    </div>
-
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Candidate category</label>
-                        <select id="aiCategorySelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
-                    </div>
-
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Quota</label>
-                        <select id="aiQuotaSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
-                    </div>
-
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Nearby evidence range</label>
-                        <select id="aiRangeSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
-                            <option value="10000">±10K ranks</option>
-                            <option value="25000" selected>±25K ranks</option>
-                            <option value="50000">±50K ranks</option>
-                            <option value="100000">±100K ranks</option>
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Choose counselling</label>
+                        <select id="scopeSelect" onchange="switchScope(this.value)"
+                            class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
+                            <option value="ai">All India MCC</option>
                         </select>
                     </div>
 
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">College card limit</label>
-                        <input id="aiLimitInput" type="number" min="5" max="80" value="30" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
-                    </div>
-                </div>
+                    <div class="h-[1px] bg-slate-200 my-[18px]"></div>
 
-                <div id="stateFilters" class="hidden">
                     <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
-                        <span class="text-slate-400 text-[10px] font-mono font-[900]">02</span><span class="flex-1 h-[1px] bg-slate-200"></span><span class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">State filters</span>
+                        <span class="text-slate-400 text-[10px] font-mono font-[900]">01</span><span
+                            class="flex-1 h-[1px] bg-slate-200"></span><span
+                            class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">Your score</span>
                     </div>
 
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Round</label>
-                        <select id="stateRoundSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                    <div class="grid grid-cols-2 bg-slate-100 rounded-[12px] p-[4px] gap-[4px] mb-[14px]">
+                        <button id="marksModeBtn"
+                            class="border-0 rounded-[9px] h-[34px] text-[12px] font-[900] text-slate-500 bg-transparent cursor-pointer [&.active]:bg-white [&.active]:text-slate-900 [&.active]:shadow-[0_2px_8px_rgba(15,23,42,0.08)] active"
+                            onclick="setInputMode('marks')">Marks</button>
+                        <button id="rankModeBtn"
+                            class="border-0 rounded-[9px] h-[34px] text-[12px] font-[900] text-slate-500 bg-transparent cursor-pointer [&.active]:bg-white [&.active]:text-slate-900 [&.active]:shadow-[0_2px_8px_rgba(15,23,42,0.08)]"
+                            onclick="setInputMode('rank')">Rank</button>
                     </div>
 
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Course</label>
-                        <select id="stateCourseSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                    <div class="mb-[14px]" id="marksBox">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Enter marks <span
+                                class="text-slate-400 font-normal">approx rank generated</span></label>
+                        <input id="marksInput" type="number" min="0" max="720" placeholder="e.g. 645"
+                            class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
                     </div>
 
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Candidate category</label>
-                        <select id="stateCategorySelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                    <div class="mb-[14px] hidden" id="rankBox">
+                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Enter NEET AIR rank</label>
+                        <input id="rankInput" type="number" min="1" placeholder="e.g. 45000"
+                            class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
                     </div>
 
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Quota / Type</label>
-                        <select id="stateQuotaSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                    <div class="h-[1px] bg-slate-200 my-[18px]"></div>
+
+                    <div id="aiFilters">
+                        <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
+                            <span class="text-slate-400 text-[10px] font-mono font-[900]">02</span><span
+                                class="flex-1 h-[1px] bg-slate-200"></span><span
+                                class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">All India
+                                filters</span>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Round</label>
+                            <select id="aiRoundSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Course</label>
+                            <select id="aiCourseSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Candidate
+                                category</label>
+                            <select id="aiCategorySelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Quota</label>
+                            <select id="aiQuotaSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Nearby evidence
+                                range</label>
+                            <select id="aiRangeSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
+                                <option value="10000">±10K ranks</option>
+                                <option value="25000" selected>±25K ranks</option>
+                                <option value="50000">±50K ranks</option>
+                                <option value="100000">±100K ranks</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">College card
+                                limit</label>
+                            <input id="aiLimitInput" type="number" min="5" max="80" value="30"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
+                        </div>
                     </div>
 
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Institute</label>
-                        <select id="stateInstituteSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
-                    </div>
+                    <div id="stateFilters" class="hidden">
+                        <div class="flex items-center gap-[8px] my-[5px] mb-[14px]">
+                            <span class="text-slate-400 text-[10px] font-mono font-[900]">02</span><span
+                                class="flex-1 h-[1px] bg-slate-200"></span><span
+                                class="text-[11px] font-[900] uppercase tracking-[.11em] text-slate-900">State
+                                filters</span>
+                        </div>
 
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Nearby evidence range</label>
-                        <select id="stateRangeSelect" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
-                            <option value="5000">±5K ranks</option>
-                            <option value="10000">±10K ranks</option>
-                            <option value="25000" selected>±25K ranks</option>
-                            <option value="50000">±50K ranks</option>
-                        </select>
-                    </div>
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Round</label>
+                            <select id="stateRoundSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
 
-                    <div class="mb-[14px]">
-                        <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">College card limit</label>
-                        <input id="stateLimitInput" type="number" min="5" max="80" value="30" class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Course</label>
+                            <select id="stateCourseSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Candidate
+                                category</label>
+                            <select id="stateCategorySelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Quota / Type</label>
+                            <select id="stateQuotaSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Institute</label>
+                            <select id="stateInstituteSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]"></select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">Nearby evidence
+                                range</label>
+                            <select id="stateRangeSelect"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20fill=%22none%22%20viewBox=%220%200%2024%2024%22%20stroke=%22%2364748b%22%3E%3Cpath%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%20stroke-width=%222.5%22%20d=%22M19%209l-7%207-7-7%22%3E%3C/path%3E%3C/svg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:14px] pr-[36px]">
+                                <option value="5000">±5K ranks</option>
+                                <option value="10000">±10K ranks</option>
+                                <option value="25000" selected>±25K ranks</option>
+                                <option value="50000">±50K ranks</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-[14px]">
+                            <label class="block mb-[6px] text-slate-500 text-[12px] font-[900]">College card
+                                limit</label>
+                            <input id="stateLimitInput" type="number" min="5" max="80" value="30"
+                                class="w-full h-[42px] rounded-[12px] border border-slate-300 bg-white text-slate-900 px-[12px] text-[14px] font-[750] outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:border-blue-600 focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] appearance-none">
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="p-[16px] border-t border-slate-200 bg-slate-50/90">
-                <button class="w-full border-0 h-[48px] rounded-[14px] bg-blue-600 text-white text-[14px] font-[950] cursor-pointer shadow-[0_10px_22px_rgba(37,99,235,0.23)] hover:bg-blue-700 transition-colors" onclick="predictColleges()">✨ Predict colleges →</button>
-            </div>
-        </aside>
-
-        <section class="min-w-0">
-            <div id="resultsRoot">
-                <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
-                    <div class="w-[74px] h-[74px] rounded-[24px] mx-auto mb-[18px] bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-[34px]">🎓</div>
-                    <h2 class="m-0 mb-[12px] text-[20px]">Unified predictor ready</h2>
-                    <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">Select counselling type: All India MCC or a State. The filter panel will change automatically.</p>
+                <div class="p-[16px] border-t border-slate-200 bg-slate-50/90">
+                    <button
+                        class="w-full border-0 h-[48px] rounded-[14px] bg-blue-600 text-white text-[14px] font-[950] cursor-pointer shadow-[0_10px_22px_rgba(37,99,235,0.23)] hover:bg-blue-700 transition-colors"
+                        onclick="predictColleges()">✨ Predict colleges →</button>
                 </div>
-            </div>
-        </section>
-    </main>
-</div>
+            </aside>
 
-<script>
-let inputMode = "marks";
-let currentScope = "ai";
+            <section class="min-w-0">
+                <div id="resultsRoot">
+                    <div
+                        class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
+                        <div
+                            class="w-[74px] h-[74px] rounded-[24px] mx-auto mb-[18px] bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-[34px]">
+                            🎓</div>
+                        <h2 class="m-0 mb-[12px] text-[20px]">Unified predictor ready</h2>
+                        <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">Select counselling type:
+                            All India MCC or a State. The filter panel will change automatically.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
-function escapeHtml(value) {
-    if (value === null || value === undefined) return "";
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
+    <script>
+        let inputMode = "marks";
+        let currentScope = "ai";
+        let lastPredictionJson = null;
+        let activeBucketFilter = null;
 
-function formatRank(n) {
-    if (n === null || n === undefined || n === "" || Number.isNaN(Number(n))) return "-";
-    return Number(n).toLocaleString("en-IN");
-}
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return "";
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
 
-function optionHtml(value, label, selectedValue = "") {
-    const selected = String(value) === String(selectedValue) ? "selected" : "";
-    return `<option value="${escapeHtml(value)}" ${selected}>${escapeHtml(label)}</option>`;
-}
+        function formatRank(n) {
+            if (n === null || n === undefined || n === "" || Number.isNaN(Number(n))) return "-";
+            return Number(n).toLocaleString("en-IN");
+        }
 
-function selectedValues(id) {
-    return [...document.getElementById(id).selectedOptions].map(o => o.value).filter(Boolean);
-}
+        function optionHtml(value, label, selectedValue = "") {
+            const selected = String(value) === String(selectedValue) ? "selected" : "";
+            return `<option value="${escapeHtml(value)}" ${selected}>${escapeHtml(label)}</option>`;
+        }
 
-function bucketLabel(bucket) {
-    if (bucket === "safe") return "Safe";
-    if (bucket === "target") return "Target";
-    if (bucket === "dream") return "Dream";
-    return "Unknown";
-}
+        function selectedValues(id) {
+            return [...document.getElementById(id).selectedOptions].map(o => o.value).filter(Boolean);
+        }
 
-function setInputMode(mode) {
-    inputMode = mode;
+        function bucketLabel(bucket) {
+            if (bucket === "safe") return "Safe";
+            if (bucket === "target") return "Target";
+            if (bucket === "dream") return "Dream";
+            return "Unknown";
+        }
 
-    document.getElementById("marksBox").style.display = mode === "marks" ? "block" : "none";
-    document.getElementById("rankBox").style.display = mode === "rank" ? "block" : "none";
+        function setInputMode(mode) {
+            inputMode = mode;
 
-    document.getElementById("marksModeBtn").classList.toggle("active", mode === "marks");
-    document.getElementById("rankModeBtn").classList.toggle("active", mode === "rank");
-}
+            document.getElementById("marksBox").style.display = mode === "marks" ? "block" : "none";
+            document.getElementById("rankBox").style.display = mode === "rank" ? "block" : "none";
 
-function switchScope(scope) {
-    currentScope = scope;
+            document.getElementById("marksModeBtn").classList.toggle("active", mode === "marks");
+            document.getElementById("rankModeBtn").classList.toggle("active", mode === "rank");
+        }
 
-    document.getElementById("aiFilters").classList.toggle("hidden", scope !== "ai");
-    document.getElementById("stateFilters").classList.toggle("hidden", scope === "ai");
+        function switchScope(scope) {
+            currentScope = scope;
 
-    if (scope === "ai") {
-        document.getElementById("eyebrowText").textContent = "MCC All India · NEET UG";
-        document.getElementById("subtitleText").textContent = "Uses imported MCC R1/R2/R3 All India allotment database.";
-        document.getElementById("filterSubtitle").textContent = "Rank + round + category + quota";
-        showWelcome("All India MCC predictor ready", "Use round, course, candidate category, and quota filters.");
-        loadAiOptions();
-    } else {
-        const stateSelect = document.getElementById("scopeSelect");
-        const stateName = stateSelect.options[stateSelect.selectedIndex].text;
-        document.getElementById("eyebrowText").textContent = `${stateName} · NEET UG`;
-        document.getElementById("subtitleText").textContent = `Unified prediction based on ${stateName} allotments.`;
-        document.getElementById("filterSubtitle").textContent = "Rank + round + course + category + quota";
-        showWelcome(`${stateName} predictor ready`, "Use round, course, candidate category, quota, and institute filters.");
-        loadStateOptions(scope);
-    }
-}
+            document.getElementById("aiFilters").classList.toggle("hidden", scope !== "ai");
+            document.getElementById("stateFilters").classList.toggle("hidden", scope === "ai");
 
-function showWelcome(title, message) {
-    document.getElementById("resultsRoot").innerHTML = `
+            if (scope === "ai") {
+                document.getElementById("eyebrowText").textContent = "MCC All India · NEET UG";
+                document.getElementById("subtitleText").textContent = "Uses imported MCC R1/R2/R3 All India allotment database.";
+                document.getElementById("filterSubtitle").textContent = "Rank + round + category + quota";
+                showWelcome("All India MCC predictor ready", "Use round, course, candidate category, and quota filters.");
+                loadAiOptions();
+            } else {
+                const stateSelect = document.getElementById("scopeSelect");
+                const stateName = stateSelect.options[stateSelect.selectedIndex].text;
+                document.getElementById("eyebrowText").textContent = `${stateName} · NEET UG`;
+                document.getElementById("subtitleText").textContent = `Unified prediction based on ${stateName} allotments.`;
+                document.getElementById("filterSubtitle").textContent = "Rank + round + course + category + quota";
+                showWelcome(`${stateName} predictor ready`, "Use round, course, candidate category, quota, and institute filters.");
+                loadStateOptions(scope);
+            }
+        }
+
+        function showWelcome(title, message) {
+            document.getElementById("resultsRoot").innerHTML = `
         <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
             <div class="w-[74px] h-[74px] rounded-[24px] mx-auto mb-[18px] bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white text-[34px]">🎓</div>
             <h2 class="m-0 mb-[12px] text-[20px] font-bold text-slate-900">${escapeHtml(title)}</h2>
             <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">${escapeHtml(message)}</p>
         </div>
     `;
-}
+        }
 
-function renderLoading(message = "Generating college-wise prediction from MongoDB...") {
-    document.getElementById("resultsRoot").innerHTML = `
+        function renderLoading(message = "Generating college-wise prediction from MongoDB...") {
+            document.getElementById("resultsRoot").innerHTML = `
         <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
             <div class="w-[42px] h-[42px] border-[4px] border-slate-200 border-t-blue-600 rounded-full animate-spin mb-[24px]"></div>
             <h2 class="m-0 mb-[12px] text-[20px] font-bold text-slate-900">Loading...</h2>
             <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5] font-[900]">${escapeHtml(message)}</p>
         </div>
     `;
-}
-
-async function loadAiOptions() {
-    const roundSelect = document.getElementById("aiRoundSelect");
-    const courseSelect = document.getElementById("aiCourseSelect");
-    const categorySelect = document.getElementById("aiCategorySelect");
-    const quotaSelect = document.getElementById("aiQuotaSelect");
-
-    const currentRound = roundSelect.value || "latest";
-    const currentCourse = courseSelect.value || "";
-    const currentCategory = categorySelect.value || "";
-    const currentQuota = quotaSelect.value || "";
-
-    const params = new URLSearchParams();
-    if (currentRound) params.set("round_no", currentRound);
-    if (currentCourse) params.set("course_code", currentCourse);
-    if (currentCategory) params.set("candidate_category_code", currentCategory);
-
-    try {
-        const res = await fetch(`/api/ai/options?${params.toString()}`);
-        const json = await res.json();
-
-        if (!json.success) throw new Error(json.message || "All India options failed.");
-
-        const data = json.data;
-
-        roundSelect.innerHTML = data.rounds.map(r =>
-            optionHtml(r.round_no, r.label, currentRound)
-        ).join("");
-
-        courseSelect.innerHTML =
-            optionHtml("", "All Courses", currentCourse) +
-            data.courses.map(c =>
-                optionHtml(c.course_code, `${c.course_code}`, currentCourse)
-            ).join("");
-
-        categorySelect.innerHTML =
-            optionHtml("", "All Candidate Categories", currentCategory) +
-            data.categories.map(c =>
-                optionHtml(c.candidate_category_code, `${c.candidate_category_code}`, currentCategory)
-            ).join("");
-
-        quotaSelect.innerHTML =
-            optionHtml("", "All Quotas", currentQuota) +
-            data.quotas.map(q =>
-                optionHtml(q.quota_code, `${q.quota_code}`, currentQuota)
-            ).join("");
-
-        if (![...roundSelect.options].some(o => o.value === currentRound)) roundSelect.value = "latest";
-        if (![...courseSelect.options].some(o => o.value === currentCourse)) courseSelect.value = "";
-        if (![...categorySelect.options].some(o => o.value === currentCategory)) categorySelect.value = "";
-        if (![...quotaSelect.options].some(o => o.value === currentQuota)) quotaSelect.value = "";
-
-    } catch (error) {
-        console.error(error);
-        alert(error.message);
-    }
-}
-
-async function loadStateOptions(stateSlug) {
-    const round = document.getElementById("stateRoundSelect").value || "latest";
-    const course = document.getElementById("stateCourseSelect").value || "";
-    const category = document.getElementById("stateCategorySelect").value || "";
-    const quota = document.getElementById("stateQuotaSelect").value || "";
-    const institute = document.getElementById("stateInstituteSelect").value || "";
-
-    const params = new URLSearchParams();
-    if (round) params.set("round_no", round);
-    if (course) params.set("course_code", course);
-    if (category) params.set("candidate_category_code", category);
-    if (quota) params.set("quota_code", quota);
-    if (institute) params.set("institute_name", institute);
-
-    try {
-        const res = await fetch(`/api/state/${stateSlug}/options?${params.toString()}`);
-        const json = await res.json();
-
-        if (!json.success) throw new Error(json.message || "State options failed.");
-
-        const data = json.data;
-
-        document.getElementById("stateRoundSelect").innerHTML = data.rounds.map(r =>
-            optionHtml(r.round_no, r.label, round)
-        ).join("");
-
-        document.getElementById("stateCourseSelect").innerHTML =
-            optionHtml("", "All Courses", course) +
-            data.courses.map(c => optionHtml(c.course_code, `${c.course_code}`, course)).join("");
-
-        document.getElementById("stateCategorySelect").innerHTML =
-            optionHtml("", "All Candidate Categories", category) +
-            data.categories.map(c => optionHtml(c.candidate_category_code, `${c.candidate_category_code}`, category)).join("");
-
-        document.getElementById("stateQuotaSelect").innerHTML =
-            optionHtml("", "All Quotas/Types", quota) +
-            data.quotas.map(q => optionHtml(q.quota_code, `${q.quota_code}`, quota)).join("");
-
-        document.getElementById("stateInstituteSelect").innerHTML =
-            optionHtml("", "All Institutes", institute) +
-            data.institutes.map(i => optionHtml(i.institute_name, i.institute_name, institute)).join("");
-
-        if (![...document.getElementById("stateRoundSelect").options].some(o => o.value === round)) document.getElementById("stateRoundSelect").value = "latest";
-        if (![...document.getElementById("stateCourseSelect").options].some(o => o.value === course)) document.getElementById("stateCourseSelect").value = "";
-        if (![...document.getElementById("stateCategorySelect").options].some(o => o.value === category)) document.getElementById("stateCategorySelect").value = "";
-        if (![...document.getElementById("stateQuotaSelect").options].some(o => o.value === quota)) document.getElementById("stateQuotaSelect").value = "";
-        if (![...document.getElementById("stateInstituteSelect").options].some(o => o.value === institute)) document.getElementById("stateInstituteSelect").value = "";
-
-    } catch (error) {
-        console.error(error);
-        alert(error.message);
-    }
-}
-
-function resetFilters() {
-    document.getElementById("marksInput").value = "";
-    document.getElementById("rankInput").value = "";
-
-    if (currentScope === "ai") {
-        document.getElementById("aiCourseSelect").value = "";
-        document.getElementById("aiCategorySelect").value = "";
-        document.getElementById("aiQuotaSelect").value = "";
-        document.getElementById("aiRangeSelect").value = "25000";
-        document.getElementById("aiLimitInput").value = "30";
-        showWelcome("All India MCC predictor ready", "Use round, course, candidate category, and quota filters.");
-        loadAiOptions();
-    } else {
-        document.getElementById("stateRoundSelect").value = "latest";
-        document.getElementById("stateCourseSelect").value = "";
-        document.getElementById("stateCategorySelect").value = "";
-        document.getElementById("stateQuotaSelect").value = "";
-        document.getElementById("stateInstituteSelect").value = "";
-        document.getElementById("stateRangeSelect").value = "25000";
-        document.getElementById("stateLimitInput").value = "30";
-        switchScope(currentScope);
-    }
-}
-
-function buildPayloadBase() {
-    const marks = document.getElementById("marksInput").value;
-    const rank = document.getElementById("rankInput").value;
-
-    if (inputMode === "marks" && !marks) {
-        alert("Please enter marks.");
-        return null;
-    }
-
-    if (inputMode === "rank" && !rank) {
-        alert("Please enter rank.");
-        return null;
-    }
-
-    return {
-        marks: inputMode === "marks" ? marks : null,
-        rank: inputMode === "rank" ? rank : null,
-    };
-}
-
-async function predictColleges() {
-    const base = buildPayloadBase();
-    if (!base) return;
-
-    let url = "";
-    let payload = {};
-
-    if (currentScope === "ai") {
-        url = "/api/ai/predict";
-        payload = {
-            ...base,
-            round_no: document.getElementById("aiRoundSelect").value,
-            course_code: document.getElementById("aiCourseSelect").value,
-            candidate_category_code: document.getElementById("aiCategorySelect").value,
-            quota_code: document.getElementById("aiQuotaSelect").value,
-            nearby_range: document.getElementById("aiRangeSelect").value,
-            limit: document.getElementById("aiLimitInput").value,
-        };
-        renderLoading("Generating All India MCC prediction from MongoDB...");
-    } else {
-        url = `/api/state/${currentScope}/predict`;
-        const stateSelect = document.getElementById("scopeSelect");
-        const stateName = stateSelect.options[stateSelect.selectedIndex].text;
-        payload = {
-            ...base,
-            round_no: document.getElementById("stateRoundSelect").value,
-            course_code: document.getElementById("stateCourseSelect").value,
-            candidate_category_code: document.getElementById("stateCategorySelect").value,
-            quota_code: document.getElementById("stateQuotaSelect").value,
-            institute_name: document.getElementById("stateInstituteSelect").value,
-            nearby_range: document.getElementById("stateRangeSelect").value,
-            limit: document.getElementById("stateLimitInput").value,
-        };
-        renderLoading(`Generating ${stateName} prediction from MongoDB...`);
-    }
-
-    try {
-        const res = await fetch(url, {
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify(payload),
-        });
-
-        const json = await res.json();
-
-        if (!json.success) {
-            throw new Error(json.message || "Prediction failed.");
         }
 
-        renderResults(json);
+        async function loadAiOptions() {
+            const roundSelect = document.getElementById("aiRoundSelect");
+            const courseSelect = document.getElementById("aiCourseSelect");
+            const categorySelect = document.getElementById("aiCategorySelect");
+            const quotaSelect = document.getElementById("aiQuotaSelect");
 
-    } catch (error) {
-        document.getElementById("resultsRoot").innerHTML = `
+            const currentRound = roundSelect.value || "latest";
+            const currentCourse = courseSelect.value || "";
+            const currentCategory = categorySelect.value || "";
+            const currentQuota = quotaSelect.value || "";
+
+            const params = new URLSearchParams();
+            if (currentRound) params.set("round_no", currentRound);
+            if (currentCourse) params.set("course_code", currentCourse);
+            if (currentCategory) params.set("candidate_category_code", currentCategory);
+
+            try {
+                const res = await fetch(`/api/ai/options?${params.toString()}`);
+                const json = await res.json();
+
+                if (!json.success) throw new Error(json.message || "All India options failed.");
+
+                const data = json.data;
+
+                roundSelect.innerHTML = data.rounds.map(r =>
+                    optionHtml(r.round_no, r.label, currentRound)
+                ).join("");
+
+                courseSelect.innerHTML =
+                    optionHtml("", "All Courses", currentCourse) +
+                    data.courses.map(c =>
+                        optionHtml(c.course_code, `${c.course_code}`, currentCourse)
+                    ).join("");
+
+                categorySelect.innerHTML =
+                    optionHtml("", "All Candidate Categories", currentCategory) +
+                    data.categories.map(c =>
+                        optionHtml(c.candidate_category_code, `${c.candidate_category_code}`, currentCategory)
+                    ).join("");
+
+                quotaSelect.innerHTML =
+                    optionHtml("", "All Quotas", currentQuota) +
+                    data.quotas.map(q =>
+                        optionHtml(q.quota_code, `${q.quota_code}`, currentQuota)
+                    ).join("");
+
+                if (![...roundSelect.options].some(o => o.value === currentRound)) roundSelect.value = "latest";
+                if (![...courseSelect.options].some(o => o.value === currentCourse)) courseSelect.value = "";
+                if (![...categorySelect.options].some(o => o.value === currentCategory)) categorySelect.value = "";
+                if (![...quotaSelect.options].some(o => o.value === currentQuota)) quotaSelect.value = "";
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
+
+        async function loadStateOptions(stateSlug) {
+            const round = document.getElementById("stateRoundSelect").value || "latest";
+            const course = document.getElementById("stateCourseSelect").value || "";
+            const category = document.getElementById("stateCategorySelect").value || "";
+            const quota = document.getElementById("stateQuotaSelect").value || "";
+            const institute = document.getElementById("stateInstituteSelect").value || "";
+
+            const params = new URLSearchParams();
+            if (round) params.set("round_no", round);
+            if (course) params.set("course_code", course);
+            if (category) params.set("candidate_category_code", category);
+            if (quota) params.set("quota_code", quota);
+            if (institute) params.set("institute_name", institute);
+
+            try {
+                const res = await fetch(`/api/state/${stateSlug}/options?${params.toString()}`);
+                const json = await res.json();
+
+                if (!json.success) throw new Error(json.message || "State options failed.");
+
+                const data = json.data;
+
+                document.getElementById("stateRoundSelect").innerHTML = data.rounds.map(r =>
+                    optionHtml(r.round_no, r.label, round)
+                ).join("");
+
+                document.getElementById("stateCourseSelect").innerHTML =
+                    optionHtml("", "All Courses", course) +
+                    data.courses.map(c => optionHtml(c.course_code, `${c.course_code}`, course)).join("");
+
+                document.getElementById("stateCategorySelect").innerHTML =
+                    optionHtml("", "All Candidate Categories", category) +
+                    data.categories.map(c => optionHtml(c.candidate_category_code, `${c.candidate_category_code}`, category)).join("");
+
+                document.getElementById("stateQuotaSelect").innerHTML =
+                    optionHtml("", "All Quotas/Types", quota) +
+                    data.quotas.map(q => optionHtml(q.quota_code, `${q.quota_code}`, quota)).join("");
+
+                document.getElementById("stateInstituteSelect").innerHTML =
+                    optionHtml("", "All Institutes", institute) +
+                    data.institutes.map(i => optionHtml(i.institute_name, i.institute_name, institute)).join("");
+
+                if (![...document.getElementById("stateRoundSelect").options].some(o => o.value === round)) document.getElementById("stateRoundSelect").value = "latest";
+                if (![...document.getElementById("stateCourseSelect").options].some(o => o.value === course)) document.getElementById("stateCourseSelect").value = "";
+                if (![...document.getElementById("stateCategorySelect").options].some(o => o.value === category)) document.getElementById("stateCategorySelect").value = "";
+                if (![...document.getElementById("stateQuotaSelect").options].some(o => o.value === quota)) document.getElementById("stateQuotaSelect").value = "";
+                if (![...document.getElementById("stateInstituteSelect").options].some(o => o.value === institute)) document.getElementById("stateInstituteSelect").value = "";
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById("marksInput").value = "";
+            document.getElementById("rankInput").value = "";
+
+            if (currentScope === "ai") {
+                document.getElementById("aiCourseSelect").value = "";
+                document.getElementById("aiCategorySelect").value = "";
+                document.getElementById("aiQuotaSelect").value = "";
+                document.getElementById("aiRangeSelect").value = "25000";
+                document.getElementById("aiLimitInput").value = "30";
+                showWelcome("All India MCC predictor ready", "Use round, course, candidate category, and quota filters.");
+                loadAiOptions();
+            } else {
+                document.getElementById("stateRoundSelect").value = "latest";
+                document.getElementById("stateCourseSelect").value = "";
+                document.getElementById("stateCategorySelect").value = "";
+                document.getElementById("stateQuotaSelect").value = "";
+                document.getElementById("stateInstituteSelect").value = "";
+                document.getElementById("stateRangeSelect").value = "25000";
+                document.getElementById("stateLimitInput").value = "30";
+                switchScope(currentScope);
+            }
+        }
+
+        function buildPayloadBase() {
+            const marks = document.getElementById("marksInput").value;
+            const rank = document.getElementById("rankInput").value;
+
+            if (inputMode === "marks" && !marks) {
+                alert("Please enter marks.");
+                return null;
+            }
+
+            if (inputMode === "rank" && !rank) {
+                alert("Please enter rank.");
+                return null;
+            }
+
+            return {
+                marks: inputMode === "marks" ? marks : null,
+                rank: inputMode === "rank" ? rank : null,
+            };
+        }
+
+        async function predictColleges() {
+            const base = buildPayloadBase();
+            if (!base) return;
+
+            let url = "";
+            let payload = {};
+
+            if (currentScope === "ai") {
+                url = "/api/ai/predict";
+                payload = {
+                    ...base,
+                    round_no: document.getElementById("aiRoundSelect").value,
+                    course_code: document.getElementById("aiCourseSelect").value,
+                    candidate_category_code: document.getElementById("aiCategorySelect").value,
+                    quota_code: document.getElementById("aiQuotaSelect").value,
+                    nearby_range: document.getElementById("aiRangeSelect").value,
+                    limit: document.getElementById("aiLimitInput").value,
+                };
+                renderLoading("Generating All India MCC prediction from MongoDB...");
+            } else {
+                url = `/api/state/${currentScope}/predict`;
+                const stateSelect = document.getElementById("scopeSelect");
+                const stateName = stateSelect.options[stateSelect.selectedIndex].text;
+                payload = {
+                    ...base,
+                    round_no: document.getElementById("stateRoundSelect").value,
+                    course_code: document.getElementById("stateCourseSelect").value,
+                    candidate_category_code: document.getElementById("stateCategorySelect").value,
+                    quota_code: document.getElementById("stateQuotaSelect").value,
+                    institute_name: document.getElementById("stateInstituteSelect").value,
+                    nearby_range: document.getElementById("stateRangeSelect").value,
+                    limit: document.getElementById("stateLimitInput").value,
+                };
+                renderLoading(`Generating ${stateName} prediction from MongoDB...`);
+            }
+
+            try {
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                const json = await res.json();
+
+                if (!json.success) {
+                    throw new Error(json.message || "Prediction failed.");
+                }
+
+                renderResults(json);
+
+            } catch (error) {
+                document.getElementById("resultsRoot").innerHTML = `
             <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
                 <h2 class="m-0 mb-[12px] text-[20px] font-bold text-slate-900">Prediction failed</h2>
                 <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">${escapeHtml(error.message)}</p>
             </div>
         `;
-    }
-}
+            }
+        }
 
-function renderResults(json) {
-    const root = document.getElementById("resultsRoot");
-    const data = json.data || [];
-    const summary = json.summary || {};
-    const mode = json.mode || currentScope;
+        function renderResults(json, bucketFilter = null) {
+            lastPredictionJson = json;
+            activeBucketFilter = bucketFilter;
+            
+            const root = document.getElementById("resultsRoot");
+            const data = json.data || [];
+            const summary = json.summary || {};
+            const mode = json.mode || currentScope;
 
-    if (!data.length) {
-        root.innerHTML = `
+            if (!data.length) {
+                root.innerHTML = `
             <div class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[48px_32px] text-center flex flex-col items-center justify-center h-full max-[600px]:p-[48px_18px]">
                 <h2 class="m-0 mb-[12px] text-[20px] font-bold text-slate-900">No college cards found</h2>
                 <p class="m-0 text-slate-500 text-[14px] max-w-[340px] leading-[1.5]">Try increasing rank range or reducing filters.</p>
             </div>
         `;
-        return;
-    }
+                return;
+            }
 
-    const cardCount = summary.totalCards ?? summary.total ?? 0;
-    const evidenceLabel = `Evidence range: ±${formatRank(summary.nearbyRange || summary.rankRange)}`;
+            const cardCount = summary.totalCards ?? summary.total ?? 0;
+            const evidenceLabel = `Evidence range: ±${formatRank(summary.nearbyRange || summary.rankRange)}`;
 
-    const summaryHtml = `
+            const filteredData = bucketFilter 
+                ? data.filter(c => c.bucket === bucketFilter)
+                : data;
+
+            const summaryHtml = `
         <div class="grid grid-cols-5 gap-[12px] mb-[16px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
-            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center max-[1100px]:col-span-2 max-[600px]:col-span-1"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Cards</span><strong class="block mt-[5px] text-[24px] text-slate-900">${cardCount}</strong></div>
-            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Safe</span><strong class="block mt-[5px] text-[24px] text-emerald-600">${summary.safe || 0}</strong></div>
-            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Target</span><strong class="block mt-[5px] text-[24px] text-amber-600">${summary.target || 0}</strong></div>
-            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Dream</span><strong class="block mt-[5px] text-[24px] text-violet-600">${summary.dream || 0}</strong></div>
-            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">User rank</span><strong class="block mt-[5px] text-[24px] text-slate-900">${formatRank(summary.userRank)}</strong></div>
+            <div onclick="renderResults(lastPredictionJson, null)" class="cursor-pointer transition-all hover:scale-[1.02] bg-white/96 border ${!bucketFilter ? 'border-slate-900 ring-2 ring-slate-900/10' : 'border-slate-200'} rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center max-[1100px]:col-span-2 max-[600px]:col-span-1">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Cards</span>
+                <strong class="block mt-[5px] text-[24px] text-slate-900">${cardCount}</strong>
+            </div>
+            <div onclick="renderResults(lastPredictionJson, 'safe')" class="cursor-pointer transition-all hover:scale-[1.02] bg-white/96 border ${bucketFilter === 'safe' ? 'border-emerald-500 ring-2 ring-emerald-500/10' : 'border-slate-200'} rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Safe</span>
+                <strong class="block mt-[5px] text-[24px] text-emerald-600">${summary.safe || 0}</strong>
+            </div>
+            <div onclick="renderResults(lastPredictionJson, 'target')" class="cursor-pointer transition-all hover:scale-[1.02] bg-white/96 border ${bucketFilter === 'target' ? 'border-amber-500 ring-2 ring-amber-500/10' : 'border-slate-200'} rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Target</span>
+                <strong class="block mt-[5px] text-[24px] text-amber-600">${summary.target || 0}</strong>
+            </div>
+            <div onclick="renderResults(lastPredictionJson, 'dream')" class="cursor-pointer transition-all hover:scale-[1.02] bg-white/96 border ${bucketFilter === 'dream' ? 'border-violet-500 ring-2 ring-violet-500/10' : 'border-slate-200'} rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Dream</span>
+                <strong class="block mt-[5px] text-[24px] text-violet-600">${summary.dream || 0}</strong>
+            </div>
+            <div class="bg-white/96 border border-slate-200 rounded-[18px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] p-[16px] text-center">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">User rank</span>
+                <strong class="block mt-[5px] text-[24px] text-slate-900">${formatRank(summary.userRank)}</strong>
+            </div>
         </div>
 
         <div class="bg-white/80 border border-slate-200 rounded-[18px] p-[13px_16px] flex justify-between gap-[12px] mb-[14px] text-slate-500 font-[800] text-[13px]">
-            <p class="m-0"><b class="text-blue-600 font-[900]">${escapeHtml(summary.title || "Prediction")}</b> around rank <b class="text-slate-900 font-[900]">${formatRank(summary.userRank)}</b></p>
+            <p class="m-0"><b class="text-blue-600 font-[900]">${escapeHtml(summary.title || "Prediction")}</b> around rank <b class="text-slate-900 font-[900]">${formatRank(summary.userRank)}</b> ${bucketFilter ? `(Filtering by <b class="capitalize">${bucketFilter}</b>)` : ''}</p>
             <p class="m-0">${evidenceLabel}</p>
         </div>
     `;
 
-    const cardsHtml = data.map(college => renderCollegeCard(college, summary, mode)).join("");
-    root.innerHTML = summaryHtml + `<div class="grid gap-[14px]">${cardsHtml}</div>`;
-}
+            const cardsHtml = filteredData.map(college => renderCollegeCard(college, summary, mode)).join("");
+            root.innerHTML = summaryHtml + `<div class="grid gap-[14px]">${cardsHtml}</div>`;
+        }
 
-function renderCollegeCard(college, summary, mode) {
-    const initials = (college.shortName || college.name || "C")
-        .split(" ")
-        .filter(Boolean)
-        .map(w => w[0])
-        .join("")
-        .slice(0, 3)
-        .toUpperCase();
+        function renderCollegeCard(college, summary, mode) {
+            const initials = (college.shortName || college.name || "C")
+                .split(" ")
+                .filter(Boolean)
+                .map(w => w[0])
+                .join("")
+                .slice(0, 3)
+                .toUpperCase();
 
-    const name = college.name || "Unknown College";
-    const course = college.courseName || college.course || "-";
-    const image = college.image || "linear-gradient(135deg, #2563eb 0%, #172554 100%)";
-    const logoColor = college.logoColor || "#2563eb";
+            const name = college.name || "Unknown College";
+            const course = college.courseName || college.course || "-";
+            const image = college.image || "linear-gradient(135deg, #2563eb 0%, #172554 100%)";
+            const logoColor = college.logoColor || "#2563eb";
 
-    const aiMiddle = mode === "ai" ? renderAiMiddle(college, summary) : renderStateMiddle(college, summary);
-    const evidence = mode === "ai" ? renderAiEvidence(college) : renderStateEvidence(college);
+            const aiMiddle = mode === "ai" ? renderAiMiddle(college, summary) : renderStateMiddle(college, summary);
+            const evidence = mode === "ai" ? renderAiEvidence(college) : renderStateEvidence(college);
 
-    return `
-        <article class="bg-white/96 border border-slate-200 rounded-[24px] shadow-[0_10px_28px_rgba(15,23,42,0.06)] overflow-hidden transition-all duration-200 hover:translate-y-[-2px] hover:shadow-[0_14px_32px_rgba(15,23,42,0.08)]">
+            const bucketBorders = {
+                'safe': 'border-emerald-400 shadow-[0_10px_28px_rgba(16,185,129,0.08)]',
+                'target': 'border-amber-400 shadow-[0_10px_28px_rgba(245,158,11,0.08)]',
+                'dream': 'border-violet-400 shadow-[0_10px_28px_rgba(139,92,246,0.08)]'
+            };
+            const activeBorder = bucketBorders[college.bucket] || 'border-slate-200 shadow-[0_10px_28px_rgba(15,23,42,0.06)]';
+
+            return `
+        <article class="bg-white/96 border-2 ${activeBorder} rounded-[24px] overflow-hidden transition-all duration-200 hover:translate-y-[-2px] hover:shadow-[0_14px_32px_rgba(15,23,42,0.1)]">
             <div class="flex max-[1100px]:flex-col">
                 <div class="w-[220px] min-h-[275px] max-[1100px]:w-full max-[1100px]:min-h-[165px] text-white shrink-0 relative overflow-hidden bg-cover bg-center cover-pattern" style="background:${image};">
                     <div class="absolute inset-0 flex items-center justify-center text-[105px] font-[950] text-white/10 select-none">${escapeHtml(initials[0] || "C")}</div>
@@ -580,7 +666,9 @@ function renderCollegeCard(college, summary, mode) {
                     </div>
 
                     <div class="absolute bottom-[14px] left-[14px] right-[14px] flex items-end gap-[10px]">
-                        <div class="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center font-[950] shadow-[0_8px_18px_rgba(0,0,0,0.18)]" style="color:${logoColor};">${escapeHtml(initials)}</div>
+                        <div class="w-[46px] h-[46px] rounded-[14px] bg-white flex items-center justify-center font-[950] shadow-[0_8px_18px_rgba(0,0,0,0.18)] overflow-hidden" style="color:${logoColor};">
+                            ${college.logoUrl ? `<img src="${college.logoUrl}" alt="logo" class="w-full h-full object-contain p-[4px]">` : escapeHtml(initials)}
+                        </div>
                         <div>
                             <p class="m-0 text-[13px] font-[950] drop-shadow-md text-white">${escapeHtml(college.shortName || name)}</p>
                             <small class="text-white/80">${escapeHtml(mode === "ai" ? (college.courseCode || "-") : (college.instituteCode || college.collegeCode || "-"))}</small>
@@ -603,17 +691,17 @@ function renderCollegeCard(college, summary, mode) {
             </div>
         </article>
     `;
-}
+        }
 
-function renderAiMiddle(college, summary) {
-    const cutoffHtml = (college.roundCutoffs || []).map(r => `
+        function renderAiMiddle(college, summary) {
+            const cutoffHtml = (college.roundCutoffs || []).map(r => `
         <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0">
             <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Round ${escapeHtml(r.round_no)}</span>
             <b class="block mt-[4px] text-[14px] break-words">${formatRank(r.opening_rank)} → ${formatRank(r.closing_rank)}</b>
         </div>
     `).join("");
 
-    return `
+            return `
         <div class="flex flex-wrap gap-[8px] mt-[12px]">
             <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-blue-50 text-blue-700">Quota: ${escapeHtml(college.quotaCodes || "-")}</span>
             <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-emerald-50 text-emerald-700">Candidate: ${escapeHtml(college.candidateCategoryCodes || "-")}</span>
@@ -627,21 +715,18 @@ function renderAiMiddle(college, summary) {
             <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Rank gap</span><strong class="block mt-[4px] text-[14px] break-words">${formatRank(college.rankGap)}</strong></div>
         </div>
 
-        <div class="mt-[12px] border-t border-slate-200 pt-[12px] grid grid-cols-3 gap-[8px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
-            ${cutoffHtml || `<div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Cutoff</span><b class="block mt-[4px] text-[14px] break-words">-</b></div>`}
-        </div>
     `;
-}
+        }
 
-function renderStateMiddle(college, summary) {
-    const cutoffHtml = (college.roundCutoffs || []).map(r => `
+        function renderStateMiddle(college, summary) {
+            const cutoffHtml = (college.roundCutoffs || []).map(r => `
         <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0">
             <span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Round ${escapeHtml(r.round_no)}</span>
             <b class="block mt-[4px] text-[14px] break-words">${formatRank(r.opening_rank)} → ${formatRank(r.closing_rank)}</b>
         </div>
     `).join("");
 
-    return `
+            return `
         <div class="flex flex-wrap gap-[8px] mt-[12px]">
             <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-blue-50 text-blue-700">Quota: ${escapeHtml(college.quotaCodes || "-")}</span>
             <span class="px-[9px] py-[6px] rounded-full text-[11px] font-[950] bg-emerald-50 text-emerald-700">Candidate: ${escapeHtml(college.candidateCategoryCodes || "-")}</span>
@@ -662,14 +747,11 @@ function renderStateMiddle(college, summary) {
             <div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Rounds</span><strong class="block mt-[4px] text-[14px] break-words">${escapeHtml(college.rounds || "-")}</strong></div>
         </div>
 
-        <div class="mt-[12px] border-t border-slate-200 pt-[12px] grid grid-cols-3 gap-[8px] max-[1100px]:grid-cols-2 max-[600px]:grid-cols-1">
-            ${cutoffHtml || `<div class="border border-slate-200 rounded-[14px] p-[11px] bg-slate-50 min-w-0"><span class="block text-[10px] text-slate-500 uppercase tracking-[.08em] font-[950]">Cutoff</span><b class="block mt-[4px] text-[14px] break-words">-</b></div>`}
-        </div>
     `;
-}
+        }
 
-function renderStateEvidence(college) {
-    const evidenceRows = (college.similarCandidates || []).map(row => `
+        function renderStateEvidence(college) {
+            const evidenceRows = (college.similarCandidates || []).map(row => `
         <tr>
             <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${formatRank(row.rank_num)}</td>
             <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">R${escapeHtml(row.round_no || "-")}</td>
@@ -680,7 +762,7 @@ function renderStateEvidence(college) {
         </tr>
     `).join("");
 
-    return `
+            return `
         <div class="mt-[14px] border-t border-slate-200 pt-[14px]">
             <h4 class="m-0 mb-[10px] text-[13px] font-bold text-slate-800">Similar allotted student evidence</h4>
             <div class="w-full overflow-x-auto border border-slate-200 rounded-[12px] bg-white">
@@ -702,10 +784,10 @@ function renderStateEvidence(college) {
             </div>
         </div>
     `;
-}
+        }
 
-function renderAiEvidence(college) {
-    const evidenceRows = (college.similarCandidates || []).map(row => `
+        function renderAiEvidence(college) {
+            const evidenceRows = (college.similarCandidates || []).map(row => `
         <tr>
             <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">${formatRank(row.rank_num)}</td>
             <td class="border-b border-slate-100 p-[9px] align-top font-bold whitespace-nowrap text-slate-700">R${escapeHtml(row.round_no)}</td>
@@ -715,7 +797,7 @@ function renderAiEvidence(college) {
         </tr>
     `).join("");
 
-    return `
+            return `
         <div class="mt-[14px] border-t border-slate-200 pt-[14px]">
             <h4 class="m-0 mb-[10px] text-[13px] font-bold text-slate-800">Similar allotted student evidence</h4>
             <div class="w-full overflow-x-auto border border-slate-200 rounded-[12px] bg-white">
@@ -736,31 +818,32 @@ function renderAiEvidence(college) {
             </div>
         </div>
     `;
-}
-
-async function initApp() {
-    try {
-        const res = await fetch("/api/states");
-        const json = await res.json();
-        
-        if (json.success && json.data && json.data.length > 0) {
-            const scopeSelect = document.getElementById("scopeSelect");
-            const existingAiOption = scopeSelect.innerHTML;
-            
-            const stateOptions = json.data.map(state => 
-                optionHtml(state.slug, `${state.name} State`)
-            ).join("");
-            
-            scopeSelect.innerHTML = existingAiOption + stateOptions;
         }
-    } catch (error) {
-        console.error("Failed to load states:", error);
-    }
-    
-    switchScope('ai');
-}
 
-window.onload = initApp;
-</script>
+        async function initApp() {
+            try {
+                const res = await fetch("/api/states");
+                const json = await res.json();
+
+                if (json.success && json.data && json.data.length > 0) {
+                    const scopeSelect = document.getElementById("scopeSelect");
+                    const existingAiOption = scopeSelect.innerHTML;
+
+                    const stateOptions = json.data.map(state =>
+                        optionHtml(state.slug, `${state.name} State`)
+                    ).join("");
+
+                    scopeSelect.innerHTML = existingAiOption + stateOptions;
+                }
+            } catch (error) {
+                console.error("Failed to load states:", error);
+            }
+
+            switchScope('ai');
+        }
+
+        window.onload = initApp;
+    </script>
 </body>
+
 </html>

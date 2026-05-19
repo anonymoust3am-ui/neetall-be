@@ -12,7 +12,10 @@ import {
 
 @Injectable()
 export class PredictorService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
+
+  // Simple in-memory cache for static options
+  private optionsCache = new Map<string, any>();
 
   // ==========================================
   // Options (Dropdowns) APIs
@@ -35,108 +38,97 @@ export class PredictorService {
   }
 
   async getAiOptions(query: any) {
+    const cacheKey = 'ai-options';
+    if (this.optionsCache.has(cacheKey)) {
+      return this.optionsCache.get(cacheKey);
+    }
+
     try {
-      // MongoDB distinct via Prisma aggregateRaw is fastest for dropdowns
-      const roundsRaw = await this.prisma.allotmentRecord.aggregateRaw({
+      const matchOptions = { counsellingLevel: 'ALL_INDIA' };
+
+      const results = await this.prisma.allotmentRecord.aggregateRaw({
         pipeline: [
-          { $match: { counsellingLevel: 'ALL_INDIA' } },
-          { $group: { _id: "$roundNo", label: { $first: "$roundNo" } } },
-          { $sort: { _id: 1 } }
+          { $match: matchOptions },
+          {
+            $facet: {
+              rounds: [ { $group: { _id: "$roundNo" } }, { $sort: { _id: 1 } } ],
+              courses: [ { $group: { _id: "$courseNameSnapshot" } }, { $sort: { _id: 1 } } ],
+              categories: [ { $group: { _id: "$categoryRaw" } }, { $sort: { _id: 1 } } ],
+              quotas: [ { $group: { _id: "$quotaNameSnapshot" } }, { $sort: { _id: 1 } } ]
+            }
+          }
         ]
       }) as unknown as any[];
 
-      const coursesRaw = await this.prisma.allotmentRecord.aggregateRaw({
-        pipeline: [
-          { $match: { counsellingLevel: 'ALL_INDIA' } },
-          { $group: { _id: "$courseNameSnapshot" } },
-          { $sort: { _id: 1 } }
-        ]
-      }) as unknown as any[];
+      if (!results || results.length === 0) {
+        return { success: true, data: { rounds: [], courses: [], categories: [], quotas: [] } };
+      }
 
-      const categoriesRaw = await this.prisma.allotmentRecord.aggregateRaw({
-        pipeline: [
-          { $match: { counsellingLevel: 'ALL_INDIA' } },
-          { $group: { _id: "$categoryNormalized" } },
-          { $sort: { _id: 1 } }
-        ]
-      }) as unknown as any[];
+      const data = results[0];
 
-      const quotasRaw = await this.prisma.allotmentRecord.aggregateRaw({
-        pipeline: [
-          { $match: { counsellingLevel: 'ALL_INDIA' } },
-          { $group: { _id: "$quotaNormalizedSnapshot" } },
-          { $sort: { _id: 1 } }
-        ]
-      }) as unknown as any[];
-
-      return {
+      const response = {
         success: true,
         data: {
-          rounds: roundsRaw.map((r: any) => ({ round_no: r._id, label: r.label || r._id })).filter((r: any) => r.round_no != null),
-          courses: coursesRaw.map((r: any) => ({ course_code: r._id })).filter((r: any) => r.course_code != null),
-          categories: categoriesRaw.map((r: any) => ({ candidate_category_code: r._id })).filter((r: any) => r.candidate_category_code != null),
-          quotas: quotasRaw.map((r: any) => ({ quota_code: r._id })).filter((r: any) => r.quota_code != null),
+          rounds: data.rounds.map((r: any) => ({ round_no: r._id, label: r._id })).filter((r: any) => r.round_no != null),
+          courses: data.courses.map((r: any) => ({ course_code: r._id })).filter((r: any) => r.course_code != null),
+          categories: data.categories.map((r: any) => ({ candidate_category_code: r._id })).filter((r: any) => r.candidate_category_code != null),
+          quotas: data.quotas.map((r: any) => ({ quota_code: r._id })).filter((r: any) => r.quota_code != null),
         }
       };
+
+      this.optionsCache.set(cacheKey, response);
+      return response;
     } catch (e: any) {
       return { success: false, message: e.message };
     }
   }
 
   async getStateOptions(stateSlug: string, query: any) {
+    const cacheKey = `state-options-${stateSlug}`;
+    if (this.optionsCache.has(cacheKey)) {
+      return this.optionsCache.get(cacheKey);
+    }
+
     try {
-      const matchOptions = { counsellingLevel: 'STATE', instituteStateSlugSnapshot: stateSlug };
-      
-      const roundsRaw = await this.prisma.allotmentRecord.aggregateRaw({
+      const matchOptions = { 
+        counsellingLevel: { $in: ['STATE', 'PRIVATE_MANAGEMENT', 'OTHER'] }, 
+        instituteStateSlugSnapshot: stateSlug 
+      };
+
+      const results = await this.prisma.allotmentRecord.aggregateRaw({
         pipeline: [
           { $match: matchOptions },
-          { $group: { _id: "$roundNo", label: { $first: "$roundNo" } } },
-          { $sort: { _id: 1 } }
+          {
+            $facet: {
+              rounds: [ { $group: { _id: "$roundNo" } }, { $sort: { _id: 1 } } ],
+              courses: [ { $group: { _id: "$courseNameSnapshot" } }, { $sort: { _id: 1 } } ],
+              categories: [ { $group: { _id: "$categoryRaw" } }, { $sort: { _id: 1 } } ],
+              quotas: [ { $group: { _id: "$quotaNameSnapshot" } }, { $sort: { _id: 1 } } ],
+              institutes: [ { $group: { _id: { name: "$instituteNameSnapshot", shortName: "$instituteShortNameSnapshot", id: "$instituteId" } } }, { $sort: { "_id.name": 1 } } ]
+            }
+          }
         ]
       }) as unknown as any[];
 
-      const coursesRaw = await this.prisma.allotmentRecord.aggregateRaw({
-        pipeline: [
-          { $match: matchOptions },
-          { $group: { _id: "$courseNameSnapshot" } },
-          { $sort: { _id: 1 } }
-        ]
-      }) as unknown as any[];
+      if (!results || results.length === 0) {
+        return { success: true, data: { rounds: [], courses: [], categories: [], quotas: [], institutes: [] } };
+      }
 
-      const categoriesRaw = await this.prisma.allotmentRecord.aggregateRaw({
-        pipeline: [
-          { $match: matchOptions },
-          { $group: { _id: "$categoryNormalized" } },
-          { $sort: { _id: 1 } }
-        ]
-      }) as unknown as any[];
+      const data = results[0];
 
-      const quotasRaw = await this.prisma.allotmentRecord.aggregateRaw({
-        pipeline: [
-          { $match: matchOptions },
-          { $group: { _id: "$quotaNameSnapshot" } },
-          { $sort: { _id: 1 } }
-        ]
-      }) as unknown as any[];
-
-      const institutesRaw = await this.prisma.allotmentRecord.aggregateRaw({
-        pipeline: [
-          { $match: matchOptions },
-          { $group: { _id: "$instituteNameSnapshot", shortName: { $first: "$instituteShortNameSnapshot" }, id: { $first: "$instituteId" } } },
-          { $sort: { _id: 1 } }
-        ]
-      }) as unknown as any[];
-
-      return {
+      const response = {
         success: true,
         data: {
-          rounds: roundsRaw.map((r: any) => ({ round_no: r._id, label: r.label || r._id })).filter((r: any) => r.round_no != null),
-          courses: coursesRaw.map((r: any) => ({ course_code: r._id })).filter((r: any) => r.course_code != null),
-          categories: categoriesRaw.map((r: any) => ({ candidate_category_code: r._id })).filter((r: any) => r.candidate_category_code != null),
-          quotas: quotasRaw.map((r: any) => ({ quota_code: r._id })).filter((r: any) => r.quota_code != null),
-          institutes: institutesRaw.map((r: any) => ({ institute_name: r._id, institute_short_name: r.shortName, institute_id: r.id })).filter((r: any) => r.institute_name != null),
+          rounds: data.rounds.map((r: any) => ({ round_no: r._id, label: r._id })).filter((r: any) => r.round_no != null),
+          courses: data.courses.map((r: any) => ({ course_code: r._id })).filter((r: any) => r.course_code != null),
+          categories: data.categories.map((r: any) => ({ candidate_category_code: r._id })).filter((r: any) => r.candidate_category_code != null),
+          quotas: data.quotas.map((r: any) => ({ quota_code: r._id })).filter((r: any) => r.quota_code != null),
+          institutes: data.institutes.map((r: any) => ({ institute_name: r._id.name, institute_short_name: r._id.shortName, institute_id: r._id.id })).filter((r: any) => r.institute_name != null),
         }
       };
+
+      this.optionsCache.set(cacheKey, response);
+      return response;
     } catch (e: any) {
       return { success: false, message: e.message };
     }
@@ -145,7 +137,7 @@ export class PredictorService {
   // ==========================================
   // Predict APIs
   // ==========================================
-  
+
   async predictAi(body: any) {
     try {
       let inputRank = cleanInt(body.rank);
@@ -164,15 +156,15 @@ export class PredictorService {
 
       if (body.round_no && body.round_no !== 'all' && body.round_no !== 'latest') matchStage.roundNo = Number(body.round_no);
       if (body.course_code) matchStage.courseNameSnapshot = body.course_code;
-      if (body.candidate_category_code) matchStage.categoryNormalized = body.candidate_category_code;
-      if (body.quota_code) matchStage.quotaNormalizedSnapshot = body.quota_code;
+      if (body.candidate_category_code) matchStage.categoryRaw = body.candidate_category_code;
+      if (body.quota_code) matchStage.quotaNameSnapshot = body.quota_code;
 
       const results = await this.prisma.allotmentRecord.aggregateRaw({
         pipeline: [
           { $match: matchStage },
           { $addFields: { rankDist: { $abs: { $subtract: ["$rank", inputRank] } } } },
           { $sort: { rankDist: 1 } },
-          { 
+          {
             $group: {
               _id: "$instituteNameSnapshot",
               instituteId: { $first: "$instituteId" },
@@ -182,19 +174,32 @@ export class PredictorService {
               rankGap: { $first: { $subtract: ["$rank", inputRank] } }, // Dist to nearest
               nearestRank: { $first: "$rank" },
               rounds: { $addToSet: "$roundNo" },
-              quotaCodes: { $addToSet: "$quotaNormalizedSnapshot" },
-              candidateCategoryCodes: { $addToSet: "$categoryNormalized" },
+              quotaCodes: { $addToSet: "$quotaNameSnapshot" },
+              rawQuotaCodes: { $addToSet: "$quotaNameSnapshot" },
+              rawCategoryCodes: { $addToSet: "$categoryRaw" },
+              candidateCategoryCodes: { $addToSet: "$categoryRaw" },
               allottedCategoryCodes: { $addToSet: "$categoryDisplay" },
               similarCandidates: {
                 $push: {
                   rank_num: "$rank",
                   round_no: "$roundNo",
-                  candidate_category_code: "$categoryNormalized",
+                  candidate_category_code: "$categoryRaw",
                   allotted_category_code: "$categoryDisplay",
-                  quota_code: "$quotaNormalizedSnapshot",
+                  quota_code: "$quotaNameSnapshot",
+                  candidate_category_raw: "$categoryRaw",
+                  quota_raw: "$quotaNameSnapshot",
+
                   rankDist: "$rankDist"
                 }
               }
+            }
+          },
+          {
+            $lookup: {
+              from: "Institute",
+              localField: "instituteId",
+              foreignField: "_id",
+              as: "instituteData"
             }
           }
         ]
@@ -204,6 +209,10 @@ export class PredictorService {
         const sortedCandidates = row.similarCandidates.sort((a: any, b: any) => a.rankDist - b.rankDist).slice(0, 4);
         const closingRank = row.closingRank || 0;
         const bucket = formatBucketByClosingRank(inputRank, closingRank);
+
+        const instituteData = row.instituteData && row.instituteData.length > 0 ? row.instituteData[0] : null;
+        const imageUrl = instituteData && instituteData.coverUrl ? `url('/data/${encodeURI(instituteData.coverUrl)}')` : getGradient(bucket);
+        const logoUrl = instituteData && instituteData.logoUrl ? `/data/${encodeURI(instituteData.logoUrl)}` : null;
 
         return {
           name: row._id,
@@ -219,7 +228,8 @@ export class PredictorService {
           rankGap: row.closingRank - inputRank,
           bucket: bucket,
           logoColor: getLogoColor(bucket),
-          image: getGradient(bucket),
+          logoUrl: logoUrl,
+          image: imageUrl,
           inputRank: inputRank,
           similarCandidates: sortedCandidates
         };
@@ -242,7 +252,7 @@ export class PredictorService {
         data: balanced
       };
 
-    } catch(e: any) {
+    } catch (e: any) {
       return { success: false, message: e.message };
     }
   }
@@ -261,11 +271,15 @@ export class PredictorService {
       const minRank = Math.max(1, inputRank - nearbyRange);
       const maxRank = inputRank + nearbyRange;
 
-      const matchStage: any = { counsellingLevel: 'STATE', instituteStateSlugSnapshot: stateSlug, rank: { $gte: minRank, $lte: maxRank } };
+      const matchStage: any = { 
+        counsellingLevel: { $in: ['STATE', 'PRIVATE_MANAGEMENT', 'OTHER'] }, 
+        instituteStateSlugSnapshot: stateSlug, 
+        rank: { $gte: minRank, $lte: maxRank } 
+      };
 
       if (body.round_no && body.round_no !== 'all' && body.round_no !== 'latest') matchStage.roundNo = Number(body.round_no);
       if (body.course_code) matchStage.courseNameSnapshot = body.course_code;
-      if (body.candidate_category_code) matchStage.categoryNormalized = body.candidate_category_code;
+      if (body.candidate_category_code) matchStage.categoryRaw = body.candidate_category_code;
       if (body.quota_code) matchStage.quotaNameSnapshot = body.quota_code;
       if (body.institute_name) matchStage.instituteNameSnapshot = body.institute_name;
 
@@ -274,7 +288,7 @@ export class PredictorService {
           { $match: matchStage },
           { $addFields: { rankDist: { $abs: { $subtract: ["$rank", inputRank] } } } },
           { $sort: { rankDist: 1 } },
-          { 
+          {
             $group: {
               _id: "$instituteNameSnapshot",
               instituteId: { $first: "$instituteId" },
@@ -287,8 +301,10 @@ export class PredictorService {
               rankGap: { $first: { $subtract: ["$rank", inputRank] } },
               nearestRank: { $first: "$rank" },
               rounds: { $addToSet: "$roundNo" },
+              rawQuotaCodes: { $addToSet: "$quotaNameSnapshot" },
+              rawCategoryCodes: { $addToSet: "$categoryRaw" },
               quotaCodes: { $addToSet: "$quotaNameSnapshot" },
-              candidateCategoryCodes: { $addToSet: "$categoryNormalized" },
+              candidateCategoryCodes: { $addToSet: "$categoryRaw" },
               allottedCategoryCodes: { $addToSet: "$categoryDisplay" },
               totalSimilarRows: { $sum: 1 },
               similarCandidates: {
@@ -296,12 +312,22 @@ export class PredictorService {
                   rank_num: "$rank",
                   counselling_rank: "$counsellingRank",
                   round_no: "$roundNo",
-                  candidate_category_code: "$categoryNormalized",
+                  candidate_category_code: "$categoryRaw",
                   allotted_category_code: "$categoryDisplay",
                   quota_code: "$quotaNameSnapshot",
+                  candidate_category_raw: "$categoryRaw",
+                  quota_raw: "$quotaNameSnapshot",
                   rankDist: "$rankDist"
                 }
               }
+            }
+          },
+          {
+            $lookup: {
+              from: "Institute",
+              localField: "instituteId",
+              foreignField: "_id",
+              as: "instituteData"
             }
           }
         ]
@@ -311,6 +337,10 @@ export class PredictorService {
         const sortedCandidates = row.similarCandidates.sort((a: any, b: any) => a.rankDist - b.rankDist).slice(0, 4);
         const closingRank = row.closingRank || 0;
         const bucket = formatBucketByClosingRank(inputRank, closingRank);
+
+        const instituteData = row.instituteData && row.instituteData.length > 0 ? row.instituteData[0] : null;
+        const imageUrl = instituteData && instituteData.coverUrl ? `url('/data/${encodeURI(instituteData.coverUrl)}')` : getGradient(bucket);
+        const logoUrl = instituteData && instituteData.logoUrl ? `/data/${encodeURI(instituteData.logoUrl)}` : null;
 
         return {
           name: row._id,
@@ -322,6 +352,7 @@ export class PredictorService {
           quotaCodes: row.quotaCodes.filter(Boolean).join(", "),
           candidateCategoryCodes: row.candidateCategoryCodes.filter(Boolean).join(", "),
           allottedCategoryCodes: row.allottedCategoryCodes.filter(Boolean).join(", "),
+
           openingRank: row.openingRank,
           closingRank: row.closingRank,
           counsellingRankOpening: row.counsellingRankOpening,
@@ -329,7 +360,8 @@ export class PredictorService {
           rankGap: row.closingRank - inputRank,
           bucket: bucket,
           logoColor: getLogoColor(bucket),
-          image: getGradient(bucket),
+          logoUrl: logoUrl,
+          image: imageUrl,
           inputRank: inputRank,
           totalSimilarRows: row.totalSimilarRows,
           similarCandidates: sortedCandidates
@@ -353,7 +385,7 @@ export class PredictorService {
         data: balanced
       };
 
-    } catch(e: any) {
+    } catch (e: any) {
       return { success: false, message: e.message };
     }
   }

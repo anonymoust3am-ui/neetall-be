@@ -503,21 +503,6 @@ async function getOrCreateInstitute(row: CsvRow, instituteState: any) {
     });
   }
 
-  if (!institute) {
-    institute = await prisma.institute.create({
-      data: {
-        sourceInstituteId,
-        name,
-        shortName: cleanStr(row.institute_short_name),
-        slug: `${slugify(name)}-${sourceInstituteId || crypto.randomUUID().slice(0, 8)}`,
-        stateId: instituteState?.id || null,
-        district: cleanStr(row.institute_district),
-        ownership: inferOwnership(row),
-        isActive: true,
-      },
-    });
-  }
-
   cache.institute.set(cacheKey, institute);
   return institute;
 }

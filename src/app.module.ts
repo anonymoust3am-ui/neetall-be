@@ -13,6 +13,7 @@ import { PackageModule } from './modules/packages/package.module';
 import { CounsellingModule } from './modules/counselling/counselling.module';
 import { InstituteModule } from './modules/institutes/institutes.module';
 import { PredictorModule } from './modules/predictor/predictor.module';
+import { AllotmentModule } from './modules/allotment/allotment.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PredictorModule } from './modules/predictor/predictor.module';
     CounsellingModule,
     InstituteModule,
     PredictorModule,
+    AllotmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

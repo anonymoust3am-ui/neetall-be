@@ -481,27 +481,47 @@ model Institute {
 
   sourceInstituteId String?
   name              String
-  shortName         String?
-  slug              String
+  state             String
+  instituteType     String
 
-  stateId String? @db.ObjectId
-  state   State?  @relation(fields: [stateId], references: [id])
+  beds  Int
+  seats Int
 
-  district  String?
-  ownership SeatOwnership?
-  isActive  Boolean        @default(true)
+  logoUrl  String?
+  coverUrl String?
 
-  allotments AllotmentRecord[]
+  university UniversityInfo
+  fee        FeeRange?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tabsToDisplay String[]
 
-  @@index([sourceInstituteId])
-  @@index([name])
-  @@index([shortName])
-  @@index([stateId])
-  @@index([slug])
-  @@index([ownership])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  stateRef         State?            @relation(fields: [stateId], references: [id])
+  stateId          String?           @db.ObjectId
+  allotmentRecords AllotmentRecord[]
+}
+
+model University {
+  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  sourceId        String  @unique
+  name            String
+  universityType  String?
+  state           String?
+  websiteGoto     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+type UniversityInfo {
+  id   Int
+  name String
+}
+
+type FeeRange {
+  min Float
+  max Float
 }
 
 model Course {
@@ -625,11 +645,11 @@ model AllotmentRecord {
   instituteId String?    @db.ObjectId
   institute   Institute? @relation(fields: [instituteId], references: [id])
 
-  instituteStateSnapshot     String?
-  instituteStateSlugSnapshot String?
-  instituteNameSnapshot      String
+  instituteNameSnapshot      String?
   instituteShortNameSnapshot String?
   instituteDistrictSnapshot  String?
+  instituteStateSnapshot     String?
+  instituteStateSlugSnapshot String?
 
   // Course reference + snapshot
   courseId String? @db.ObjectId
@@ -708,14 +728,12 @@ model AllotmentRecord {
   @@index([quotaNameSnapshot])
   @@index([quotaNormalizedSnapshot])
   @@index([ownershipSnapshot])
-  @@index([instituteStateSnapshot])
-  @@index([instituteNameSnapshot])
   @@index([feeAmount])
   @@index([bondYearsNumber])
   @@index([bedsCount])
   // Predictor query indexes
   @@index([sessionYear, counsellingLevel, courseNameSnapshot, categoryNormalized, roundNo, rank])
-  @@index([sessionYear, counsellingLevel, instituteStateSnapshot, courseNameSnapshot, rank])
+  @@index([sessionYear, counsellingLevel, courseNameSnapshot, rank])
   @@index([sessionYear, counsellingLevel, masterQuotaSnapshot, courseNameSnapshot, categoryNormalized, rank])
   @@index([sessionYear, counsellingId, courseNameSnapshot, categoryNormalized, rank])
   @@index([sessionYear, counsellingId, roundNo])
