@@ -25,6 +25,8 @@ api-cors.py
 mysql_portable
 fb-service-acc.json
 /data
+test-facet.ts
+test-keys.js
 cache
 # OS
 .DS_Store

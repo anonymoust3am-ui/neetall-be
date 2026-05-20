@@ -19,8 +19,7 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             source "$NVM_DIR/nvm.sh"
 
-            echo "Going to project folder..."
-            cd /home/neetell/neetal-next
+            cd /home/neetell/neetall-be
 
             echo "Pulling latest code..."
             git pull origin master
@@ -28,12 +27,15 @@ jobs:
             echo "Installing dependencies..."
             npm install
 
-            echo "Building Next.js..."
+            echo "Generating Prisma Client..."
+            npx prisma generate
+
+            echo "Generating Prisma Schema..."
+            npx prisma db push
+
+            echo "Building NestJS..."
             npm run build
 
             echo "Restarting PM2..."
-            pm2 restart neetall-next || pm2 start npm --name "neetall-next" -- start
-
+            pm2 restart neetall-be || pm2 start dist/main.js --name neetall-be
             pm2 save
-
-            echo "Deployment done 🚀"
