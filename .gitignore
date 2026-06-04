@@ -27,6 +27,7 @@ fb-service-acc.json
 /data
 test-facet.ts
 test-keys.js
+fb-service-acc.json
 cache
 # OS
 .DS_Store

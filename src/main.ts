@@ -10,7 +10,7 @@ async function bootstrap() {
     prefix: '/data/',
   });
   app.enableCors({
-    origin: true,
+    origin: [process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "http://localhost:3000", "http://192.168.29.243:3000", "http://127.0.0.1:3000"],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
