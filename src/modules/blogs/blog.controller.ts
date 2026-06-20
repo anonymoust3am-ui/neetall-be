@@ -111,10 +111,7 @@ export class BlogController {
    */
   @Patch('faqs/:faqId')
   @UseGuards(AuthGuard)
-  async updateFaq(
-    @Param('faqId') faqId: string,
-    @Body() body: UpdateFaqDto,
-  ) {
+  async updateFaq(@Param('faqId') faqId: string, @Body() body: UpdateFaqDto) {
     return this.blogService.updateFaq(faqId, body);
   }
 

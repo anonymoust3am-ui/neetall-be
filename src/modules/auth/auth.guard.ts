@@ -24,8 +24,7 @@ export class AuthGuard implements CanActivate {
     }
 
     // Verify Firebase token
-    const firebaseUser =
-      await this.firebase.getUserFromAuthHeader(authHeader);
+    const firebaseUser = await this.firebase.getUserFromAuthHeader(authHeader);
 
     // Get user from database
     const user = await this.prisma.user.findUnique({
@@ -49,7 +48,9 @@ export class AuthGuard implements CanActivate {
       });
 
       if (!session) {
-        throw new UnauthorizedException('Session is not active or device is logged out');
+        throw new UnauthorizedException(
+          'Session is not active or device is logged out',
+        );
       }
 
       // Update last seen

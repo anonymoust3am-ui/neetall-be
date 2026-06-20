@@ -2,6 +2,7 @@ import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { GetInstitutesQueryDto } from './dto/get-institutes-query.dto';
+import { PrismaService } from '../../prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
@@ -24,7 +25,10 @@ export class InstituteService {
   private readonly cacheDir = path.join(process.cwd(), 'cache', 'institutes');
   private readonly CACHE_TTL = 1000 * 60 * 60; // 1 hour
 
-  constructor(private readonly httpService: HttpService) {
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly prisma: PrismaService,
+  ) {
     // Ensure cache directory exists
     if (!fs.existsSync(this.cacheDir)) {
       fs.mkdirSync(this.cacheDir, { recursive: true });
@@ -64,6 +68,64 @@ export class InstituteService {
    * Get institutes with optional filters
    */
   async getInstitutes(queryDto: GetInstitutesQueryDto) {
+    if (queryDto.counselling) {
+      try {
+        this.logger.debug(
+          `Fetching local institutes for counselling: ${queryDto.counselling}`,
+        );
+        const allotments = await this.prisma.allotmentRecord.findMany({
+          where: {
+            OR: [
+              { counsellingName: queryDto.counselling },
+              { sourceCounsellingName: queryDto.counselling },
+              { counselling: { name: queryDto.counselling } },
+            ],
+          },
+          select: {
+            institute: {
+              select: {
+                id: true,
+                sourceInstituteId: true,
+                name: true,
+                state: true,
+              },
+            },
+          },
+          distinct: ['instituteId'],
+        });
+
+        const institutes = allotments
+          .map((a) => a.institute)
+          .filter(
+            (inst): inst is NonNullable<typeof inst> =>
+              inst !== null && inst !== undefined,
+          )
+          .map((inst) => ({
+            id: inst.sourceInstituteId
+              ? parseInt(inst.sourceInstituteId, 10)
+              : inst.id,
+            name: inst.name,
+            state: inst.state,
+          }));
+
+        // Sort by name alphabetically
+        institutes.sort((a, b) => a.name.localeCompare(b.name));
+
+        return {
+          success: true,
+          data: {
+            institutes,
+            total: institutes.length,
+          },
+        };
+      } catch (error) {
+        this.logger.error(
+          `Error querying local institutes for counselling ${queryDto.counselling}: ${error.message}`,
+          error.stack,
+        );
+      }
+    }
+
     try {
       const url = `${this.baseUrl}/institutes`;
 
@@ -133,14 +195,20 @@ export class InstituteService {
         `Error fetching institute details for ID ${id}: ${error.message}`,
         error.stack,
       );
-      this.handleHttpError(error, `Failed to fetch institute details for ID ${id}`);
+      this.handleHttpError(
+        error,
+        `Failed to fetch institute details for ID ${id}`,
+      );
     }
   }
 
   /**
    * Proxy a resource from Zynerd with retry logic and disk caching
    */
-  async proxyResource(pathStr: string, retries = 3): Promise<{ data: any; contentType: string }> {
+  async proxyResource(
+    pathStr: string,
+    retries = 3,
+  ): Promise<{ data: any; contentType: string }> {
     try {
       if (!pathStr) {
         throw new HttpException('Path is required', HttpStatus.BAD_REQUEST);
@@ -160,9 +228,13 @@ export class InstituteService {
         }
       }
 
-      const cleanPath = pathStr.startsWith('/') ? pathStr.substring(1) : pathStr;
+      const cleanPath = pathStr.startsWith('/')
+        ? pathStr.substring(1)
+        : pathStr;
       const url = `https://public.zynerd.com/${encodeURI(cleanPath)}`;
-      this.logger.debug(`Proxying resource from: ${url} (Retries left: ${retries})`);
+      this.logger.debug(
+        `Proxying resource from: ${url} (Retries left: ${retries})`,
+      );
 
       const response = await firstValueFrom(
         this.httpService.get(url, {
@@ -170,19 +242,21 @@ export class InstituteService {
           timeout: this.timeout,
           headers: {
             'User-Agent': this.getRandomUserAgent(),
-            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            Accept:
+              'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://www.zynerd.com/',
-            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="121", "Google Chrome";v="121"',
+            Referer: 'https://www.zynerd.com/',
+            'Sec-Ch-Ua':
+              '"Not_A Brand";v="8", "Chromium";v="121", "Google Chrome";v="121"',
             'Sec-Ch-Ua-Mobile': '?0',
             'Sec-Ch-Ua-Platform': '"Windows"',
             'Sec-Fetch-Dest': 'image',
             'Sec-Fetch-Mode': 'no-cors',
             'Sec-Fetch-Site': 'cross-site',
             'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-            'Connection': 'keep-alive',
-          }
+            Pragma: 'no-cache',
+            Connection: 'keep-alive',
+          },
         }),
       );
 
@@ -194,23 +268,35 @@ export class InstituteService {
       // Store in disk cache
       try {
         fs.writeFileSync(cacheFilePath, Buffer.from(response.data));
-        fs.writeFileSync(cacheMetaPath, JSON.stringify({
-          contentType: result.contentType,
-          timestamp: Date.now(),
-          originalPath: pathStr
-        }));
+        fs.writeFileSync(
+          cacheMetaPath,
+          JSON.stringify({
+            contentType: result.contentType,
+            timestamp: Date.now(),
+            originalPath: pathStr,
+          }),
+        );
       } catch (cacheError) {
-        this.logger.error(`Failed to write to disk cache: ${cacheError.message}`);
+        this.logger.error(
+          `Failed to write to disk cache: ${cacheError.message}`,
+        );
       }
 
       return result;
     } catch (error) {
-      const isConnectionError = error.code === 'ECONNRESET' || error.message?.includes('ECONNRESET') || error.code === 'ETIMEDOUT';
-      
+      const isConnectionError =
+        error.code === 'ECONNRESET' ||
+        error.message?.includes('ECONNRESET') ||
+        error.code === 'ETIMEDOUT';
+
       if (retries > 0 && isConnectionError) {
-        this.logger.warn(`Connection error for ${pathStr} (${error.code || error.message}), retrying... (${retries} left)`);
+        this.logger.warn(
+          `Connection error for ${pathStr} (${error.code || error.message}), retrying... (${retries} left)`,
+        );
         // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries)));
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 * (4 - retries)),
+        );
         return this.proxyResource(pathStr, retries - 1);
       }
 
@@ -237,7 +323,9 @@ export class InstituteService {
       const proxyBaseUrl = `${appUrl}/api/institutes/proxy?path=`;
 
       const stringified = JSON.stringify(data);
-      const masked = stringified.split(zynerdPublicUrl + '/').join(proxyBaseUrl);
+      const masked = stringified
+        .split(zynerdPublicUrl + '/')
+        .join(proxyBaseUrl);
 
       return JSON.parse(masked);
     } catch (error) {

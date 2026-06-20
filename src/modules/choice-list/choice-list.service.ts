@@ -40,22 +40,89 @@ export class ChoiceListService {
       throw new ConflictException('Choice list with this name already exists');
     }
 
+    let detailsCreatePayload: any[] | undefined = undefined;
+    if (data.details && data.details.length > 0) {
+      // 1. Fetch matching allotments in bulk
+      const allotments = await this.prisma.allotmentRecord.findMany({
+        where: {
+          OR: data.details.map((d) => ({
+            instituteNameSnapshot: d.institute,
+            courseNameSnapshot: d.course,
+            quotaNameSnapshot: d.quota,
+            categoryRaw: d.catagory,
+          })),
+        },
+        select: {
+          instituteNameSnapshot: true,
+          courseNameSnapshot: true,
+          quotaNameSnapshot: true,
+          categoryRaw: true,
+          sessionYear: true,
+          roundNo: true,
+          rank: true,
+        },
+      });
+
+      // 2. Map allotments by key
+      const allotmentsMap = new Map<
+        string,
+        Array<(typeof allotments)[number]>
+      >();
+      for (const a of allotments) {
+        const key = `${a.instituteNameSnapshot}|${a.courseNameSnapshot}|${a.quotaNameSnapshot}|${a.categoryRaw}`;
+        if (!allotmentsMap.has(key)) {
+          allotmentsMap.set(key, []);
+        }
+        allotmentsMap.get(key)!.push(a);
+      }
+
+      // 3. Map details to creation payload with closingRanks
+      detailsCreatePayload = data.details.map((d) => {
+        const key = `${d.institute}|${d.course}|${d.quota}|${d.catagory}`;
+        const matches = allotmentsMap.get(key) || [];
+
+        const ranksGrouped: Record<string, Record<string, number>> = {};
+        for (const match of matches) {
+          const year = String(match.sessionYear);
+          const round = String(match.roundNo);
+          const rank = match.rank;
+
+          if (rank !== null && rank !== undefined) {
+            if (!ranksGrouped[year]) {
+              ranksGrouped[year] = {};
+            }
+            const currentMax = ranksGrouped[year][round];
+            if (currentMax === undefined || rank > currentMax) {
+              ranksGrouped[year][round] = rank;
+              ranksGrouped[year][`R${round}`] = rank;
+            }
+          }
+        }
+
+        const closingRanks =
+          Object.keys(ranksGrouped).length > 0 ? ranksGrouped : null;
+
+        return {
+          name: d.name,
+          Caunselling: d.caunselling,
+          Institute: d.institute,
+          Course: d.course,
+          Quota: d.quota,
+          Catagory: d.catagory,
+          InsertAt: d.insertAt,
+          closingRanks: closingRanks as any,
+        };
+      });
+    }
+
     const choiceList = await this.prisma.choiceList.create({
       data: {
         userId,
         name: data.name,
         Caunselling: data.caunselling,
-        ChoiceListDetails: data.details?.length
+        ChoiceListDetails: detailsCreatePayload
           ? {
-              create: data.details.map((d) => ({
-                name: d.name,
-                Caunselling: d.caunselling,
-                Institute: d.institute,
-                Course: d.course,
-                Quota: d.quota,
-                Catagory: d.catagory,
-                InsertAt: d.insertAt,
-              })),
+              create: detailsCreatePayload,
             }
           : undefined,
       },
@@ -159,13 +226,16 @@ export class ChoiceListService {
         where: { name: data.name },
       });
       if (duplicate) {
-        throw new ConflictException('Choice list with this name already exists');
+        throw new ConflictException(
+          'Choice list with this name already exists',
+        );
       }
     }
 
     const updateData: any = {};
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.caunselling !== undefined) updateData.Caunselling = data.caunselling;
+    if (data.caunselling !== undefined)
+      updateData.Caunselling = data.caunselling;
 
     const choiceList = await this.prisma.choiceList.update({
       where: { id },
@@ -232,6 +302,13 @@ export class ChoiceListService {
       throw new ConflictException('Detail with this name already exists');
     }
 
+    const closingRanks = await this.getClosingRanks(
+      data.institute,
+      data.course,
+      data.quota,
+      data.catagory,
+    );
+
     const detail = await this.prisma.choiceListDetails.create({
       data: {
         choiceListId,
@@ -242,6 +319,7 @@ export class ChoiceListService {
         Quota: data.quota,
         Catagory: data.catagory,
         InsertAt: data.insertAt,
+        closingRanks: closingRanks as any,
       },
     });
 
@@ -279,12 +357,31 @@ export class ChoiceListService {
 
     const updateData: any = {};
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.caunselling !== undefined) updateData.Caunselling = data.caunselling;
+    if (data.caunselling !== undefined)
+      updateData.Caunselling = data.caunselling;
     if (data.institute !== undefined) updateData.Institute = data.institute;
     if (data.course !== undefined) updateData.Course = data.course;
     if (data.quota !== undefined) updateData.Quota = data.quota;
     if (data.catagory !== undefined) updateData.Catagory = data.catagory;
     if (data.insertAt !== undefined) updateData.InsertAt = data.insertAt;
+
+    // Check if college details are changing
+    const isCollegeDetailsChanging =
+      (data.institute !== undefined && data.institute !== detail.Institute) ||
+      (data.course !== undefined && data.course !== detail.Course) ||
+      (data.quota !== undefined && data.quota !== detail.Quota) ||
+      (data.catagory !== undefined && data.catagory !== detail.Catagory);
+
+    if (isCollegeDetailsChanging) {
+      const inst =
+        data.institute !== undefined ? data.institute : detail.Institute;
+      const crs = data.course !== undefined ? data.course : detail.Course;
+      const qt = data.quota !== undefined ? data.quota : detail.Quota;
+      const cat = data.catagory !== undefined ? data.catagory : detail.Catagory;
+
+      const closingRanks = await this.getClosingRanks(inst, crs, qt, cat);
+      updateData.closingRanks = closingRanks as any;
+    }
 
     const updated = await this.prisma.choiceListDetails.update({
       where: { id: detailId },
@@ -376,8 +473,52 @@ export class ChoiceListService {
       quota: detail.Quota,
       catagory: detail.Catagory,
       insertAt: detail.InsertAt,
+      closingRanks: detail.closingRanks || null,
       createdAt: detail.createdAt,
       updatedAt: detail.updatedAt,
     };
+  }
+
+  private async getClosingRanks(
+    institute: string,
+    course: string,
+    quota: string,
+    category: string,
+  ): Promise<Record<string, Record<string, number>> | null> {
+    const allotments = await this.prisma.allotmentRecord.findMany({
+      where: {
+        instituteNameSnapshot: institute,
+        courseNameSnapshot: course,
+        quotaNameSnapshot: quota,
+        categoryRaw: category,
+      },
+      select: {
+        sessionYear: true,
+        roundNo: true,
+        rank: true,
+      },
+    });
+
+    if (!allotments || allotments.length === 0) return null;
+
+    const ranksGrouped: Record<string, Record<string, number>> = {};
+    for (const match of allotments) {
+      const year = String(match.sessionYear);
+      const round = String(match.roundNo);
+      const rank = match.rank;
+
+      if (rank !== null && rank !== undefined) {
+        if (!ranksGrouped[year]) {
+          ranksGrouped[year] = {};
+        }
+        const currentMax = ranksGrouped[year][round];
+        if (currentMax === undefined || rank > currentMax) {
+          ranksGrouped[year][round] = rank;
+          ranksGrouped[year][`R${round}`] = rank; // Support both "1" and "R1" formats
+        }
+      }
+    }
+
+    return Object.keys(ranksGrouped).length > 0 ? ranksGrouped : null;
   }
 }

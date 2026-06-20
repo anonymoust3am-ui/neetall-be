@@ -24,7 +24,16 @@ import {
 } from './dto/profile.dto';
 
 const REQUIRED_PROFILE_FIELDS = ['name', 'state', 'city'];
-const ALL_PROFILE_FIELDS = ['name', 'state', 'city', 'email', 'gender', 'category', 'dob', 'country'];
+const ALL_PROFILE_FIELDS = [
+  'name',
+  'state',
+  'city',
+  'email',
+  'gender',
+  'category',
+  'dob',
+  'country',
+];
 
 @Injectable()
 export class ProfileService {
@@ -69,7 +78,8 @@ export class ProfileService {
     if (data.category !== undefined) updateData.Category = data.category;
     if (data.dob !== undefined) updateData.dob = data.dob;
     if (data.profilePic !== undefined) updateData.profilePic = data.profilePic;
-    if (data.alternatePhone !== undefined) updateData.alternatePhone = data.alternatePhone;
+    if (data.alternatePhone !== undefined)
+      updateData.alternatePhone = data.alternatePhone;
     if (data.theme !== undefined) updateData.Theme = data.theme;
 
     const updatedUser = await this.prisma.user.update({
@@ -128,7 +138,8 @@ export class ProfileService {
 
     if (data.name !== undefined) updateData.name = data.name;
     if (data.profilePic !== undefined) updateData.profilePic = data.profilePic;
-    if (data.alternatePhone !== undefined) updateData.alternatePhone = data.alternatePhone;
+    if (data.alternatePhone !== undefined)
+      updateData.alternatePhone = data.alternatePhone;
     if (data.gender !== undefined) updateData.Gender = data.gender;
     if (data.dob !== undefined) updateData.dob = data.dob;
     if (data.country !== undefined) updateData.country = data.country;
@@ -161,7 +172,9 @@ export class ProfileService {
   /**
    * 📊 GET PROFILE COMPLETION STATUS
    */
-  async getProfileCompletionStatus(userId: string): Promise<ProfileCompletionStatusDto> {
+  async getProfileCompletionStatus(
+    userId: string,
+  ): Promise<ProfileCompletionStatusDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -171,13 +184,24 @@ export class ProfileService {
     }
 
     const completedFields = ALL_PROFILE_FIELDS.filter((field) => {
-      const value = user[field === 'category' ? 'Category' : field === 'gender' ? 'Gender' : field];
+      const value =
+        user[
+          field === 'category'
+            ? 'Category'
+            : field === 'gender'
+              ? 'Gender'
+              : field
+        ];
       return value && value !== 'N/A';
     });
 
-    const missingFields = ALL_PROFILE_FIELDS.filter((field) => !completedFields.includes(field));
+    const missingFields = ALL_PROFILE_FIELDS.filter(
+      (field) => !completedFields.includes(field),
+    );
 
-    const completionPercentage = Math.round((completedFields.length / ALL_PROFILE_FIELDS.length) * 100);
+    const completionPercentage = Math.round(
+      (completedFields.length / ALL_PROFILE_FIELDS.length) * 100,
+    );
 
     return {
       isComplete: this.isProfileComplete(user),
@@ -191,7 +215,10 @@ export class ProfileService {
   /**
    * 📧 UPDATE EMAIL - Change user email
    */
-  async updateEmail(userId: string, { newEmail }: UpdateEmailDto): Promise<EmailUpdateResponseDto> {
+  async updateEmail(
+    userId: string,
+    { newEmail }: UpdateEmailDto,
+  ): Promise<EmailUpdateResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -238,7 +265,11 @@ export class ProfileService {
   /**
    * ✅ VERIFY EMAIL - Confirm new email with OTP
    */
-  async verifyEmail(userId: string, email: string, code: string): Promise<EmailUpdateResponseDto> {
+  async verifyEmail(
+    userId: string,
+    email: string,
+    code: string,
+  ): Promise<EmailUpdateResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -372,7 +403,10 @@ export class ProfileService {
   /**
    * 🔄 RESEND EMAIL VERIFICATION - Resend OTP to email
    */
-  async resendEmailVerification(userId: string, { email }: ResendEmailVerificationDto) {
+  async resendEmailVerification(
+    userId: string,
+    { email }: ResendEmailVerificationDto,
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -424,18 +458,25 @@ export class ProfileService {
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       throw new BadRequestException('Current password is incorrect');
     }
 
     // Validate new password
     if (newPassword.length < 8) {
-      throw new BadRequestException('New password must be at least 8 characters');
+      throw new BadRequestException(
+        'New password must be at least 8 characters',
+      );
     }
 
     if (newPassword === currentPassword) {
-      throw new BadRequestException('New password cannot be same as current password');
+      throw new BadRequestException(
+        'New password cannot be same as current password',
+      );
     }
 
     // Hash and save new password
@@ -487,7 +528,14 @@ export class ProfileService {
    */
   private isProfileComplete(user: any): boolean {
     return REQUIRED_PROFILE_FIELDS.every((field) => {
-      const value = user[field === 'category' ? 'Category' : field === 'gender' ? 'Gender' : field];
+      const value =
+        user[
+          field === 'category'
+            ? 'Category'
+            : field === 'gender'
+              ? 'Gender'
+              : field
+        ];
       return !!value && value !== 'N/A';
     });
   }

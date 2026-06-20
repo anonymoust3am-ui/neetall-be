@@ -13,10 +13,10 @@ export class CreatePackageDto {
   availability!: 'AVAILABLE' | 'UNAVAILABLE';
   coverageId!: string;
   couponCode?: string;
-  features?: string[];   // feature IDs
-  tools?: string[];      // tool IDs
-  insights?: string[];   // insight IDs
-  explores?: string[];   // explore IDs
+  features?: string[]; // feature IDs
+  tools?: string[]; // tool IDs
+  insights?: string[]; // insight IDs
+  explores?: string[]; // explore IDs
 }
 
 export class UpdatePackageDto {

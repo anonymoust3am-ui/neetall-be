@@ -80,11 +80,11 @@ export class ProfileDetailsDto {
   profilePic!: string | null;
   alternatePhone!: string | null;
   theme!: string | null;
-  
+
   // Email login fields
   enableEmailLogin!: boolean;
   emailLoginVerified!: boolean;
-  
+
   isProfileComplete!: boolean;
   createdAt!: Date;
   updatedAt!: Date;

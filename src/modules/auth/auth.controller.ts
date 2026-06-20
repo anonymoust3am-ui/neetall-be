@@ -29,12 +29,12 @@ export class AuthController {
   /**
    * 🔓 POST /auth/login
    * Login/Register with Firebase OTP
-   * 
+   *
    * Payload:
    * - deviceId: unique device identifier
    * - deviceType: mobile|tablet|desktop|web
    * - Optional: name, email, state, city, gender, category, dob
-   * 
+   *
    * Header:
    * - Authorization: Bearer <firebase-id-token>
    */
@@ -70,7 +70,7 @@ export class AuthController {
   /**
    * 🌐 POST /auth/logout-remote
    * Logout from other devices
-   * 
+   *
    * If deviceIds not provided: logout from ALL except current device
    */
   @Post('logout-remote')
@@ -83,16 +83,13 @@ export class AuthController {
   /**
    * 📋 PATCH /auth/profile
    * Update user profile (progressive)
-   * 
+   *
    * Only updates provided fields
    * Non-destructive: never overwrites existing data
    */
   @Patch('profile')
   @UseGuards(AuthGuard)
-  async updateProfile(
-    @Body() body: UpdateProfileDto,
-    @Req() req: any,
-  ) {
+  async updateProfile(@Body() body: UpdateProfileDto, @Req() req: any) {
     return this.authService.updateProfile(req.user.id, body);
   }
 
@@ -123,10 +120,7 @@ export class AuthController {
    */
   @Post('email/send-otp')
   @UseGuards(AuthGuard)
-  async sendEmailOtp(
-    @Body() body: SendEmailOtpDto,
-    @Req() req: any,
-  ) {
+  async sendEmailOtp(@Body() body: SendEmailOtpDto, @Req() req: any) {
     return this.authService.sendEmailOtp(req.user.id, body);
   }
 
@@ -136,10 +130,7 @@ export class AuthController {
    */
   @Post('email/verify-otp')
   @UseGuards(AuthGuard)
-  async verifyEmailOtp(
-    @Body() body: VerifyEmailOtpDto,
-    @Req() req: any,
-  ) {
+  async verifyEmailOtp(@Body() body: VerifyEmailOtpDto, @Req() req: any) {
     return this.authService.verifyEmailOtp(req.user.id, body);
   }
 }

@@ -206,12 +206,14 @@ export class BlogService {
 
     const updateData: any = {};
     if (data.title !== undefined) updateData.title = data.title;
-    if (data.description !== undefined) updateData.description = data.description;
+    if (data.description !== undefined)
+      updateData.description = data.description;
     if (data.content !== undefined) updateData.content = data.content;
     if (data.authorId !== undefined) updateData.authorId = data.authorId;
     if (data.slug !== undefined) updateData.slug = data.slug;
     if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
-    if (data.coverImageUrl !== undefined) updateData.coverImageUrl = data.coverImageUrl;
+    if (data.coverImageUrl !== undefined)
+      updateData.coverImageUrl = data.coverImageUrl;
     if (data.tags !== undefined) updateData.tags = data.tags;
 
     const blog = await this.prisma.blogs.update({
@@ -316,7 +318,10 @@ export class BlogService {
   /**
    * Update an author
    */
-  async updateAuthor(id: string, data: UpdateAuthorDto): Promise<AuthorResponseDto> {
+  async updateAuthor(
+    id: string,
+    data: UpdateAuthorDto,
+  ): Promise<AuthorResponseDto> {
     const existing = await this.prisma.author.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException('Author not found');
@@ -430,8 +435,13 @@ export class BlogService {
   /**
    * Add social link to an author
    */
-  async addSocialLink(authorId: string, data: CreateSocialLinkDto): Promise<SocialLinkResponseDto> {
-    const author = await this.prisma.author.findUnique({ where: { id: authorId } });
+  async addSocialLink(
+    authorId: string,
+    data: CreateSocialLinkDto,
+  ): Promise<SocialLinkResponseDto> {
+    const author = await this.prisma.author.findUnique({
+      where: { id: authorId },
+    });
     if (!author) {
       throw new NotFoundException('Author not found');
     }
@@ -450,8 +460,13 @@ export class BlogService {
   /**
    * Update a social link
    */
-  async updateSocialLink(linkId: string, data: UpdateSocialLinkDto): Promise<SocialLinkResponseDto> {
-    const existing = await this.prisma.socialLink.findUnique({ where: { id: linkId } });
+  async updateSocialLink(
+    linkId: string,
+    data: UpdateSocialLinkDto,
+  ): Promise<SocialLinkResponseDto> {
+    const existing = await this.prisma.socialLink.findUnique({
+      where: { id: linkId },
+    });
     if (!existing) {
       throw new NotFoundException('Social link not found');
     }
@@ -472,7 +487,9 @@ export class BlogService {
    * Delete a social link
    */
   async deleteSocialLink(linkId: string): Promise<{ message: string }> {
-    const existing = await this.prisma.socialLink.findUnique({ where: { id: linkId } });
+    const existing = await this.prisma.socialLink.findUnique({
+      where: { id: linkId },
+    });
     if (!existing) {
       throw new NotFoundException('Social link not found');
     }

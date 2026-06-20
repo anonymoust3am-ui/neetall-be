@@ -212,7 +212,11 @@ export class PackageService {
     const coverage = await this.prisma.coverage.create({
       data: { type: data.type, description: data.description },
     });
-    return { id: coverage.id, type: coverage.type, description: coverage.description };
+    return {
+      id: coverage.id,
+      type: coverage.type,
+      description: coverage.description,
+    };
   }
 
   async getAllCoverages(): Promise<CoverageResponseDto[]> {
@@ -229,7 +233,9 @@ export class PackageService {
   // ================================================================
 
   async createFeature(data: CreateItemDto): Promise<ItemResponseDto> {
-    const item = await this.prisma.feature.create({ data: { name: data.name } });
+    const item = await this.prisma.feature.create({
+      data: { name: data.name },
+    });
     return { id: item.id, name: item.name };
   }
 
@@ -247,7 +253,9 @@ export class PackageService {
   }
 
   async createInsight(data: CreateItemDto): Promise<ItemResponseDto> {
-    const item = await this.prisma.insight.create({ data: { name: data.name } });
+    const item = await this.prisma.insight.create({
+      data: { name: data.name },
+    });
     return { id: item.id, name: item.name };
   }
 
@@ -256,7 +264,9 @@ export class PackageService {
   }
 
   async createExplore(data: CreateItemDto): Promise<ItemResponseDto> {
-    const item = await this.prisma.explore.create({ data: { name: data.name } });
+    const item = await this.prisma.explore.create({
+      data: { name: data.name },
+    });
     return { id: item.id, name: item.name };
   }
 
@@ -305,7 +315,8 @@ export class PackageService {
     }
 
     const updateData: any = {};
-    if (data.description !== undefined) updateData.description = data.description;
+    if (data.description !== undefined)
+      updateData.description = data.description;
     if (data.discount !== undefined) updateData.discount = data.discount;
     if (data.validTill !== undefined)
       updateData.validTill = new Date(data.validTill);
@@ -399,7 +410,9 @@ export class PackageService {
       },
     });
     if (existingPurchase) {
-      throw new ConflictException('You already have an active subscription for this package');
+      throw new ConflictException(
+        'You already have an active subscription for this package',
+      );
     }
 
     // Calculate price with coupon discount
@@ -475,7 +488,11 @@ export class PackageService {
   async verifyPayment(
     userId: string,
     data: VerifyPaymentDto,
-  ): Promise<{ success: boolean; message: string; userPackage?: UserPackageResponseDto }> {
+  ): Promise<{
+    success: boolean;
+    message: string;
+    userPackage?: UserPackageResponseDto;
+  }> {
     // Find the payment record
     const payment = await this.prisma.payment.findUnique({
       where: { razorpayOrderId: data.razorpayOrderId },
@@ -506,7 +523,9 @@ export class PackageService {
         data: { status: 'FAILED' },
       });
 
-      throw new BadRequestException('Payment verification failed — invalid signature');
+      throw new BadRequestException(
+        'Payment verification failed — invalid signature',
+      );
     }
 
     // Payment is verified — update payment record

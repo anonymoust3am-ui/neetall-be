@@ -6,4 +6,4 @@ import { PredictorService } from './predictor.service';
   controllers: [PredictorController],
   providers: [PredictorService],
 })
-export class PredictorModule { }
+export class PredictorModule {}

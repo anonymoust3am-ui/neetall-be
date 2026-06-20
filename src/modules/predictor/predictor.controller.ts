@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 
 @Controller()
 export class PredictorController {
-  constructor(private readonly predictorService: PredictorService) { }
+  constructor(private readonly predictorService: PredictorService) {}
 
   // ==========================================
   // UI Route
@@ -14,7 +14,10 @@ export class PredictorController {
   getPredictorUI() {
     // Serve the legacy HTML layout wrapped in an endpoint for easy access
     try {
-      const htmlPath = join(process.cwd(), 'src/modules/predictor/predictor.html');
+      const htmlPath = join(
+        process.cwd(),
+        'src/modules/predictor/predictor.html',
+      );
       return readFileSync(htmlPath, 'utf8');
     } catch (e) {
       return 'UI File not found.';

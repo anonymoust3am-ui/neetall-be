@@ -51,7 +51,7 @@ export class InstituteController {
   async proxy(@Query('path') path: string, @Res() res: express.Response) {
     const resource = await this.instituteService.proxyResource(path);
     if (resource.contentType) {
-      res.set('Content-Type', resource.contentType as any);
+      res.set('Content-Type', resource.contentType);
     }
     res.send(resource.data);
   }

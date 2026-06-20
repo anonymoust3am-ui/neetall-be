@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsArray, ValidateNested, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+  IsBoolean,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateBodyQuotaDto {
@@ -102,4 +108,3 @@ export class CreateCounsellingOptionDto {
   @Type(() => CreateBodyDto)
   bodies?: CreateBodyDto[];
 }
-

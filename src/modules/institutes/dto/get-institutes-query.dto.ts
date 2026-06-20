@@ -16,6 +16,10 @@ export class GetInstitutesQueryDto {
   university_id?: number;
 
   @IsOptional()
+  @IsString()
+  counselling?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)

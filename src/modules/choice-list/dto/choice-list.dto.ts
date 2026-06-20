@@ -55,6 +55,7 @@ export class ChoiceListDetailResponseDto {
   quota!: string;
   catagory!: string;
   insertAt!: number | null;
+  closingRanks?: Record<string, Record<string, number | null>> | null;
   createdAt!: Date;
   updatedAt!: Date;
 }

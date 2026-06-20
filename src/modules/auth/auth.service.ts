@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FirebaseService } from '../../firebase/firebase.service';
 import { DecodedIdToken } from 'firebase-admin/auth';
@@ -20,11 +25,11 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private firebase: FirebaseService,
-  ) { }
+  ) {}
 
   /**
    * 🔓 LOGIN/REGISTER - Main authentication endpoint
-   * 
+   *
    * Flow:
    * 1. Verify Firebase token
    * 2. Extract user data from token
@@ -150,7 +155,7 @@ export class AuthService {
 
   /**
    * 📋 UPDATE PROFILE - Progressive profile completion
-   * 
+   *
    * - Only updates provided fields
    * - Never overwrites existing data
    * - Auto-marks profile as complete if all required fields are filled
@@ -166,12 +171,17 @@ export class AuthService {
     if (updateData.email !== undefined) dataToUpdate.email = updateData.email;
     if (updateData.state !== undefined) dataToUpdate.state = updateData.state;
     if (updateData.city !== undefined) dataToUpdate.city = updateData.city;
-    if (updateData.gender !== undefined) dataToUpdate.Gender = updateData.gender;
-    if (updateData.category !== undefined) dataToUpdate.Category = updateData.category;
+    if (updateData.gender !== undefined)
+      dataToUpdate.Gender = updateData.gender;
+    if (updateData.category !== undefined)
+      dataToUpdate.Category = updateData.category;
     if (updateData.dob !== undefined) dataToUpdate.dob = updateData.dob;
-    if (updateData.profilePic !== undefined) dataToUpdate.profilePic = updateData.profilePic;
-    if (updateData.alternatePhone !== undefined) dataToUpdate.alternatePhone = updateData.alternatePhone;
-    if (updateData.country !== undefined) dataToUpdate.country = updateData.country;
+    if (updateData.profilePic !== undefined)
+      dataToUpdate.profilePic = updateData.profilePic;
+    if (updateData.alternatePhone !== undefined)
+      dataToUpdate.alternatePhone = updateData.alternatePhone;
+    if (updateData.country !== undefined)
+      dataToUpdate.country = updateData.country;
     if (updateData.theme !== undefined) dataToUpdate.Theme = updateData.theme;
 
     const user = await this.prisma.user.update({
@@ -195,7 +205,10 @@ export class AuthService {
   /**
    * 📧 SEND EMAIL OTP - Start email verification
    */
-  async sendEmailOtp(userId: string, { email }: SendEmailOtpDto): Promise<{ message: string }> {
+  async sendEmailOtp(
+    userId: string,
+    { email }: SendEmailOtpDto,
+  ): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -301,7 +314,7 @@ export class AuthService {
     });
 
     return {
-      sessions: sessions.map(s => ({
+      sessions: sessions.map((s) => ({
         id: s.id,
         userId: s.userId,
         deviceId: s.DeviceId || '',
@@ -338,7 +351,7 @@ export class AuthService {
 
   /**
    * 🌐 REMOTE LOGOUT - Logout from other devices
-   * 
+   *
    * If deviceIds not provided: logout from ALL except current device
    * If deviceIds provided: logout only from those devices
    */
@@ -347,7 +360,7 @@ export class AuthService {
     currentDeviceId: string,
     { deviceIds }: RemoteLogoutDto = {},
   ): Promise<{ message: string; loggedOutCount: number }> {
-    let whereClause: any = { userId, IsActive: true };
+    const whereClause: any = { userId, IsActive: true };
 
     if (deviceIds && deviceIds.length > 0) {
       // Logout from specific devices
@@ -421,10 +434,7 @@ export class AuthService {
 
     if (!user) return false;
 
-    const isComplete =
-      !!user.name &&
-      !!user.state &&
-      !!user.city;
+    const isComplete = !!user.name && !!user.state && !!user.city;
 
     return isComplete;
   }

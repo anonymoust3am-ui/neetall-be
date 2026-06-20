@@ -6,39 +6,52 @@ export function cleanInt(value: any): number | null {
 
 export function cleanText(value: any): string | null {
   if (value === null || value === undefined) return null;
-  let text = String(value).replace(/[\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
-  if (text === '' || ['nan', 'none', 'null', '-', 'all'].includes(text.toLowerCase())) return null;
+  const text = String(value)
+    .replace(/[\n\r\t]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (
+    text === '' ||
+    ['nan', 'none', 'null', '-', 'all'].includes(text.toLowerCase())
+  )
+    return null;
   return text;
 }
 
 export function marksToRank(marksInput: any): number | null {
   const marks = cleanInt(marksInput);
   if (marks === null) return null;
-  
+
   if (marks >= 715) return Math.round((720 - marks) * 50 + 1);
   if (marks >= 650) return Math.round((720 - marks) * 600);
   if (marks >= 550) return Math.round((720 - marks) * 1200);
   if (marks >= 450) return Math.round((720 - marks) * 1500);
-  
+
   return Math.round((720 - marks) * 2000);
 }
 
 export function shortName(nameInput: any): string {
   const name = cleanText(nameInput) || 'College';
-  let text = name
-    .replace(/All India Institute of Medical Sciences/ig, 'AIIMS')
-    .replace(/Jawaharlal Institute of Postgraduate Medical Education and Research/ig, 'JIPMER')
-    .replace(/GOVERNMENT/ig, 'Govt.')
-    .replace(/Government/ig, 'Govt.')
-    .replace(/MEDICAL COLLEGE/ig, 'MC')
-    .replace(/Medical College/ig, 'MC')
-    .replace(/DENTAL COLLEGE/ig, 'DC')
-    .replace(/Dental College/ig, 'DC');
-    
+  const text = name
+    .replace(/All India Institute of Medical Sciences/gi, 'AIIMS')
+    .replace(
+      /Jawaharlal Institute of Postgraduate Medical Education and Research/gi,
+      'JIPMER',
+    )
+    .replace(/GOVERNMENT/gi, 'Govt.')
+    .replace(/Government/gi, 'Govt.')
+    .replace(/MEDICAL COLLEGE/gi, 'MC')
+    .replace(/Medical College/gi, 'MC')
+    .replace(/DENTAL COLLEGE/gi, 'DC')
+    .replace(/Dental College/gi, 'DC');
+
   return text.split(',')[0].trim().substring(0, 55);
 }
 
-export function formatBucketByClosingRank(userRank: number | null, closingRank: number | null): string {
+export function formatBucketByClosingRank(
+  userRank: number | null,
+  closingRank: number | null,
+): string {
   if (!userRank || !closingRank) return 'unknown';
 
   const gap = closingRank - userRank;
@@ -50,7 +63,10 @@ export function formatBucketByClosingRank(userRank: number | null, closingRank: 
   return 'target';
 }
 
-export function formatBucketByNearestRank(userRank: number | null, candidateRank: number | null): string {
+export function formatBucketByNearestRank(
+  userRank: number | null,
+  candidateRank: number | null,
+): string {
   if (!userRank || !candidateRank) return 'unknown';
 
   const diff = candidateRank - userRank;
@@ -67,9 +83,12 @@ export function bucketPriority(bucket: string): number {
 }
 
 export function getGradient(bucket: string): string {
-  if (bucket === 'safe') return 'linear-gradient(135deg, #059669 0%, #064e3b 100%)';
-  if (bucket === 'target') return 'linear-gradient(135deg, #d97706 0%, #7c2d12 100%)';
-  if (bucket === 'dream') return 'linear-gradient(135deg, #7c3aed 0%, #2e1065 100%)';
+  if (bucket === 'safe')
+    return 'linear-gradient(135deg, #059669 0%, #064e3b 100%)';
+  if (bucket === 'target')
+    return 'linear-gradient(135deg, #d97706 0%, #7c2d12 100%)';
+  if (bucket === 'dream')
+    return 'linear-gradient(135deg, #7c3aed 0%, #2e1065 100%)';
   return 'linear-gradient(135deg, #2563eb 0%, #172554 100%)';
 }
 
@@ -81,19 +100,29 @@ export function getLogoColor(bucket: string): string {
 }
 
 export function balancedCards(cards: any[], cardLimit = 30): any[] {
-  const safeCards = cards.filter(c => c.bucket === 'safe');
-  const targetCards = cards.filter(c => c.bucket === 'target');
-  const dreamCards = cards.filter(c => c.bucket === 'dream');
-  const unknownCards = cards.filter(c => c.bucket === 'unknown');
+  const safeCards = cards.filter((c) => c.bucket === 'safe');
+  const targetCards = cards.filter((c) => c.bucket === 'target');
+  const dreamCards = cards.filter((c) => c.bucket === 'dream');
+  const unknownCards = cards.filter((c) => c.bucket === 'unknown');
 
   const sortGroup = (group: any[]) => {
     group.sort((a, b) => {
-      const aRankGap = a.rankGap !== null && a.rankGap !== undefined ? Math.abs(a.rankGap) : 10 ** 12;
-      const bRankGap = b.rankGap !== null && b.rankGap !== undefined ? Math.abs(b.rankGap) : 10 ** 12;
+      const aRankGap =
+        a.rankGap !== null && a.rankGap !== undefined
+          ? Math.abs(a.rankGap)
+          : 10 ** 12;
+      const bRankGap =
+        b.rankGap !== null && b.rankGap !== undefined
+          ? Math.abs(b.rankGap)
+          : 10 ** 12;
       if (aRankGap !== bRankGap) return aRankGap - bRankGap;
 
-      const aNearest = a.nearestRank ? Math.abs((a.nearestRank || 0) - (a.inputRank || 0)) : 10 ** 12;
-      const bNearest = b.nearestRank ? Math.abs((b.nearestRank || 0) - (b.inputRank || 0)) : 10 ** 12;
+      const aNearest = a.nearestRank
+        ? Math.abs((a.nearestRank || 0) - (a.inputRank || 0))
+        : 10 ** 12;
+      const bNearest = b.nearestRank
+        ? Math.abs((b.nearestRank || 0) - (b.inputRank || 0))
+        : 10 ** 12;
       if (aNearest !== bNearest) return aNearest - bNearest;
 
       return (a.name || '').localeCompare(b.name || '');
@@ -106,7 +135,13 @@ export function balancedCards(cards: any[], cardLimit = 30): any[] {
   sortGroup(unknownCards);
 
   const mixed: any[] = [];
-  const maxLen = Math.max(safeCards.length, targetCards.length, dreamCards.length, unknownCards.length, 0);
+  const maxLen = Math.max(
+    safeCards.length,
+    targetCards.length,
+    dreamCards.length,
+    unknownCards.length,
+    0,
+  );
 
   for (let i = 0; i < maxLen; i++) {
     if (i < safeCards.length) mixed.push(safeCards[i]);
@@ -165,7 +200,10 @@ export function expandUpCodeList(value: string | null): string | null {
   const text = cleanText(value);
   if (!text) return null;
 
-  const parts = text.split(',').map(x => cleanText(x)).filter(Boolean);
-  const expanded = parts.map(x => expandUpCategoryCode(x)).filter(Boolean);
+  const parts = text
+    .split(',')
+    .map((x) => cleanText(x))
+    .filter(Boolean);
+  const expanded = parts.map((x) => expandUpCategoryCode(x)).filter(Boolean);
   return expanded.join(', ');
 }

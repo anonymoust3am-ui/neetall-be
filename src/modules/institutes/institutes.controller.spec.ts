@@ -41,15 +41,11 @@ describe('InstituteController (e2e)', () => {
     });
 
     it('should accept query parameters', () => {
-      return request(app.getHttpServer())
-        .get('/institutes?page=1')
-        .expect(200);
+      return request(app.getHttpServer()).get('/institutes?page=1').expect(200);
     });
 
     it('should handle pagination', () => {
-      return request(app.getHttpServer())
-        .get('/institutes?page=2')
-        .expect(200);
+      return request(app.getHttpServer()).get('/institutes?page=2').expect(200);
     });
 
     it('should handle filters', () => {

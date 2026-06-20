@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { ReferralService } from './referral.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApplyReferralDto } from './dto/referral.dto';

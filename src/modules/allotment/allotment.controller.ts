@@ -9,6 +9,6 @@ export class AllotmentController {
   @Get()
   @HttpCode(HttpStatus.OK)
   async getAllotments(@Query() queryDto: GetAllotmentsQueryDto) {
-    return await this. allotmentService.getAllotments(queryDto);
+    return await this.allotmentService.getAllotments(queryDto);
   }
 }

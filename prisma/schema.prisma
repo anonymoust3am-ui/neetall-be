@@ -75,6 +75,7 @@ model ChoiceListDetails {
   Quota        String
   Catagory     String
   InsertAt     Int?
+  closingRanks Json?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }

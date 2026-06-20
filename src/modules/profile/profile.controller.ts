@@ -97,10 +97,7 @@ export class ProfileController {
    */
   @Post('email-login/enable')
   @HttpCode(HttpStatus.OK)
-  async enableEmailLogin(
-    @Body() body: EnableEmailLoginDto,
-    @Req() req: any,
-  ) {
+  async enableEmailLogin(@Body() body: EnableEmailLoginDto, @Req() req: any) {
     return this.profileService.enableEmailLogin(req.user.id, body);
   }
 

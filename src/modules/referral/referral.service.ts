@@ -137,9 +137,7 @@ export class ReferralService {
     const referredUsers: ReferredUserResponseDto[] = referrals.map((r) => ({
       id: r.id,
       referredName: r.referredName,
-      referredPhone: r.referredPhone
-        ? this.maskPhone(r.referredPhone)
-        : null,
+      referredPhone: r.referredPhone ? this.maskPhone(r.referredPhone) : null,
       isRewarded: r.isRewarded,
       createdAt: r.createdAt,
     }));

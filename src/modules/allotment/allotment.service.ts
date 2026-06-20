@@ -33,32 +33,39 @@ export class AllotmentService {
       where.sessionYear = sessionNum;
     }
 
-    if (counselling_level && Object.values(CounsellingLevel).includes(counselling_level as any)) {
+    if (
+      counselling_level &&
+      Object.values(CounsellingLevel).includes(counselling_level as any)
+    ) {
       where.counsellingLevel = counselling_level as CounsellingLevel;
     }
 
     if (rounds) {
-      where.roundNo = { in: rounds.split(',').map(r => parseFloat(r.trim())) };
+      where.roundNo = {
+        in: rounds.split(',').map((r) => parseFloat(r.trim())),
+      };
     }
 
     if (institutes) {
-      where.instituteId = { in: institutes.split(',').map(id => id.trim()) };
+      where.instituteId = { in: institutes.split(',').map((id) => id.trim()) };
     }
 
     if (courses) {
-      where.courseId = { in: courses.split(',').map(id => id.trim()) };
+      where.courseId = { in: courses.split(',').map((id) => id.trim()) };
     }
 
     if (quotas) {
-      where.quotaIdRef = { in: quotas.split(',').map(id => id.trim()) };
+      where.quotaIdRef = { in: quotas.split(',').map((id) => id.trim()) };
     }
 
     if (categories) {
-      where.categoryMapId = { in: categories.split(',').map(id => id.trim()) };
+      where.categoryMapId = {
+        in: categories.split(',').map((id) => id.trim()),
+      };
     }
 
     if (states) {
-      where.sourceStateName = { in: states.split(',').map(s => s.trim()) };
+      where.sourceStateName = { in: states.split(',').map((s) => s.trim()) };
     }
 
     const [total, records] = await Promise.all([
@@ -87,31 +94,40 @@ export class AllotmentService {
         rank: record.rank,
         ai_rank: record.aiRank,
         counselling_rank: record.counsellingRank,
-        institute: record.institute ? {
-          id: record.institute.id,
-          name: record.institute.name,
-          short_name: record.instituteShortNameSnapshot || record.institute.name,
-          logo_url: null, // Assuming no logo URL in standard schema
-          district: record.instituteDistrictSnapshot,
-        } : null,
-        course: record.course ? {
-          id: record.course.id,
-          name: record.course.name,
-          short_name: record.courseShortNameSnapshot || record.course.name,
-        } : null,
-        quota: record.quota ? {
-          id: record.quota.id,
-          name: record.quota.name,
-          short_name: record.quotaShortNameSnapshot || record.quota.name,
-          master_quota: record.masterQuotaSnapshot,
-        } : null,
+        institute: record.institute
+          ? {
+              id: record.institute.id,
+              name: record.institute.name,
+              short_name:
+                record.instituteShortNameSnapshot || record.institute.name,
+              logo_url: null, // Assuming no logo URL in standard schema
+              district: record.instituteDistrictSnapshot,
+            }
+          : null,
+        course: record.course
+          ? {
+              id: record.course.id,
+              name: record.course.name,
+              short_name: record.courseShortNameSnapshot || record.course.name,
+            }
+          : null,
+        quota: record.quota
+          ? {
+              id: record.quota.id,
+              name: record.quota.name,
+              short_name: record.quotaShortNameSnapshot || record.quota.name,
+              master_quota: record.masterQuotaSnapshot,
+            }
+          : null,
         category: record.categoryDisplay || record.categoryRaw,
         state: record.sourceStateName,
-        counselling: record.counselling ? {
-          id: record.counselling.id,
-          name: record.counselling.name,
-          short_name: record.counselling.name,
-        } : null,
+        counselling: record.counselling
+          ? {
+              id: record.counselling.id,
+              name: record.counselling.name,
+              short_name: record.counselling.name,
+            }
+          : null,
         inservice_candidate: record.inserviceCandidate,
         candidate_flag: record.candidateFlag,
         fee_id: record.sourceFeeId,
@@ -132,213 +148,213 @@ export class AllotmentService {
       data: {
         selected_session: session ? String(session) : undefined,
         headers: [
-            {
-                "name": "Round",
-                "key": "round",
-                "sortable": true,
-                "hyperlink": false,
-                "use_short_name": false
+          {
+            name: 'Round',
+            key: 'round',
+            sortable: true,
+            hyperlink: false,
+            use_short_name: false,
+          },
+          {
+            name: 'AI Rank',
+            key: 'rank',
+            sortable: true,
+            hyperlink: false,
+            use_short_name: false,
+          },
+          {
+            name: 'State',
+            key: 'state',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: false,
+          },
+          {
+            name: 'Institute',
+            key: 'institute',
+            sortable: false,
+            hyperlink: true,
+            use_short_name: true,
+            hyperlink_properties: {
+              type: 'redirect',
+              show: 'institute',
             },
-            {
-                "name": "AI Rank",
-                "key": "rank",
-                "sortable": true,
-                "hyperlink": false,
-                "use_short_name": false
-            },
-            {
-                "name": "State",
-                "key": "state",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": false
-            },
-            {
-                "name": "Institute",
-                "key": "institute",
-                "sortable": false,
-                "hyperlink": true,
-                "use_short_name": true,
-                "hyperlink_properties": {
-                    "type": "redirect",
-                    "show": "institute"
-                }
-            },
-            {
-                "name": "Course",
-                "key": "course",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": true
-            },
-            {
-                "name": "Quota",
-                "key": "quota",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": true
-            },
-            {
-                "name": "Category",
-                "key": "category",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": false
-            },
-            {
-                "name": "Fee",
-                "key": "fee",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": false
-            },
-            {
-                "name": "Beds",
-                "key": "beds",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": false
-            },
-            {
-                "name": "Bond Years",
-                "key": "bond_years",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": false
-            },
-            {
-                "name": "Bond Penalty",
-                "key": "bond_penalty",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": false
-            },
-            {
-                "name": "Stipend Year 1",
-                "key": "stipend_year_1",
-                "sortable": false,
-                "hyperlink": false,
-                "use_short_name": false
-            }
+          },
+          {
+            name: 'Course',
+            key: 'course',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: true,
+          },
+          {
+            name: 'Quota',
+            key: 'quota',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: true,
+          },
+          {
+            name: 'Category',
+            key: 'category',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: false,
+          },
+          {
+            name: 'Fee',
+            key: 'fee',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: false,
+          },
+          {
+            name: 'Beds',
+            key: 'beds',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: false,
+          },
+          {
+            name: 'Bond Years',
+            key: 'bond_years',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: false,
+          },
+          {
+            name: 'Bond Penalty',
+            key: 'bond_penalty',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: false,
+          },
+          {
+            name: 'Stipend Year 1',
+            key: 'stipend_year_1',
+            sortable: false,
+            hyperlink: false,
+            use_short_name: false,
+          },
         ],
         records: mappedRecords,
-        access_state: "LIMITED",
+        access_state: 'LIMITED',
         total: total,
         page_size: pageSizeNum,
         show_rank_switch: false,
         remarks_content: remarksHtml,
         remarks: {
-            "type": "HTML",
-            "html": remarksHtml
+          type: 'HTML',
+          html: remarksHtml,
         },
         table_comments: [
-            "Click on the record for detailed information and factors.",
-            "(*) Indicates additional remarks available in Details & Factors."
+          'Click on the record for detailed information and factors.',
+          '(*) Indicates additional remarks available in Details & Factors.',
         ],
         is_group: false,
         candidate_flags: {
-            "inservice_candidate": {
-                "color": "blue",
-                "label": "Inservice Candidates with Incentives"
-            },
-            "nri_priority_1": {
-                "color": "yellow",
-                "label": "NRI Quota - Priority 1"
-            },
-            "nri_priority_2": {
-                "color": "brown",
-                "label": "NRI Quota - Priority 2"
-            },
-            "SCG_S2_Karnataka": {
-                "color": "pink",
-                "label": "SCB Category Candidates"
-            },
-            "SCG_S3_Karnataka": {
-                "color": "purple",
-                "label": "SCC Category Candidates"
-            },
-            "SCG_S1_Karnataka": {
-                "color": "turquoise",
-                "label": "SCA Category Candidates"
-            },
-            "SCH_S1_Karnataka": {
-                "color": "gray",
-                "label": "SCA Category Hyd-Karnataka Candidates"
-            },
-            "SCH_S3_Karnataka": {
-                "color": "violet",
-                "label": "SCC Category Hyd-Karnataka Candidates"
-            },
-            "SCH_S2_Karnataka": {
-                "color": "green",
-                "label": "SCB Category Hyd-Karnataka Candidates"
-            },
-            "SC1_FEM_Andhra": {
-                "color": "pink",
-                "label": "SC-FEM Group 1 Candidates"
-            },
-            "SC2_FEM_Andhra": {
-                "color": "purple",
-                "label": "SC-FEM Group 2 Candidates"
-            },
-            "SC3_FEM_Andhra": {
-                "color": "turquoise",
-                "label": "SC-FEM Group 3 Candidates"
-            },
-            "SC1_GEN_Andhra": {
-                "color": "gray",
-                "label": "SC-GEN Group 1 Candidates"
-            },
-            "SC2_GEN_Andhra": {
-                "color": "violet",
-                "label": "SC-GEN Group 2 Candidates"
-            },
-            "SC3_GEN_Andhra": {
-                "color": "green",
-                "label": "SC-GEN Group 3 Candidates"
-            },
-            "SC1_FEM_Telangana": {
-                "color": "pink",
-                "label": "SC-FEM Group 1 Candidates"
-            },
-            "SC2_FEM_Telangana": {
-                "color": "purple",
-                "label": "SC-FEM Group 2 Candidates"
-            },
-            "SC3_FEM_Telangana": {
-                "color": "turquoise",
-                "label": "SC-FEM Group 3 Candidates"
-            },
-            "SC1_GEN_Telangana": {
-                "color": "gray",
-                "label": "SC-GEN Group 1 Candidates"
-            },
-            "SC2_GEN_Telangana": {
-                "color": "violet",
-                "label": "SC-GEN Group 2 Candidates"
-            },
-            "SC3_GEN_Telangana": {
-                "color": "green",
-                "label": "SC-GEN Group 3 Candidates"
-            },
-            "mp_institutional_seat": {
-                "color": "purple",
-                "label": "Institutional Seats"
-            },
-            "mp_institutional_seat_inservice_candidate": {
-                "color": "yellow",
-                "label": "Institutional Seats with Incentive"
-            },
-            "mp_non_institutional_seat_inservice_candidate": {
-                "color": "blue",
-                "label": "Non-Institutional Seats with Incentive"
-            },
-            "mp_non_institutional_seat": {
-                "color": "gray",
-                "label": "Non-Institutional Seats"
-            }
-        }
-      }
+          inservice_candidate: {
+            color: 'blue',
+            label: 'Inservice Candidates with Incentives',
+          },
+          nri_priority_1: {
+            color: 'yellow',
+            label: 'NRI Quota - Priority 1',
+          },
+          nri_priority_2: {
+            color: 'brown',
+            label: 'NRI Quota - Priority 2',
+          },
+          SCG_S2_Karnataka: {
+            color: 'pink',
+            label: 'SCB Category Candidates',
+          },
+          SCG_S3_Karnataka: {
+            color: 'purple',
+            label: 'SCC Category Candidates',
+          },
+          SCG_S1_Karnataka: {
+            color: 'turquoise',
+            label: 'SCA Category Candidates',
+          },
+          SCH_S1_Karnataka: {
+            color: 'gray',
+            label: 'SCA Category Hyd-Karnataka Candidates',
+          },
+          SCH_S3_Karnataka: {
+            color: 'violet',
+            label: 'SCC Category Hyd-Karnataka Candidates',
+          },
+          SCH_S2_Karnataka: {
+            color: 'green',
+            label: 'SCB Category Hyd-Karnataka Candidates',
+          },
+          SC1_FEM_Andhra: {
+            color: 'pink',
+            label: 'SC-FEM Group 1 Candidates',
+          },
+          SC2_FEM_Andhra: {
+            color: 'purple',
+            label: 'SC-FEM Group 2 Candidates',
+          },
+          SC3_FEM_Andhra: {
+            color: 'turquoise',
+            label: 'SC-FEM Group 3 Candidates',
+          },
+          SC1_GEN_Andhra: {
+            color: 'gray',
+            label: 'SC-GEN Group 1 Candidates',
+          },
+          SC2_GEN_Andhra: {
+            color: 'violet',
+            label: 'SC-GEN Group 2 Candidates',
+          },
+          SC3_GEN_Andhra: {
+            color: 'green',
+            label: 'SC-GEN Group 3 Candidates',
+          },
+          SC1_FEM_Telangana: {
+            color: 'pink',
+            label: 'SC-FEM Group 1 Candidates',
+          },
+          SC2_FEM_Telangana: {
+            color: 'purple',
+            label: 'SC-FEM Group 2 Candidates',
+          },
+          SC3_FEM_Telangana: {
+            color: 'turquoise',
+            label: 'SC-FEM Group 3 Candidates',
+          },
+          SC1_GEN_Telangana: {
+            color: 'gray',
+            label: 'SC-GEN Group 1 Candidates',
+          },
+          SC2_GEN_Telangana: {
+            color: 'violet',
+            label: 'SC-GEN Group 2 Candidates',
+          },
+          SC3_GEN_Telangana: {
+            color: 'green',
+            label: 'SC-GEN Group 3 Candidates',
+          },
+          mp_institutional_seat: {
+            color: 'purple',
+            label: 'Institutional Seats',
+          },
+          mp_institutional_seat_inservice_candidate: {
+            color: 'yellow',
+            label: 'Institutional Seats with Incentive',
+          },
+          mp_non_institutional_seat_inservice_candidate: {
+            color: 'blue',
+            label: 'Non-Institutional Seats with Incentive',
+          },
+          mp_non_institutional_seat: {
+            color: 'gray',
+            label: 'Non-Institutional Seats',
+          },
+        },
+      },
     };
   }
 }
