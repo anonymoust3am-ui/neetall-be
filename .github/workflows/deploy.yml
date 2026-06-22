@@ -22,6 +22,7 @@ jobs:
             cd /home/neetell/neetall-be
 
             echo "Pulling latest code..."
+            git checkout -- tsconfig.build.tsbuildinfo
             git pull origin master
 
             echo "Installing dependencies..."
