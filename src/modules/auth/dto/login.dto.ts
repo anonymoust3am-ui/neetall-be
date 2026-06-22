@@ -92,6 +92,15 @@ export class ProfileResponseDto {
   isProfileComplete!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+  enableEmailLogin!: boolean;
+  emailLoginVerified!: boolean;
+  aiCredits!: number;
+  aiCreditLimit!: number;
+  aiUserSummurry!: string;
+  isAiEnabled!: boolean;
+  isAiCreditSystem!: boolean;
+  userPackages!: string[];
+
 }
 
 export class SessionResponseDto {

@@ -7,6 +7,8 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcryptjs';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { join, extname } from 'path';
 import {
   CompleteProfileDto,
   UpdateProfileFieldsDto,
@@ -47,6 +49,8 @@ export class ProfileService {
   async completeProfile(
     userId: string,
     data: CompleteProfileDto,
+    file?: any,
+    baseUrl?: string,
   ): Promise<ProfileUpdateResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -63,7 +67,7 @@ export class ProfileService {
     if (data.email !== undefined) {
       // Check if email already exists for another user
       if (data.email !== user.email) {
-        const existingEmail = await this.prisma.user.findUnique({
+        const existingEmail = await this.prisma.user.findFirst({
           where: { email: data.email },
         });
         if (existingEmail && existingEmail.id !== userId) {
@@ -78,7 +82,11 @@ export class ProfileService {
     if (data.gender !== undefined) updateData.Gender = data.gender;
     if (data.category !== undefined) updateData.Category = data.category;
     if (data.dob !== undefined) updateData.dob = data.dob;
-    if (data.profilePic !== undefined) updateData.profilePic = data.profilePic;
+    if (file) {
+      updateData.profilePic = this.saveAvatar(userId, file);
+    } else if (data.profilePic !== undefined) {
+      updateData.profilePic = data.profilePic;
+    }
     if (data.alternatePhone !== undefined)
       updateData.alternatePhone = data.alternatePhone;
     if (data.theme !== undefined) updateData.Theme = data.theme;
@@ -100,7 +108,7 @@ export class ProfileService {
 
     return {
       message: 'Profile completed successfully',
-      profile: this.formatProfileResponse(updatedUser),
+      profile: this.formatProfileResponse(updatedUser, baseUrl),
       profileComplete: isComplete,
     };
   }
@@ -108,7 +116,7 @@ export class ProfileService {
   /**
    * 👤 GET PROFILE - Retrieve current user profile
    */
-  async getProfile(userId: string): Promise<ProfileDetailsDto> {
+  async getProfile(userId: string, baseUrl?: string): Promise<ProfileDetailsDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -117,7 +125,7 @@ export class ProfileService {
       throw new UnauthorizedException('User not found');
     }
 
-    return this.formatProfileResponse(user);
+    return this.formatProfileResponse(user, baseUrl);
   }
 
   /**
@@ -126,6 +134,8 @@ export class ProfileService {
   async updateProfileFields(
     userId: string,
     data: UpdateProfileFieldsDto,
+    file?: any,
+    baseUrl?: string,
   ): Promise<ProfileUpdateResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -138,7 +148,11 @@ export class ProfileService {
     const updateData: any = {};
 
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.profilePic !== undefined) updateData.profilePic = data.profilePic;
+    if (file) {
+      updateData.profilePic = this.saveAvatar(userId, file);
+    } else if (data.profilePic !== undefined) {
+      updateData.profilePic = data.profilePic;
+    }
     if (data.alternatePhone !== undefined)
       updateData.alternatePhone = data.alternatePhone;
     if (data.gender !== undefined) updateData.Gender = data.gender;
@@ -165,7 +179,7 @@ export class ProfileService {
 
     return {
       message: 'Profile updated successfully',
-      profile: this.formatProfileResponse(updatedUser),
+      profile: this.formatProfileResponse(updatedUser, baseUrl),
       profileComplete: isComplete,
     };
   }
@@ -230,7 +244,7 @@ export class ProfileService {
 
     // Check if email already in use
     if (newEmail !== user.email) {
-      const existingUser = await this.prisma.user.findUnique({
+      const existingUser = await this.prisma.user.findFirst({
         where: { email: newEmail },
       });
       if (existingUser && existingUser.id !== userId) {
@@ -323,7 +337,7 @@ export class ProfileService {
 
     // Check if email already in use
     if (email !== user.email) {
-      const existingUser = await this.prisma.user.findUnique({
+      const existingUser = await this.prisma.user.findFirst({
         where: { email },
       });
       if (existingUser && existingUser.id !== userId) {
@@ -544,7 +558,16 @@ export class ProfileService {
   /**
    * Format user profile for response
    */
-  private formatProfileResponse(user: any): ProfileDetailsDto {
+  private formatProfileResponse(user: any, baseUrl?: string): ProfileDetailsDto {
+    let profilePicUrl = user.profilePic;
+    if (profilePicUrl && !profilePicUrl.startsWith('http://') && !profilePicUrl.startsWith('https://')) {
+      const cleanPath = profilePicUrl.startsWith('/data/') ? profilePicUrl : `/data/${profilePicUrl.replace(/^\//, '')}`;
+      if (baseUrl) {
+        profilePicUrl = `${baseUrl.replace(/\/$/, '')}${cleanPath}`;
+      } else {
+        profilePicUrl = cleanPath;
+      }
+    }
     return {
       id: user.id,
       phone: user.phone,
@@ -558,7 +581,7 @@ export class ProfileService {
       gender: user.Gender,
       category: user.Category,
       dob: user.dob,
-      profilePic: user.profilePic,
+      profilePic: profilePicUrl,
       alternatePhone: user.alternatePhone,
       theme: user.Theme,
       enableEmailLogin: user.enableEmailLogin,
@@ -566,6 +589,61 @@ export class ProfileService {
       isProfileComplete: user.isProfileComplete,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+    };
+  }
+
+  /**
+   * Save avatar image file locally under data/images/profile
+   */
+  private saveAvatar(userId: string, file: any): string {
+    if (!file) return '';
+    if (!file.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Only image files are allowed');
+    }
+    const fileExt = extname(file.originalname || '');
+    const fileName = `profile-${userId}-${Date.now()}${fileExt || '.png'}`;
+    const uploadDir = join(process.cwd(), 'data', 'images', 'profile');
+    if (!existsSync(uploadDir)) {
+      mkdirSync(uploadDir, { recursive: true });
+    }
+    const filePath = join(uploadDir, fileName);
+    writeFileSync(filePath, file.buffer);
+    return `images/profile/${fileName}`;
+  }
+
+  /**
+   * 🖼️ UPLOAD AVATAR - Standalone upload
+   */
+  async uploadAvatar(
+    userId: string,
+    file: any,
+    baseUrl?: string,
+  ): Promise<ProfileUpdateResponseDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!file) {
+      throw new BadRequestException('No image file provided');
+    }
+
+    const relativePath = this.saveAvatar(userId, file);
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { profilePic: relativePath },
+    });
+
+    const isComplete = this.isProfileComplete(updatedUser);
+
+    return {
+      message: 'Avatar uploaded successfully',
+      profile: this.formatProfileResponse(updatedUser, baseUrl),
+      profileComplete: isComplete,
     };
   }
 

@@ -82,4 +82,15 @@ export class FirebaseService {
   isEmailVerified(decoded: DecodedIdToken): boolean {
     return decoded.email_verified ?? false;
   }
+
+  /**
+   * Delete user by Firebase UID
+   */
+  async deleteUser(uid: string): Promise<void> {
+    try {
+      await admin.auth().deleteUser(uid);
+    } catch (error) {
+      console.error(`Failed to delete Firebase user ${uid}:`, error);
+    }
+  }
 }

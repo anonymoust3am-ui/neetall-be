@@ -12,7 +12,7 @@ model User {
   firebaseUid     String  @unique @map("firebase_uid")
   phone           String  @unique
   phoneVerified   Boolean @default(true) @map("phone_verified")
-  email           String? @unique
+  email           String?
   emailVerified   Boolean @default(false) @map("email_verified")
   isEmailCodeSent Boolean @default(false) @map("is_email_code_sent")
 
@@ -778,7 +778,7 @@ model AllotmentRecord {
 model PredictionQuery {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String? @db.ObjectId
+  userId String?
   user   User?   @relation(fields: [userId], references: [id])
 
   sessionYear      Int

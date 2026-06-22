@@ -9,7 +9,10 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ProfileService } from './profile.service';
 import { AuthGuard } from '../auth/auth.guard';
 import {
@@ -29,15 +32,27 @@ import {
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
+  private getBaseUrl(req: any): string {
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:4000';
+    return `${proto}://${host}`;
+  }
+
   /**
    * 📋 POST /profile/complete
    * Complete user profile during onboarding
-   * Provide required info: name, state, city + optional fields
+   * Provide required info: name, state, city + optional fields (including optional avatar file)
    */
   @Post('complete')
+  @UseInterceptors(FileInterceptor('profilePic'))
   @HttpCode(HttpStatus.OK)
-  async completeProfile(@Body() body: CompleteProfileDto, @Req() req: any) {
-    return this.profileService.completeProfile(req.user.id, body);
+  async completeProfile(
+    @Body() body: CompleteProfileDto,
+    @Req() req: any,
+    @UploadedFile() file?: any,
+  ) {
+    const baseUrl = this.getBaseUrl(req);
+    return this.profileService.completeProfile(req.user.id, body, file, baseUrl);
   }
 
   /**
@@ -46,19 +61,45 @@ export class ProfileController {
    */
   @Get()
   async getProfile(@Req() req: any) {
-    return this.profileService.getProfile(req.user.id);
+    const baseUrl = this.getBaseUrl(req);
+    return this.profileService.getProfile(req.user.id, baseUrl);
+  }
+
+  /**
+   * 👤 GET /profile/me
+   * Retrieve current user profile (alternative endpoint)
+   */
+  @Get('me')
+  async getProfileMe(@Req() req: any) {
+    const baseUrl = this.getBaseUrl(req);
+    return this.profileService.getProfile(req.user.id, baseUrl);
   }
 
   /**
    * ✏️ PATCH /profile/update
-   * Update individual or multiple profile fields
+   * Update individual or multiple profile fields (including optional avatar file)
    */
   @Patch('update')
+  @UseInterceptors(FileInterceptor('profilePic'))
   async updateProfileFields(
     @Body() body: UpdateProfileFieldsDto,
     @Req() req: any,
+    @UploadedFile() file?: any,
   ) {
-    return this.profileService.updateProfileFields(req.user.id, body);
+    const baseUrl = this.getBaseUrl(req);
+    return this.profileService.updateProfileFields(req.user.id, body, file, baseUrl);
+  }
+
+  /**
+   * 🖼️ POST /profile/avatar
+   * Standalone upload for user avatar image
+   */
+  @Post('avatar')
+  @UseInterceptors(FileInterceptor('profilePic'))
+  @HttpCode(HttpStatus.OK)
+  async uploadAvatar(@UploadedFile() file: any, @Req() req: any) {
+    const baseUrl = this.getBaseUrl(req);
+    return this.profileService.uploadAvatar(req.user.id, file, baseUrl);
   }
 
   /**

@@ -470,9 +470,13 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
     const trimmed = message.trim();
 
     if (!trimmed) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
       return {
         success: false,
         answer: 'Please type your NEET rank, category, state, course, and quota preference.',
+        aiCredits: user?.aiCredits || 0,
       };
     }
 
@@ -720,8 +724,10 @@ Explain the result in 2-3 short lines.
       });
     }
 
+    let remainingCredits = user.aiCredits;
     // 7. Deduct credit if credit system is enabled
     if (user.isAiCreditSystem) {
+      remainingCredits = Math.max(0, user.aiCredits - 1);
       await this.prisma.user.update({
         where: { id: userId },
         data: {
@@ -745,6 +751,7 @@ Explain the result in 2-3 short lines.
     return {
       ...responseData,
       chatHistoryId: historyId,
+      aiCredits: remainingCredits,
     };
   }
 

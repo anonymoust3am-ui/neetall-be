@@ -25,7 +25,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private firebase: FirebaseService,
-  ) {}
+  ) { }
 
   /**
    * 🔓 LOGIN/REGISTER - Main authentication endpoint
@@ -60,8 +60,13 @@ export class AuthService {
     }
 
     // ✅ 2. Find or create user
-    let user = await this.prisma.user.findUnique({
-      where: { firebaseUid },
+    let user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { firebaseUid },
+          { phone },
+        ],
+      },
     });
 
     if (!user) {
@@ -71,7 +76,7 @@ export class AuthService {
         data: {
           firebaseUid,
           phone,
-          email: email ?? payload?.email ?? null,
+          email: (email ?? payload?.email) || undefined,
           emailVerified: emailVerified || false,
           phoneVerified: true, // Firebase phone auth = verified
           refralCode: referralCode,
@@ -92,6 +97,7 @@ export class AuthService {
       user = await this.prisma.user.update({
         where: { id: user.id },
         data: {
+          firebaseUid,
           // Only update if empty in DB and provided in payload
           name: user.name ?? payload?.name ?? undefined,
           state: user.state ?? payload?.state ?? undefined,
@@ -132,6 +138,12 @@ export class AuthService {
 
     // ✅ 4. Check if profile is complete
     const isProfileComplete = await this.checkProfileCompletion(user.id);
+    if (isProfileComplete && !user.isProfileComplete) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { isProfileComplete: true },
+      });
+    }
 
     return {
       user: {
@@ -219,7 +231,7 @@ export class AuthService {
 
     // Check if email is already verified for another user
     if (email !== user.email) {
-      const existingUser = await this.prisma.user.findUnique({
+      const existingUser = await this.prisma.user.findFirst({
         where: { email },
       });
       if (existingUser && existingUser.id !== userId) {
@@ -393,6 +405,36 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
+    const isComplete = await this.checkProfileCompletion(userId);
+    if (!isComplete) {
+      // Delete user from Firebase
+      try {
+        await this.firebase.deleteUser(user.firebaseUid);
+      } catch (err) {
+        console.error('Failed to delete Firebase user:', err);
+      }
+
+      // Delete user sessions
+      try {
+        await this.prisma.session.deleteMany({
+          where: { userId },
+        });
+      } catch (err) {
+        console.error('Failed to delete user sessions:', err);
+      }
+
+      // Delete user from local database
+      try {
+        await this.prisma.user.delete({
+          where: { id: userId },
+        });
+      } catch (err) {
+        console.error('Failed to delete user from DB:', err);
+      }
+
+      throw new UnauthorizedException('Profile not complete. User registration has been reset.');
+    }
+
     return this.formatUserResponse(user);
   }
 
@@ -463,6 +505,14 @@ export class AuthService {
       isProfileComplete: user.isProfileComplete,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      enableEmailLogin: user.enableEmailLogin,
+      emailLoginVerified: user.emailLoginVerified,
+      userPackages: user.userPackages,
+      aiCredits: user.aiCredits,
+      aiCreditLimit: user.aiCreditLimit,
+      aiUserSummurry: user.aiUserSummurry,
+      isAiEnabled: user.isAiEnabled,
+      isAiCreditSystem: user.isAiCreditSystem,
     };
   }
 
