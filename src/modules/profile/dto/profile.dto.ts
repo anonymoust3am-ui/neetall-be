@@ -114,3 +114,15 @@ export class PasswordUpdateResponseDto {
   message!: string;
   timestamp!: Date;
 }
+
+export class UpsertFcmTokenDto {
+  token!: string;
+  deviceType?: string;
+  deviceName?: string;
+  deviceId?: string;
+}
+
+export class DeleteFcmTokenDto {
+  token!: string;
+}
+

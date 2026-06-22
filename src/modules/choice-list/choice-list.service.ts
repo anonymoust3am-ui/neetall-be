@@ -12,7 +12,6 @@ import {
   UpdateChoiceListDetailDto,
   ChoiceListQueryDto,
   ChoiceListResponseDto,
-  ChoiceListSummaryResponseDto,
   ChoiceListDetailResponseDto,
   PaginatedChoiceListResponseDto,
 } from './dto/choice-list.dto';
@@ -32,6 +31,9 @@ export class ChoiceListService {
     userId: string,
     data: CreateChoiceListDto,
   ): Promise<ChoiceListResponseDto> {
+    console.log(
+      `[ChoiceListService] createChoiceList called: name="${data.name}", detailsCount=${data.details?.length || 0}`,
+    );
     // Check name uniqueness
     const existing = await this.prisma.choiceList.findUnique({
       where: { name: data.name },
@@ -42,77 +44,27 @@ export class ChoiceListService {
 
     let detailsCreatePayload: any[] | undefined = undefined;
     if (data.details && data.details.length > 0) {
-      // 1. Fetch matching allotments in bulk
-      const allotments = await this.prisma.allotmentRecord.findMany({
-        where: {
-          OR: data.details.map((d) => ({
-            instituteNameSnapshot: d.institute,
-            courseNameSnapshot: d.course,
-            quotaNameSnapshot: d.quota,
-            categoryRaw: d.catagory,
-          })),
-        },
-        select: {
-          instituteNameSnapshot: true,
-          courseNameSnapshot: true,
-          quotaNameSnapshot: true,
-          categoryRaw: true,
-          sessionYear: true,
-          roundNo: true,
-          rank: true,
-        },
-      });
+      detailsCreatePayload = await Promise.all(
+        data.details.map(async (d) => {
+          const closingRanks = await this.getClosingRanks(
+            d.institute,
+            d.course,
+            d.quota,
+            d.catagory,
+          );
 
-      // 2. Map allotments by key
-      const allotmentsMap = new Map<
-        string,
-        Array<(typeof allotments)[number]>
-      >();
-      for (const a of allotments) {
-        const key = `${a.instituteNameSnapshot}|${a.courseNameSnapshot}|${a.quotaNameSnapshot}|${a.categoryRaw}`;
-        if (!allotmentsMap.has(key)) {
-          allotmentsMap.set(key, []);
-        }
-        allotmentsMap.get(key)!.push(a);
-      }
-
-      // 3. Map details to creation payload with closingRanks
-      detailsCreatePayload = data.details.map((d) => {
-        const key = `${d.institute}|${d.course}|${d.quota}|${d.catagory}`;
-        const matches = allotmentsMap.get(key) || [];
-
-        const ranksGrouped: Record<string, Record<string, number>> = {};
-        for (const match of matches) {
-          const year = String(match.sessionYear);
-          const round = String(match.roundNo);
-          const rank = match.rank;
-
-          if (rank !== null && rank !== undefined) {
-            if (!ranksGrouped[year]) {
-              ranksGrouped[year] = {};
-            }
-            const currentMax = ranksGrouped[year][round];
-            if (currentMax === undefined || rank > currentMax) {
-              ranksGrouped[year][round] = rank;
-              ranksGrouped[year][`R${round}`] = rank;
-            }
-          }
-        }
-
-        const closingRanks =
-          Object.keys(ranksGrouped).length > 0 ? ranksGrouped : null;
-
-        return {
-          name: d.name,
-          Caunselling: d.caunselling,
-          Institute: d.institute,
-          Course: d.course,
-          Quota: d.quota,
-          Catagory: d.catagory,
-          InsertAt: d.insertAt,
-          closingRanks: closingRanks as any,
-        };
-      });
+          return {
+            name: d.name,
+            Caunselling: d.caunselling,
+            Institute: d.institute,
+            Course: d.course,
+            Quota: d.quota,
+            Catagory: d.catagory,
+            InsertAt: d.insertAt,
+            closingRanks: closingRanks as any,
+          };
+        }),
+      );
     }
 
     const choiceList = await this.prisma.choiceList.create({
@@ -284,6 +236,9 @@ export class ChoiceListService {
     choiceListId: string,
     data: CreateChoiceListDetailDto,
   ): Promise<ChoiceListDetailResponseDto> {
+    console.log(
+      `[ChoiceListService] addDetail called: choiceListId="${choiceListId}", name="${data.name}", institute="${data.institute}", course="${data.course}", quota="${data.quota}", catagory="${data.catagory}"`,
+    );
     const choiceList = await this.prisma.choiceList.findUnique({
       where: { id: choiceListId },
     });
@@ -334,6 +289,10 @@ export class ChoiceListService {
     detailId: string,
     data: UpdateChoiceListDetailDto,
   ): Promise<ChoiceListDetailResponseDto> {
+    console.log(
+      `[ChoiceListService] updateDetail called: detailId="${detailId}", data=`,
+      JSON.stringify(data),
+    );
     const detail = await this.prisma.choiceListDetails.findUnique({
       where: { id: detailId },
       include: { choiceList: true },
@@ -485,13 +444,34 @@ export class ChoiceListService {
     quota: string,
     category: string,
   ): Promise<Record<string, Record<string, number>> | null> {
+    console.log(
+      `[ChoiceListService] getClosingRanks START for: "${institute}" | "${course}" | "${quota}" | "${category}"`,
+    );
+    const quotaConditions = this.getQuotaQueryConditions(quota);
+    const categoryConditions = this.getCategoryQueryConditions(category);
+
+    const whereClause: any = {
+      instituteNameSnapshot: { equals: institute, mode: 'insensitive' },
+      courseNameSnapshot: { equals: course, mode: 'insensitive' },
+      isPwd: category.toUpperCase().includes('PWD'),
+      OR: quotaConditions,
+    };
+
+    if (categoryConditions.length > 0) {
+      whereClause.AND = [
+        {
+          OR: categoryConditions,
+        },
+      ];
+    }
+
+    console.log(
+      `[ChoiceListService] getClosingRanks whereClause:`,
+      JSON.stringify(whereClause, null, 2),
+    );
+
     const allotments = await this.prisma.allotmentRecord.findMany({
-      where: {
-        instituteNameSnapshot: institute,
-        courseNameSnapshot: course,
-        quotaNameSnapshot: quota,
-        categoryRaw: category,
-      },
+      where: whereClause,
       select: {
         sessionYear: true,
         roundNo: true,
@@ -499,7 +479,20 @@ export class ChoiceListService {
       },
     });
 
-    if (!allotments || allotments.length === 0) return null;
+    console.log(
+      `[ChoiceListService] getClosingRanks allotments count: ${allotments?.length || 0}`,
+    );
+    if (allotments && allotments.length > 0) {
+      console.log(
+        `[ChoiceListService] getClosingRanks sample allotment:`,
+        JSON.stringify(allotments[0]),
+      );
+    }
+
+    if (!allotments || allotments.length === 0) {
+      console.log(`[ChoiceListService] getClosingRanks returning null`);
+      return null;
+    }
 
     const ranksGrouped: Record<string, Record<string, number>> = {};
     for (const match of allotments) {
@@ -519,6 +512,144 @@ export class ChoiceListService {
       }
     }
 
+    console.log(
+      `[ChoiceListService] getClosingRanks returning:`,
+      JSON.stringify(ranksGrouped),
+    );
     return Object.keys(ranksGrouped).length > 0 ? ranksGrouped : null;
+  }
+
+  private getQuotaQueryConditions(quota: string): any[] {
+    const q = quota.toUpperCase().trim();
+    if (q === 'AIQ') {
+      return [
+        {
+          quotaNormalizedSnapshot: {
+            in: ['AIQ', 'BHU', 'AMU', 'AIIMS', 'JIPMER', 'ESI'],
+          },
+        },
+        {
+          masterQuotaSnapshot: {
+            in: [
+              'All India Quota',
+              'BHU Seats',
+              'AMU Seats',
+              'AIIMS Seats',
+              'JIPMER Seats',
+              'ESI Seats',
+            ],
+          },
+        },
+        {
+          ownershipSnapshot: {
+            in: ['AIIMS', 'JIPMER', 'CENTRAL_UNIVERSITY', 'ESI'],
+          },
+        },
+      ];
+    } else if (q === 'STATE QUOTA' || q === 'STATE') {
+      return [
+        {
+          quotaNormalizedSnapshot: { notIn: ['AIQ', 'BHU', 'AMU', 'AIIMS', 'JIPMER', 'ESI'] },
+          NOT: [
+            { quotaNameSnapshot: { contains: 'All India', mode: 'insensitive' } },
+            { quotaNameSnapshot: { contains: 'AIIMS', mode: 'insensitive' } },
+            { quotaNameSnapshot: { contains: 'JIPMER', mode: 'insensitive' } },
+          ],
+          OR: [
+            { quotaNormalizedSnapshot: 'STATE' },
+            { quotaNormalizedSnapshot: { contains: 'GOVT', mode: 'insensitive' } },
+            { quotaNormalizedSnapshot: { contains: 'STATE', mode: 'insensitive' } },
+            { quotaNameSnapshot: { contains: 'State', mode: 'insensitive' } },
+            { quotaNameSnapshot: { contains: 'Govt', mode: 'insensitive' } },
+            { quotaNameSnapshot: { contains: 'Government', mode: 'insensitive' } },
+            { quotaNameSnapshot: { contains: 'Seats', mode: 'insensitive' } },
+            { ownershipSnapshot: 'GOVERNMENT' }
+          ]
+        }
+      ];
+    } else if (q === 'NRI') {
+      return [
+        { quotaNormalizedSnapshot: 'NRI' },
+        { quotaNameSnapshot: { contains: 'NRI', mode: 'insensitive' } },
+        { isNri: true },
+      ];
+    } else if (q === 'MANAGEMENT' || q === 'PAID') {
+      return [
+        { quotaNormalizedSnapshot: { in: ['MANAGEMENT', 'PAID'] } },
+        { quotaNameSnapshot: { contains: 'Management', mode: 'insensitive' } },
+        { quotaNameSnapshot: { contains: 'Paid', mode: 'insensitive' } },
+        { isManagement: true },
+      ];
+    } else if (q === 'INSTITUTIONAL' || q === 'INTERNAL') {
+      return [
+        { quotaNameSnapshot: { contains: 'Internal', mode: 'insensitive' } },
+        {
+          quotaNameSnapshot: { contains: 'Institutional', mode: 'insensitive' },
+        },
+      ];
+    } else if (q === 'PWD') {
+      return [
+        { isPwd: true },
+        { quotaNameSnapshot: { contains: 'PwD', mode: 'insensitive' } },
+      ];
+    } else {
+      return [
+        { quotaNameSnapshot: { equals: quota, mode: 'insensitive' } },
+        { quotaNormalizedSnapshot: { equals: quota, mode: 'insensitive' } },
+        { quotaShortNameSnapshot: { equals: quota, mode: 'insensitive' } },
+      ];
+    }
+  }
+
+  private getCategoryQueryConditions(category: string): any[] {
+    const c = category.toUpperCase().trim();
+    let normalizedGroup = '';
+
+    if (c.startsWith('PWD-')) {
+      const parts = c.split('-');
+      normalizedGroup = parts[1];
+    } else if (c === 'PWD') {
+      normalizedGroup = '';
+    } else {
+      normalizedGroup = c;
+    }
+
+    if (normalizedGroup === 'GENERAL') {
+      normalizedGroup = 'OPEN';
+    } else if (normalizedGroup === 'OBC-NCL') {
+      normalizedGroup = 'OBC';
+    }
+
+    const conditions: any[] = [];
+    if (normalizedGroup) {
+      if (normalizedGroup === 'OPEN') {
+        conditions.push(
+          {
+            categoryRaw: {
+              in: ['Open', 'OPEN', 'GEN', 'General', 'UR', 'Unreserved'],
+            },
+          },
+          {
+            categoryDisplay: {
+              in: ['Open', 'OPEN', 'GEN', 'General', 'UR', 'Unreserved'],
+            },
+          },
+          { categoryNormalized: 'OPEN' },
+        );
+      } else {
+        conditions.push(
+          { categoryRaw: { equals: normalizedGroup, mode: 'insensitive' } },
+          { categoryDisplay: { equals: normalizedGroup, mode: 'insensitive' } },
+          {
+            categoryNormalized: {
+              equals: normalizedGroup,
+              mode: 'insensitive',
+            },
+          },
+        );
+      }
+    }
+
+    return conditions;
   }
 }

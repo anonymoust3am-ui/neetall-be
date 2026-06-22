@@ -21,6 +21,7 @@ import {
   ProfileUpdateResponseDto,
   EmailUpdateResponseDto,
   PasswordUpdateResponseDto,
+  UpsertFcmTokenDto,
 } from './dto/profile.dto';
 
 const REQUIRED_PROFILE_FIELDS = ['name', 'state', 'city'];
@@ -567,4 +568,78 @@ export class ProfileService {
       updatedAt: user.updatedAt,
     };
   }
+
+  /**
+   * 📲 REGISTER / UPDATE FCM TOKEN
+   * Registers a new FCM token or updates its association/metadata.
+   * If a deviceId is provided, clears any other tokens associated with that deviceId.
+   */
+  async upsertFcmToken(userId: string, data: UpsertFcmTokenDto) {
+    if (!data.token) {
+      throw new BadRequestException('FCM token is required');
+    }
+
+    if (data.deviceId) {
+      // Clear out other tokens registered for the same deviceId
+      await (this.prisma as any).fcmToken.deleteMany({
+        where: {
+          deviceId: data.deviceId,
+          token: { not: data.token },
+        },
+      });
+    }
+
+    const fcmToken = await (this.prisma as any).fcmToken.upsert({
+      where: { token: data.token },
+      update: {
+        userId,
+        deviceType: data.deviceType ?? null,
+        deviceName: data.deviceName ?? null,
+        deviceId: data.deviceId ?? null,
+      },
+      create: {
+        token: data.token,
+        userId,
+        deviceType: data.deviceType ?? null,
+        deviceName: data.deviceName ?? null,
+        deviceId: data.deviceId ?? null,
+      },
+    });
+
+    return {
+      message: 'FCM token registered successfully',
+      fcmToken,
+    };
+  }
+
+  /**
+   * 📲 REMOVE FCM TOKEN
+   * Deletes an FCM token from the database.
+   */
+  async deleteFcmToken(userId: string, token: string) {
+    if (!token) {
+      throw new BadRequestException('FCM token is required');
+    }
+
+    const existingToken = await (this.prisma as any).fcmToken.findUnique({
+      where: { token },
+    });
+
+    if (!existingToken) {
+      throw new BadRequestException('FCM token not found');
+    }
+
+    if (existingToken.userId !== userId) {
+      throw new UnauthorizedException('Not authorized to delete this token');
+    }
+
+    await (this.prisma as any).fcmToken.delete({
+      where: { token },
+    });
+
+    return {
+      message: 'FCM token removed successfully',
+    };
+  }
 }
+

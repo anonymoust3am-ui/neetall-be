@@ -14,6 +14,8 @@ import { CounsellingModule } from './modules/counselling/counselling.module';
 import { InstituteModule } from './modules/institutes/institutes.module';
 import { PredictorModule } from './modules/predictor/predictor.module';
 import { AllotmentModule } from './modules/allotment/allotment.module';
+import { GeminiModule } from './modules/gemini/gemini.module';
+import { AiChatModule } from './modules/ai-chat/ai-chat.module';
 
 @Module({
   imports: [
@@ -30,8 +32,10 @@ import { AllotmentModule } from './modules/allotment/allotment.module';
     InstituteModule,
     PredictorModule,
     AllotmentModule,
+    GeminiModule,
+    AiChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

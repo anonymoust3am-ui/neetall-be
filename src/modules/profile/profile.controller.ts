@@ -20,6 +20,8 @@ import {
   UpdatePasswordDto,
   VerifyEmailForLoginDto,
   ResendEmailVerificationDto,
+  UpsertFcmTokenDto,
+  DeleteFcmTokenDto,
 } from './dto/profile.dto';
 
 @Controller('profile')
@@ -145,4 +147,24 @@ export class ProfileController {
   async disableEmailLogin(@Req() req: any) {
     return this.profileService.disableEmailLogin(req.user.id);
   }
+
+  /**
+   * 📲 POST /profile/fcm-token
+   * Register or update FCM token for the current user
+   */
+  @Post('fcm-token')
+  @HttpCode(HttpStatus.OK)
+  async upsertFcmToken(@Body() body: UpsertFcmTokenDto, @Req() req: any) {
+    return this.profileService.upsertFcmToken(req.user.id, body);
+  }
+
+  /**
+   * 📲 DELETE /profile/fcm-token
+   * Remove an FCM token (e.g. on logout)
+   */
+  @Delete('fcm-token')
+  async deleteFcmToken(@Body() body: DeleteFcmTokenDto, @Req() req: any) {
+    return this.profileService.deleteFcmToken(req.user.id, body.token);
+  }
 }
+
