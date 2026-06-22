@@ -320,7 +320,7 @@ export class InstituteService {
       const zynerdPublicUrl = 'https://public.zynerd.com';
       // Use environment variable for app URL or default to relative if needed.
       const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
-      const proxyBaseUrl = `${appUrl}/api/institutes/proxy?path=`;
+      const proxyBaseUrl = `${appUrl}/institutes/proxy?path=`;
 
       const stringified = JSON.stringify(data);
       const masked = stringified
