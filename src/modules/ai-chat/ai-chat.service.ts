@@ -85,10 +85,220 @@ export class AiChatService {
     private readonly prisma: PrismaService,
   ) {}
 
-  private async generateAiText(basePrompt: string, userSummary?: string, recentMessages?: any[]): Promise<string> {
+  private async executeTool(name: string, args: any, userId: string): Promise<any> {
+    try {
+      switch (name) {
+        case 'predict_colleges': {
+          const payload: Record<string, any> = {
+            rank: Number(args.rank),
+            course_code: args.course || 'MBBS',
+            nearby_range: 25000,
+            limit: 50,
+          };
+          if (args.category) {
+            payload.candidate_category_code = args.category;
+          }
+          return args.isStateCounselling && args.state
+            ? await this.predictorService.predictState(args.state, payload)
+            : await this.predictorService.predictAi(payload);
+        }
+
+        case 'search_allotment_records': {
+          const match: any = {};
+          if (args.collegeName) {
+            match.instituteNameSnapshot = { contains: args.collegeName, mode: 'insensitive' };
+          }
+          if (args.course) {
+            match.courseNameSnapshot = { contains: args.course, mode: 'insensitive' };
+          }
+          if (args.quota) {
+            match.quotaNameSnapshot = { contains: args.quota, mode: 'insensitive' };
+          }
+          if (args.category) {
+            match.categoryRaw = { contains: args.category, mode: 'insensitive' };
+          }
+          if (args.minRank || args.maxRank) {
+            match.rank = {};
+            if (args.minRank) match.rank.gte = Number(args.minRank);
+            if (args.maxRank) match.rank.lte = Number(args.maxRank);
+          }
+          return await this.prisma.allotmentRecord.findMany({
+            where: match,
+            take: 15,
+            select: {
+              sessionYear: true,
+              roundNo: true,
+              rank: true,
+              aiRank: true,
+              instituteNameSnapshot: true,
+              courseNameSnapshot: true,
+              quotaNameSnapshot: true,
+              categoryRaw: true,
+              feeAmount: true,
+            }
+          });
+        }
+
+        case 'get_user_profile': {
+          const user = await this.prisma.user.findUnique({
+            where: { id: userId }
+          });
+          if (!user) return { error: 'User not found' };
+          return {
+            id: user.id,
+            phone: user.phone,
+            email: user.email,
+            name: user.name,
+            state: user.state,
+            city: user.city,
+            country: user.country,
+            gender: user.Gender,
+            category: user.Category,
+            dob: user.dob,
+            prefExam: user.PrefExam,
+            rank: user.Rank,
+            score: user.Score,
+            isProfileComplete: user.isProfileComplete,
+          };
+        }
+
+        case 'manage_choice_list': {
+          const { action, listName, counselling, collegeName, course, quota, category } = args;
+          if (action === 'list_all') {
+            return await this.prisma.choiceList.findMany({
+              where: { userId },
+              select: { id: true, name: true, Caunselling: true }
+            });
+          }
+
+          if (action === 'get') {
+            if (!listName) return { error: 'listName required for action=get' };
+            const list = await this.prisma.choiceList.findFirst({
+              where: { userId, name: listName },
+              include: { ChoiceListDetails: true }
+            });
+            return list || { message: 'No choice list found with that name' };
+          }
+
+          if (action === 'add') {
+            if (!listName) return { error: 'listName required' };
+            if (!collegeName) return { error: 'collegeName required' };
+            let list = await this.prisma.choiceList.findFirst({
+              where: { userId, name: listName }
+            });
+            if (!list) {
+              list = await this.prisma.choiceList.create({
+                data: {
+                  userId,
+                  name: listName,
+                  Caunselling: counselling || 'All India MCC'
+                }
+              });
+            }
+            const detailName = `${listName}_${collegeName}_${course || 'MBBS'}`;
+            const existing = await this.prisma.choiceListDetails.findFirst({
+              where: { choiceListId: list.id, name: detailName }
+            });
+            if (existing) return { message: 'Choice already exists in list', choice: existing };
+
+            const choice = await this.prisma.choiceListDetails.create({
+              data: {
+                choiceListId: list.id,
+                name: detailName,
+                Caunselling: list.Caunselling,
+                Institute: collegeName,
+                Course: course || 'MBBS',
+                Quota: quota || 'AIQ',
+                Catagory: category || 'UR'
+              }
+            });
+            return { message: 'Successfully added to choice list', choice };
+          }
+
+          if (action === 'remove') {
+            if (!listName) return { error: 'listName required' };
+            if (!collegeName) return { error: 'collegeName required' };
+            const list = await this.prisma.choiceList.findFirst({
+              where: { userId, name: listName }
+            });
+            if (!list) return { error: 'Choice list not found' };
+
+            const detailName = `${listName}_${collegeName}_${course || 'MBBS'}`;
+            const deleted = await this.prisma.choiceListDetails.deleteMany({
+              where: { choiceListId: list.id, name: detailName }
+            });
+            return { message: 'Successfully removed from choice list', count: deleted.count };
+          }
+          return { error: 'Invalid action' };
+        }
+
+        case 'get_packages': {
+          return await this.prisma.userPackage.findMany({
+            where: { userId },
+            include: { package: true }
+          });
+        }
+
+        case 'search_institutes': {
+          const where: any = {};
+          if (args.query) {
+            where.OR = [
+              { name: { contains: args.query, mode: 'insensitive' } },
+              { state: { contains: args.query, mode: 'insensitive' } },
+              { instituteType: { contains: args.query, mode: 'insensitive' } }
+            ];
+          }
+          if (args.state) {
+            where.state = { contains: args.state, mode: 'insensitive' };
+          }
+          return await this.prisma.institute.findMany({
+            where,
+            take: 15,
+            select: {
+              name: true,
+              state: true,
+              instituteType: true,
+              beds: true,
+              seats: true,
+              fee: true,
+            }
+          });
+        }
+
+        default:
+          return { error: `Tool ${name} not found` };
+      }
+    } catch (e: any) {
+      console.error(`Error executing tool ${name}:`, e);
+      return { error: e.message };
+    }
+  }
+
+  private async generateAiText(
+    userId: string,
+    basePrompt: string,
+    userSummary?: string,
+    recentMessages?: any[],
+  ): Promise<string> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
     let contextBlock = '';
+    if (user) {
+      contextBlock += `\n\n[STUDENT ACTIVE PROFILE]`;
+      contextBlock += `\n- Name: ${user.name || 'Student'}`;
+      contextBlock += `\n- NEET AIR: ${user.Rank || 'Not provided'}`;
+      contextBlock += `\n- NEET Score: ${user.Score || 'Not provided'}`;
+      contextBlock += `\n- Category: ${user.Category || 'UR/General'}`;
+      contextBlock += `\n- Preferred Course: ${user.PrefExam || 'MBBS'}`;
+      contextBlock += `\n- Home State: ${user.state || 'Not provided'}`;
+      contextBlock += `\n- City: ${user.city || 'Not provided'}`;
+      contextBlock += `\n- AI Summary: ${user.aiUserSummurry || 'None'}\n`;
+    }
+
     if (userSummary) {
-      contextBlock += `\n\n[STUDENT PROFILE SUMMARY]\nThis is the info of the student: ${userSummary}\n`;
+      contextBlock += `\n[PREVIOUS CHAT SUMMARY]\n${userSummary}\n`;
     }
     if (recentMessages && recentMessages.length > 1) {
       const formattedHistory = recentMessages
@@ -101,10 +311,144 @@ export class AiChatService {
     }
 
     const finalPrompt = `${basePrompt}${contextBlock}`;
-    return this.geminiService.generateText(finalPrompt);
+
+    // Define function declarations for tools
+    const tools = [
+      {
+        functionDeclarations: [
+          {
+            name: 'predict_colleges',
+            description: 'Predict matching colleges based on NEET rank, category, course, counselling level, and quota preference. Rank must be provided.',
+            parameters: {
+              type: 'OBJECT',
+              properties: {
+                rank: { type: 'INTEGER', description: 'NEET All India Rank (AIR)' },
+                category: { type: 'STRING', description: 'Category code (e.g. UR, OBC, EWS, SC, ST)' },
+                course: { type: 'STRING', description: 'Preferred course (e.g. MBBS, BDS)' },
+                isStateCounselling: { type: 'BOOLEAN', description: 'Whether to use State counselling instead of All India MCC counselling' },
+                state: { type: 'STRING', description: 'State name/code (if isStateCounselling is true)' },
+                quota: { type: 'STRING', description: 'Quota preference (e.g. AIQ, AIIMS_OPEN, DEEMED, STATE_QUOTA)' },
+              },
+              required: ['rank'],
+            },
+          },
+          {
+            name: 'search_allotment_records',
+            description: 'Query raw allotment records in the database with custom filters (e.g., search by college name, round, rank range, fee, category, course, quota). Use this when student asks about specific college cutoffs or fee info.',
+            parameters: {
+              type: 'OBJECT',
+              properties: {
+                collegeName: { type: 'STRING', description: 'Full or partial name of the college' },
+                course: { type: 'STRING', description: 'Course name/code (e.g. MBBS, BDS)' },
+                quota: { type: 'STRING', description: 'Quota code or name' },
+                category: { type: 'STRING', description: 'Category name or code' },
+                minRank: { type: 'INTEGER', description: 'Minimum rank' },
+                maxRank: { type: 'INTEGER', description: 'Maximum rank' },
+              },
+            },
+          },
+          {
+            name: 'get_user_profile',
+            description: "Get the currently logged-in student's profile details (such as rank, category, home state, score, preferences).",
+            parameters: {
+              type: 'OBJECT',
+              properties: {},
+            },
+          },
+          {
+            name: 'manage_choice_list',
+            description: "Retrieve, list, create, add, or remove choices from the student's choice list. Perfect for managing their preferred college options.",
+            parameters: {
+              type: 'OBJECT',
+              properties: {
+                action: {
+                  type: 'STRING',
+                  description: "Action to perform: 'get' (retrieve list by name), 'add' (add college to list), 'remove' (remove college from list), 'list_all' (list all choice lists).",
+                },
+                listName: { type: 'STRING', description: 'Name of the choice list' },
+                counselling: { type: 'STRING', description: "Counselling type (required for action='add' if creating a list)" },
+                collegeName: { type: 'STRING', description: 'Name of the college to add or remove' },
+                course: { type: 'STRING', description: "Course code (e.g. MBBS, BDS) for action='add'" },
+                quota: { type: 'STRING', description: "Quota code (e.g. AIQ) for action='add'" },
+                category: { type: 'STRING', description: "Category (e.g. UR) for action='add'" },
+              },
+              required: ['action'],
+            },
+          },
+          {
+            name: 'get_packages',
+            description: "Check the student's purchased packages, active payment status, and subscription details.",
+            parameters: {
+              type: 'OBJECT',
+              properties: {},
+            },
+          },
+          {
+            name: 'search_institutes',
+            description: 'Search detailed information about medical colleges/institutes (beds, seats, fee structures, types, state references).',
+            parameters: {
+              type: 'OBJECT',
+              properties: {
+                query: { type: 'STRING', description: 'Search query (name, city, state, or type)' },
+                state: { type: 'STRING', description: 'State name to filter by' },
+              },
+            },
+          },
+        ],
+      },
+    ] as any;
+
+    let contents: any[] = [{ role: 'user', parts: [{ text: finalPrompt }] }];
+    let loopCount = 0;
+    const maxLoops = 5;
+
+    while (loopCount < maxLoops) {
+      const response = await this.geminiService.ai.models.generateContent({
+        model: this.geminiService.model,
+        contents,
+        config: { tools },
+      });
+
+      const candidate = response.candidates?.[0];
+      const parts = candidate?.content?.parts || [];
+      const functionCalls = parts.filter((p: any) => p.functionCall) as any[];
+
+      if (!functionCalls || functionCalls.length === 0) {
+        return response.text || '';
+      }
+
+      const responseParts: any[] = [];
+      for (const call of functionCalls) {
+        const name = call.functionCall?.name;
+        const args = call.functionCall?.args;
+        if (!name) continue;
+
+        const result = await this.executeTool(name, args, userId);
+        responseParts.push({
+          functionResponse: {
+            name,
+            response: { result },
+          },
+        });
+      }
+
+      // Add model response containing function call to contents
+      if (candidate?.content) {
+        contents.push(candidate.content);
+      }
+      // Add tool responses back
+      contents.push({
+        role: 'user',
+        parts: responseParts,
+      });
+
+      loopCount++;
+    }
+
+    return '';
   }
 
-  private async answerExamDateQuestion(message: string, userSummary?: string, recentMessages?: any[]): Promise<string> {
+  private async answerExamDateQuestion(userId: string, message: string, userSummary?: string, recentMessages?: any[]): Promise<string> {
     try {
       const aiPrompt = `
 You are NEETal AI Counsellor.
@@ -129,7 +473,7 @@ ${message}
 Write a helpful answer.
 `;
 
-      const answer = await this.generateAiText(aiPrompt, userSummary, recentMessages);
+      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages);
 
       return (
         answer?.trim() ||
@@ -142,29 +486,29 @@ Write a helpful answer.
     }
   }
 
-  private async answerCollegeInfoQuestion(message: string, userSummary?: string, recentMessages?: any[]): Promise<string> {
+  private async answerCollegeInfoQuestion(userId: string, message: string, userSummary?: string, recentMessages?: any[]): Promise<string> {
     try {
       const aiPrompt = `
-You are NEETal AI Counsellor.
+You are NEETal AI Counsellor, a warm, professional, and friendly medical college advisor.
 
-The user is asking about a medical college location/details.
+The user is asking about a medical college location, fee structure, intake, beds, or details.
+
+Available tools you can call:
+- search_institutes: Searches medical college details (seats, beds, fee ranges, state references).
+- search_allotment_records: Searches historical allotment records in the database with custom filters.
 
 Rules:
-- Do not ask for rank/category/course/quota.
-- Do not predict admission chances.
-- If the college location is clear from the name, answer directly.
+- Address the student by their first name if provided in their profile details.
+- Actively call search_institutes or search_allotment_records to get the exact data for the requested college instead of guessing!
 - Use VALID MARKDOWN.
 - Use ## headings and bullet points.
-- Keep answer simple and useful.
-- If unsure, say the user should verify from official college/MCC/state counselling website.
+- Keep answer simple, professional, and useful.
 
 User question:
 ${message}
-
-Write a helpful answer.
 `;
 
-      const answer = await this.generateAiText(aiPrompt, userSummary, recentMessages);
+      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages);
 
       return (
         answer?.trim() ||
@@ -177,64 +521,34 @@ Write a helpful answer.
     }
   }
 
-  private isGeneralCounsellingQuestion(message: string): boolean {
-    const text = message.toLowerCase();
-
-    const generalKeywords = [
-      'what is',
-      'what are',
-      'explain',
-      'meaning',
-      'quota',
-      'esi',
-      'nri',
-      'management',
-      'deemed',
-      'aiq',
-      'all india quota',
-      'documents',
-      'security deposit',
-      'choice filling',
-      'counselling process',
-      'mcc',
-      'round',
-      'seat matrix',
-      'where is',
-      'located',
-      'location',
-      'address',
-      'city',
-      'district',
-      'state of college',
-      'college info',
-      'college details',
-    ];
-
-    return generalKeywords.some((keyword) => text.includes(keyword));
-  }
-
-  private async answerGeneralCounsellingQuestion(message: string, userSummary?: string, recentMessages?: any[]): Promise<string> {
+  private async answerGeneralCounsellingQuestion(userId: string, message: string, userSummary?: string, recentMessages?: any[]): Promise<string> {
     try {
       const aiPrompt = `
-You are NEETal AI Counsellor.
+You are NEETal AI Counsellor, a warm, professional, and friendly medical counselling advisor for Indian students.
 
-Answer this general NEET UG counselling or medical college question in simple language.
+Answer this general NEET UG counselling, medical college admission, process, or cutoff question in simple language.
+
+Available tools you can call:
+- predict_colleges: Predicts matching colleges based on rank, category, course, and quota.
+- search_allotment_records: Searches historical allotment records in the database with custom filters (useful for specific cutoff questions).
+- get_user_profile: Retrieves the active student's profile details.
+- manage_choice_list: Manages (gets, adds, removes) college choices in the student's custom choice lists.
+- get_packages: Retrieves the active packages/subscriptions.
+- search_institutes: Searches medical college details (seats, beds, fee ranges, state references).
 
 Rules:
-- Do not predict colleges unless rank/category/course/quota are provided.
-- Do not ask for rank if the user is asking about quota, location, address, documents, process, or college details.
-- If the user asks where a college is located, answer the location directly if clear from the college name.
+- Address the student by their first name if provided in their profile details.
+- If the question is about specific cutoffs, fee structures, or choices, actively use the appropriate tool to fetch accurate database values rather than guessing.
 - Use VALID MARKDOWN only.
 - Use ## headings.
 - Use bullet points when helpful.
 - Keep answer practical for Indian NEET UG students and parents.
-- If the question is about quota, explain eligibility clearly.
 - Mention that students should verify final rules from official MCC/state counselling notices when relevant.
 
 Student question:
 ${message}
 `;
-      const answer = await this.generateAiText(aiPrompt, userSummary, recentMessages);
+      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages);
 
       return (
         answer?.trim() ||
@@ -283,63 +597,7 @@ private getMissingPredictionFields(
   return missing;
 }
 
-  private async buildMissingInfoAnswer(
-    extracted: ExtractedCounsellingInput,
-    missingFields: string[],
-    userSummary?: string,
-    recentMessages?: any[],
-  ): Promise<string> {
-    try {
-      const prompt = `
-You are NEETal AI Counsellor, a warm, professional, and friendly medical counselling advisor for Indian students.
 
-The student is asking for a NEET college prediction or chance assessment, but we need a few more details to give a reliable prediction.
-Here is what we have already extracted from their query/profile:
-${JSON.stringify(extracted, null, 2)}
-
-We are missing these specific fields:
-${missingFields.map((f) => `- ${f}`).join('\n')}
-
-Guidelines for missing fields:
-- 'rank': NEET All India Rank (AIR)
-- 'category': Candidate category (e.g., General/UR, EWS, OBC, SC, ST)
-- 'course': Preferred course (e.g., MBBS, BDS, BAMS)
-- 'counselling_type': All India MCC or State counselling
-- 'state': Candidate's home state (for state quota seats)
-- 'quota': Quota preference (e.g., Normal All India Quota/AIQ, AIIMS Open, Deemed University, ESI, NRI, Management/Paid seats, State Quota)
-
-Your task:
-Write a warm, welcoming, and fully natural question (1-3 sentences) asking the user to provide these missing details.
-Do NOT use bullet points, numbered lists, markdown headers (##), bold prefixes for fields, or rigid structures.
-Do NOT output any "Reply example" or code blocks.
-Ask for them naturally, just like a human counsellor talking to a student. For example: "To give you an accurate prediction, could you please share your NEET All India Rank, category, preferred course, and whether you are looking for All India or State counselling?"
-
-Student's last message:
-"${recentMessages?.[recentMessages.length - 1]?.content || ''}"
-`;
-
-      const answer = await this.generateAiText(prompt, userSummary, recentMessages);
-      if (answer?.trim()) {
-        return answer.trim();
-      }
-    } catch (err) {
-      console.error('Failed to generate natural missing info answer:', err);
-    }
-
-    const missingDescriptions = missingFields.map((field) => {
-      switch (field) {
-        case 'rank': return 'NEET All India Rank';
-        case 'category': return 'category (e.g., General, OBC, EWS, SC, ST)';
-        case 'course': return 'preferred course (e.g., MBBS, BDS)';
-        case 'counselling_type': return 'counselling type (All India MCC or State)';
-        case 'state': return 'home state';
-        case 'quota': return 'preferred quota (like AIQ, State Quota, AIIMS, or Deemed)';
-        default: return field;
-      }
-    });
-
-    return `To give you a reliable counselling prediction, could you please share your ${missingDescriptions.slice(0, -1).join(', ')}${missingDescriptions.length > 1 ? ', and ' : ''}${missingDescriptions[missingDescriptions.length - 1]}? Let me know so I can predict the best matching colleges for you.`;
-  }
 
 private extractQuota(lower: string): string | undefined {
   if (/\b(normal aiq|aiq only|all india quota|aiq|normal all india|normal all india quota|normal mcc)\b/i.test(lower)) {
@@ -533,12 +791,30 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
 
     // 5. Run standard logic
     const extracted = this.extractCounsellingInput(trimmed);
+
+    // Merge student stats from their profile as fallbacks if missing from query
+    if (!extracted.rank && user.Rank) {
+      extracted.rank = user.Rank;
+    }
+    if (!extracted.category && user.Category && user.Category !== 'N/A' && user.Category.toLowerCase() !== 'general') {
+      extracted.category = user.Category;
+    }
+    if (!extracted.state && user.state && user.state !== 'N/A') {
+      extracted.state = user.state;
+      if (!extracted.scope) {
+        extracted.scope = 'STATE';
+      }
+    }
+    if (!extracted.course && user.PrefExam && user.PrefExam !== 'N/A') {
+      extracted.course = user.PrefExam;
+    }
+
     const intent = this.detectIntent(trimmed);
 
     let responseData: any = {};
 
     if (intent === 'exam_date') {
-      const answer = await this.answerExamDateQuestion(trimmed, user.aiUserSummurry || undefined, recentMessages);
+      const answer = await this.answerExamDateQuestion(userId, trimmed, user.aiUserSummurry || undefined, recentMessages);
       responseData = {
         success: true,
         type: 'exam_date_answer',
@@ -547,7 +823,7 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
         answer,
       };
     } else if (intent === 'college_info') {
-      const answer = await this.answerCollegeInfoQuestion(trimmed, user.aiUserSummurry || undefined, recentMessages);
+      const answer = await this.answerCollegeInfoQuestion(userId, trimmed, user.aiUserSummurry || undefined, recentMessages);
       responseData = {
         success: true,
         type: 'college_info_answer',
@@ -556,7 +832,7 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
         answer,
       };
     } else if (intent === 'general_counselling') {
-      const answer = await this.answerGeneralCounsellingQuestion(trimmed, user.aiUserSummurry || undefined, recentMessages);
+      const answer = await this.answerGeneralCounsellingQuestion(userId, trimmed, user.aiUserSummurry || undefined, recentMessages);
       responseData = {
         success: true,
         type: 'general_counselling_answer',
@@ -597,24 +873,26 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
         const missingFieldsList = ['rank', 'category', 'course', 'counselling_type', 'quota'].filter(f => !extracted[f === 'counselling_type' ? 'scope' : f]);
 
         const aiPrompt = `
-You are NEETal AI Counsellor, a warm, friendly, and professional medical counselling advisor for Indian students.
+You are NEETal AI Counsellor, a highly professional, encouraging, and expert medical counselling advisor for Indian students.
 
-Your job:
-Respond to the student's question about medical college admissions and prediction in a natural, conversational way.
-Use the predictor database results provided below to answer their question.
+You have access to 6 advanced tools to help answer student queries:
+- predict_colleges: Predicts matching colleges based on rank, category, course, and quota.
+- search_allotment_records: Searches historical allotment records in the database with custom filters (useful for specific cutoff questions).
+- get_user_profile: Retrieves the active student's profile details.
+- manage_choice_list: Manages (gets, adds, removes) college choices in the student's custom choice lists.
+- get_packages: Retrieves the active packages/subscriptions.
+- search_institutes: Searches medical college details (seats, beds, fee ranges, state references).
 
-Rules:
-1. If the student has not provided their NEET All India Rank (AIR), ask them for it and other missing details naturally at the end of your response.
-2. If some details (like category, course, counselling type, or quota) were not provided by the student, mention the assumption you made (e.g., General category, MBBS course, All India Quota) and ask them naturally at the end of your response to provide those missing details if they want to refine the prediction.
-3. Do not guess colleges. Do not add any college that is not present in the predictor result.
-4. Do not say "guaranteed admission", "confirmed seat", or "sure shot". Use "comparatively safer" instead of "safe".
-5. If special quota results were hidden, clearly mention that ESI/NRI/Management/Minority/CW/IP quota results were hidden because the student did not mention eligibility.
-6. If any visible result has special quota, warn the student to verify eligibility.
-7. Final counselling depends on official MCC/state rules, seat matrix, category movement, and round-wise variation.
-8. Return VALID MARKDOWN only.
-9. Every section heading must start with ##.
-10. Every college must be shown as a bullet point using "-".
-11. College names must be bold using **College Name**.
+Active Guidelines:
+1. Address the student by their first name if provided in their profile details.
+2. If the student has not provided their NEET All India Rank (AIR), ask them for it and other missing details naturally at the end of your response.
+3. If some details (like category, course, counselling type, or quota) were not provided by the student, mention the assumption you made (e.g., General category, MBBS course, All India Quota) and ask them naturally at the end of your response to provide those missing details if they want to refine the prediction.
+4. Do not guess colleges. Do not add any college that is not present in the predictor result.
+5. Do not say "guaranteed admission", "confirmed seat", or "sure shot". Use "comparatively safer" instead of "safe".
+6. If special quota results were hidden, clearly mention that ESI/NRI/Management/Minority/CW/IP quota results were hidden because the student did not mention eligibility.
+7. If any visible result has special quota, warn the student to verify eligibility.
+8. Encourage the student to check and organize their options. You can mention that you can add any of these colleges to their choice list for them if they tell you to!
+9. Return VALID MARKDOWN only. Every section heading must start with ##. Every college must be shown as a bullet point using "-". College names must be bold using **College Name**.
 
 Student question:
 ${trimmed}
@@ -661,7 +939,7 @@ Explain the result in 2-3 short lines, mentioning any default assumptions you ma
 - Mention that this is not guaranteed admission.
 `;
 
-        const geminiAnswer = await this.generateAiText(aiPrompt, user.aiUserSummurry || undefined, recentMessages);
+        const geminiAnswer = await this.generateAiText(userId, aiPrompt, user.aiUserSummurry || undefined, recentMessages);
         if (geminiAnswer?.trim()) {
           aiAnswer = geminiAnswer.trim();
         }

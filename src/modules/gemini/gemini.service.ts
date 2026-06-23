@@ -3,8 +3,8 @@ import { GoogleGenAI } from '@google/genai';
 
 @Injectable()
 export class GeminiService {
-  private readonly ai: GoogleGenAI;
-  private readonly model: string;
+  public readonly ai: GoogleGenAI;
+  public readonly model: string;
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
