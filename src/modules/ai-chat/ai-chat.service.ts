@@ -283,65 +283,63 @@ private getMissingPredictionFields(
   return missing;
 }
 
-private buildMissingInfoAnswer(
-  extracted: ExtractedCounsellingInput,
-  missingFields: string[],
-): string {
-  const lines: string[] = [];
+  private async buildMissingInfoAnswer(
+    extracted: ExtractedCounsellingInput,
+    missingFields: string[],
+    userSummary?: string,
+    recentMessages?: any[],
+  ): Promise<string> {
+    try {
+      const prompt = `
+You are NEETal AI Counsellor, a warm, professional, and friendly medical counselling advisor for Indian students.
 
-  lines.push('## I need a few more details');
-  lines.push('');
-  lines.push('To give a reliable counselling prediction, please provide the missing information below:');
-  lines.push('');
+The student is asking for a NEET college prediction or chance assessment, but we need a few more details to give a reliable prediction.
+Here is what we have already extracted from their query/profile:
+${JSON.stringify(extracted, null, 2)}
 
-  if (missingFields.includes('rank')) {
-    lines.push('- **NEET rank** — example: `45000`');
+We are missing these specific fields:
+${missingFields.map((f) => `- ${f}`).join('\n')}
+
+Guidelines for missing fields:
+- 'rank': NEET All India Rank (AIR)
+- 'category': Candidate category (e.g., General/UR, EWS, OBC, SC, ST)
+- 'course': Preferred course (e.g., MBBS, BDS, BAMS)
+- 'counselling_type': All India MCC or State counselling
+- 'state': Candidate's home state (for state quota seats)
+- 'quota': Quota preference (e.g., Normal All India Quota/AIQ, AIIMS Open, Deemed University, ESI, NRI, Management/Paid seats, State Quota)
+
+Your task:
+Write a warm, welcoming, and fully natural question (1-3 sentences) asking the user to provide these missing details.
+Do NOT use bullet points, numbered lists, markdown headers (##), bold prefixes for fields, or rigid structures.
+Do NOT output any "Reply example" or code blocks.
+Ask for them naturally, just like a human counsellor talking to a student. For example: "To give you an accurate prediction, could you please share your NEET All India Rank, category, preferred course, and whether you are looking for All India or State counselling?"
+
+Student's last message:
+"${recentMessages?.[recentMessages.length - 1]?.content || ''}"
+`;
+
+      const answer = await this.generateAiText(prompt, userSummary, recentMessages);
+      if (answer?.trim()) {
+        return answer.trim();
+      }
+    } catch (err) {
+      console.error('Failed to generate natural missing info answer:', err);
+    }
+
+    const missingDescriptions = missingFields.map((field) => {
+      switch (field) {
+        case 'rank': return 'NEET All India Rank';
+        case 'category': return 'category (e.g., General, OBC, EWS, SC, ST)';
+        case 'course': return 'preferred course (e.g., MBBS, BDS)';
+        case 'counselling_type': return 'counselling type (All India MCC or State)';
+        case 'state': return 'home state';
+        case 'quota': return 'preferred quota (like AIQ, State Quota, AIIMS, or Deemed)';
+        default: return field;
+      }
+    });
+
+    return `To give you a reliable counselling prediction, could you please share your ${missingDescriptions.slice(0, -1).join(', ')}${missingDescriptions.length > 1 ? ', and ' : ''}${missingDescriptions[missingDescriptions.length - 1]}? Let me know so I can predict the best matching colleges for you.`;
   }
-
-  if (missingFields.includes('category')) {
-    lines.push('- **Category** — example: `UR`, `EWS`, `OBC`, `OBC-NCL`, `SC`, `ST`');
-  }
-
-  if (missingFields.includes('course')) {
-    lines.push('- **Course** — example: `MBBS`, `BDS`, `BAMS`, `BHMS`');
-  }
-
-  if (missingFields.includes('counselling_type')) {
-    lines.push('- **Counselling type** — choose `All India MCC` or `State counselling`');
-  }
-
-  if (missingFields.includes('state')) {
-    lines.push('- **State** — example: `Bihar`, `Uttar Pradesh`, `Maharashtra`, `Tamil Nadu`');
-  }
-
-  if (missingFields.includes('quota')) {
-    lines.push('- **Quota preference** — choose one option from below');
-    lines.push('');
-    lines.push('### Common quota options');
-    lines.push('');
-    lines.push('- **Normal All India Quota / AIQ** — for regular MCC All India seats');
-    lines.push('- **AIIMS Open** — for AIIMS seats through MCC');
-    lines.push('- **ESI Insured Persons quota** — only if you have valid ESI eligibility');
-    lines.push('- **Deemed University** — for deemed university counselling');
-    lines.push('- **NRI quota** — only if eligible');
-    lines.push('- **Management/Paid seats** — mostly private/deemed options');
-    lines.push('- **State quota** — for state counselling and domicile-based seats');
-  }
-
-  lines.push('');
-  lines.push('### Reply example');
-  lines.push('');
-  lines.push('`My rank is 45000, category EWS, course MBBS, All India MCC, normal AIQ only.`');
-
-  if (extracted.scope === 'STATE') {
-    lines.push('');
-    lines.push('For state counselling, you can say:');
-    lines.push('');
-    lines.push('`My rank is 85000, category OBC, course MBBS, Bihar state counselling, state quota.`');
-  }
-
-  return lines.join('\n');
-}
 
 private extractQuota(lower: string): string | undefined {
   if (/\b(normal aiq|aiq only|all india quota|aiq|normal all india|normal all india quota|normal mcc)\b/i.test(lower)) {
@@ -568,18 +566,11 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
       };
     } else {
       // Prediction logic
-      const missingFields = this.getMissingPredictionFields(extracted);
+      let prediction: any = null;
+      let rawCards: any[] = [];
+      let cards: any[] = [];
 
-      if (missingFields.length > 0) {
-        responseData = {
-          success: true,
-          type: 'missing_information',
-          extracted,
-          missingFields,
-          answer: this.buildMissingInfoAnswer(extracted, missingFields),
-        };
-      } else {
-        // All fields available, call predictor
+      if (extracted.rank) {
         const predictorPayload: Record<string, any> = {
           rank: extracted.rank,
           course_code: extracted.course || 'MBBS',
@@ -591,57 +582,39 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
           predictorPayload.candidate_category_code = extracted.category;
         }
 
-        const prediction =
+        prediction =
           extracted.scope === 'STATE' && extracted.state
             ? await this.predictorService.predictState(extracted.state, predictorPayload)
             : await this.predictorService.predictAi(predictorPayload);
 
-        if (!prediction?.success) {
-          responseData = {
-            success: false,
-            type: 'predictor_error',
-            extracted,
-            answer:
-              prediction?.message ||
-              'I could not fetch prediction data right now. Please check if the predictor database is connected.',
-          };
-        } else {
-          const rawCards = prediction.data || [];
-          const cards = this.filterSpecialQuotaCards(rawCards, trimmed);
-          const fallbackAnswer = this.buildHumanAnswer(
-            extracted,
-            cards,
-            {
-              ...(prediction.summary || {}),
-              totalCards: cards.length,
-              rawTotalCards: rawCards.length,
-            },
-          );
+        rawCards = prediction?.data || [];
+        cards = this.filterSpecialQuotaCards(rawCards, trimmed);
+      }
 
-          let aiAnswer = fallbackAnswer;
+      let aiAnswer = '';
+      try {
+        const hiddenCount = rawCards.length - cards.length;
+        const missingFieldsList = ['rank', 'category', 'course', 'counselling_type', 'quota'].filter(f => !extracted[f === 'counselling_type' ? 'scope' : f]);
 
-          try {
-            const hiddenCount = rawCards.length - cards.length;
-            const aiPrompt = `
-You are NEETal AI Counsellor.
+        const aiPrompt = `
+You are NEETal AI Counsellor, a warm, friendly, and professional medical counselling advisor for Indian students.
 
 Your job:
-Explain NEET counselling prediction results in simple language for Indian students and parents.
+Respond to the student's question about medical college admissions and prediction in a natural, conversational way.
+Use the predictor database results provided below to answer their question.
 
-Very important rules:
-1. Do not guess colleges.
-2. Do not add any college that is not present in the predictor result.
-3. Use only the predictor result given below.
-4. Do not say "guaranteed admission", "confirmed seat", or "sure shot".
-5. Use "comparatively safer" instead of "safe".
-6. If special quota results were hidden, clearly mention that ESI/NRI/Management/Minority/CW/IP quota results were hidden because the student did not mention eligibility.
-7. If any visible result has special quota, warn the student to verify eligibility.
-8. Final counselling depends on official MCC/state rules, seat matrix, category movement, and round-wise variation.
-9. Return VALID MARKDOWN only.
-10. Every section heading must start with ##.
-11. Every college must be shown as a bullet point using "-".
-12. College names must be bold using **College Name**.
-13. Keep answer professional, concise, and useful.
+Rules:
+1. If the student has not provided their NEET All India Rank (AIR), ask them for it and other missing details naturally at the end of your response.
+2. If some details (like category, course, counselling type, or quota) were not provided by the student, mention the assumption you made (e.g., General category, MBBS course, All India Quota) and ask them naturally at the end of your response to provide those missing details if they want to refine the prediction.
+3. Do not guess colleges. Do not add any college that is not present in the predictor result.
+4. Do not say "guaranteed admission", "confirmed seat", or "sure shot". Use "comparatively safer" instead of "safe".
+5. If special quota results were hidden, clearly mention that ESI/NRI/Management/Minority/CW/IP quota results were hidden because the student did not mention eligibility.
+6. If any visible result has special quota, warn the student to verify eligibility.
+7. Final counselling depends on official MCC/state rules, seat matrix, category movement, and round-wise variation.
+8. Return VALID MARKDOWN only.
+9. Every section heading must start with ##.
+10. Every college must be shown as a bullet point using "-".
+11. College names must be bold using **College Name**.
 
 Student question:
 ${trimmed}
@@ -652,7 +625,7 @@ ${JSON.stringify(extracted, null, 2)}
 Predictor summary:
 ${JSON.stringify(
   {
-    ...(prediction.summary || {}),
+    ...(prediction?.summary || {}),
     visibleCardsAfterFiltering: cards.length,
     hiddenSpecialQuotaCards: hiddenCount,
   },
@@ -663,11 +636,11 @@ ${JSON.stringify(
 Visible predictor result:
 ${JSON.stringify(cards.slice(0, 15), null, 2)}
 
-Now write the final answer using exactly this structure:
+Now write the final answer. If you have predictor results, structure it like this:
 
 ## Short Summary
 
-Explain the result in 2-3 short lines.
+Explain the result in 2-3 short lines, mentioning any default assumptions you made if details were missing.
 
 ## Comparatively Safer Options
 
@@ -688,29 +661,38 @@ Explain the result in 2-3 short lines.
 - Mention that this is not guaranteed admission.
 `;
 
-            const geminiAnswer = await this.generateAiText(aiPrompt, user.aiUserSummurry || undefined, recentMessages);
-
-            if (geminiAnswer?.trim()) {
-              aiAnswer = geminiAnswer.trim();
-            }
-          } catch (error) {
-            console.error('Gemini explanation failed:', error);
-          }
-
-          responseData = {
-            success: true,
-            type: 'prediction_answer',
-            extracted,
-            summary: {
-              ...(prediction.summary || {}),
-              visibleCardsAfterFiltering: cards.length,
-              hiddenSpecialQuotaCards: rawCards.length - cards.length,
-            },
-            data: cards,
-            answer: aiAnswer,
-          };
+        const geminiAnswer = await this.generateAiText(aiPrompt, user.aiUserSummurry || undefined, recentMessages);
+        if (geminiAnswer?.trim()) {
+          aiAnswer = geminiAnswer.trim();
         }
+      } catch (error) {
+        console.error('Gemini explanation failed:', error);
       }
+
+      if (!aiAnswer) {
+        aiAnswer = this.buildHumanAnswer(
+          extracted,
+          cards,
+          {
+            ...(prediction?.summary || {}),
+            totalCards: cards.length,
+            rawTotalCards: rawCards.length,
+          },
+        );
+      }
+
+      responseData = {
+        success: true,
+        type: 'prediction_answer',
+        extracted,
+        summary: {
+          ...(prediction?.summary || {}),
+          visibleCardsAfterFiltering: cards.length,
+          hiddenSpecialQuotaCards: rawCards.length - cards.length,
+        },
+        data: cards,
+        answer: aiAnswer,
+      };
     }
 
     // 6. Save AI's response to database
