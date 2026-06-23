@@ -89,6 +89,9 @@ export class ProfileResponseDto {
   alternatePhone!: string | null;
   country!: string | null;
   theme!: string | null;
+  prefExam!: string | null;
+  rank!: number | null;
+  score!: number | null;
   isProfileComplete!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
@@ -100,7 +103,6 @@ export class ProfileResponseDto {
   isAiEnabled!: boolean;
   isAiCreditSystem!: boolean;
   userPackages!: string[];
-
 }
 
 export class SessionResponseDto {

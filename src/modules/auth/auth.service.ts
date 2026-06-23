@@ -485,23 +485,31 @@ export class AuthService {
    * Format user response
    */
   private formatUserResponse(user: any): ProfileResponseDto {
+    let profilePicUrl = user.profilePic;
+    if (profilePicUrl && !profilePicUrl.startsWith('http://') && !profilePicUrl.startsWith('https://')) {
+      profilePicUrl = profilePicUrl.startsWith('/profile/') ? profilePicUrl : `/profile/${profilePicUrl.replace(/^\//, '')}`;
+    }
+
     return {
       id: user.id,
       firebaseUid: user.firebaseUid,
       phone: user.phone,
       phoneVerified: user.phoneVerified,
-      email: user.email,
+      email: user.email ?? null,
       emailVerified: user.emailVerified,
-      name: user.name,
-      state: user.state,
-      city: user.city,
-      gender: user.Gender,
-      category: user.Category,
-      dob: user.dob,
-      profilePic: user.profilePic,
-      alternatePhone: user.alternatePhone,
-      country: user.country,
-      theme: user.Theme,
+      name: user.name ?? null,
+      state: user.state ?? null,
+      city: user.city ?? null,
+      gender: user.Gender ?? null,
+      category: user.Category ?? null,
+      dob: user.dob ?? null,
+      profilePic: profilePicUrl ?? null,
+      alternatePhone: user.alternatePhone ?? null,
+      country: user.country ?? null,
+      theme: user.Theme ?? null,
+      prefExam: user.PrefExam ?? null,
+      rank: user.Rank ?? null,
+      score: user.Score ?? null,
       isProfileComplete: user.isProfileComplete,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -509,8 +517,8 @@ export class AuthService {
       emailLoginVerified: user.emailLoginVerified,
       userPackages: user.userPackages,
       aiCredits: user.aiCredits,
-      aiCreditLimit: user.aiCreditLimit,
-      aiUserSummurry: user.aiUserSummurry,
+      aiCreditLimit: user.aiCreditLimit ?? null,
+      aiUserSummurry: user.aiUserSummurry ?? null,
       isAiEnabled: user.isAiEnabled,
       isAiCreditSystem: user.isAiCreditSystem,
     };
