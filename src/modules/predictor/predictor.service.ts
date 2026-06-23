@@ -213,11 +213,10 @@ export class PredictorService {
       const nearbyRange = cleanInt(body.nearby_range) || 25000;
 
       const minRank = Math.max(1, inputRank - nearbyRange);
-      const maxRank = inputRank + nearbyRange;
 
       const matchStage: any = {
         counsellingLevel: 'ALL_INDIA',
-        aiRank: { $gte: minRank, $lte: maxRank },
+        aiRank: { $gte: minRank },
       };
 
       if (
@@ -282,6 +281,7 @@ export class PredictorService {
               as: 'instituteData',
             },
           },
+          { $limit: limit * 4 },
         ],
       })) as unknown as any[];
 
@@ -363,12 +363,11 @@ export class PredictorService {
       const nearbyRange = cleanInt(body.nearby_range) || 25000;
 
       const minRank = Math.max(1, inputRank - nearbyRange);
-      const maxRank = inputRank + nearbyRange;
 
       const matchStage: any = {
         counsellingLevel: { $in: ['STATE', 'PRIVATE_MANAGEMENT', 'OTHER'] },
         instituteStateSlugSnapshot: stateSlug,
-        aiRank: { $gte: minRank, $lte: maxRank },
+        aiRank: { $gte: minRank },
       };
 
       if (
@@ -439,6 +438,7 @@ export class PredictorService {
               as: 'instituteData',
             },
           },
+          { $limit: limit * 4 },
         ],
       })) as unknown as any[];
 
