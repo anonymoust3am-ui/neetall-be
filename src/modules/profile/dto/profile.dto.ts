@@ -15,6 +15,9 @@ export class CompleteProfileDto {
   profilePic?: string;
   alternatePhone?: string;
   theme?: 'light' | 'dark';
+  prefExam?: string;
+  rank?: number;
+  score?: number;
 }
 
 export class UpdateProfileFieldsDto {
@@ -28,6 +31,9 @@ export class UpdateProfileFieldsDto {
   city?: string;
   category?: string;
   theme?: 'light' | 'dark';
+  prefExam?: string;
+  rank?: number;
+  score?: number;
 }
 
 export class UpdateEmailDto {
@@ -80,6 +86,9 @@ export class ProfileDetailsDto {
   profilePic!: string | null;
   alternatePhone!: string | null;
   theme!: string | null;
+  prefExam!: string | null;
+  rank!: number | null;
+  score!: number | null;
 
   // Email login fields
   enableEmailLogin!: boolean;

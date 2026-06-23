@@ -90,6 +90,9 @@ export class ProfileService {
     if (data.alternatePhone !== undefined)
       updateData.alternatePhone = data.alternatePhone;
     if (data.theme !== undefined) updateData.Theme = data.theme;
+    if (data.prefExam !== undefined) updateData.PrefExam = data.prefExam;
+    if (data.rank !== undefined) updateData.Rank = data.rank;
+    if (data.score !== undefined) updateData.Score = data.score;
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
@@ -162,6 +165,9 @@ export class ProfileService {
     if (data.city !== undefined) updateData.city = data.city;
     if (data.category !== undefined) updateData.Category = data.category;
     if (data.theme !== undefined) updateData.Theme = data.theme;
+    if (data.prefExam !== undefined) updateData.PrefExam = data.prefExam;
+    if (data.rank !== undefined) updateData.Rank = data.rank;
+    if (data.score !== undefined) updateData.Score = data.score;
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
@@ -584,6 +590,9 @@ export class ProfileService {
       profilePic: profilePicUrl,
       alternatePhone: user.alternatePhone,
       theme: user.Theme,
+      prefExam: user.PrefExam,
+      rank: user.Rank,
+      score: user.Score,
       enableEmailLogin: user.enableEmailLogin,
       emailLoginVerified: user.emailLoginVerified,
       isProfileComplete: user.isProfileComplete,
