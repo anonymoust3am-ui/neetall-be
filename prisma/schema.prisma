@@ -760,6 +760,7 @@ model AllotmentRecord {
   @@index([feeAmount])
   @@index([bondYearsNumber])
   @@index([bedsCount])
+  @@index([instituteStateSlugSnapshot])
   // Predictor query indexes
   @@index([sessionYear, counsellingLevel, courseNameSnapshot, categoryNormalized, roundNo, rank])
   @@index([sessionYear, counsellingLevel, courseNameSnapshot, rank])

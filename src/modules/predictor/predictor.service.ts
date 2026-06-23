@@ -227,8 +227,12 @@ export class PredictorService {
       )
         matchStage.roundNo = Number(body.round_no);
       if (body.course_code) matchStage.courseNameSnapshot = body.course_code;
-      if (body.candidate_category_code)
-        matchStage.categoryRaw = body.candidate_category_code;
+      if (body.candidate_category_code) {
+        matchStage.$or = [
+          { categoryNormalized: body.candidate_category_code },
+          { categoryRaw: body.candidate_category_code }
+        ];
+      }
       if (body.quota_code) matchStage.quotaNameSnapshot = body.quota_code;
 
       const results = (await this.prisma.allotmentRecord.aggregateRaw({
@@ -374,8 +378,12 @@ export class PredictorService {
       )
         matchStage.roundNo = Number(body.round_no);
       if (body.course_code) matchStage.courseNameSnapshot = body.course_code;
-      if (body.candidate_category_code)
-        matchStage.categoryRaw = body.candidate_category_code;
+      if (body.candidate_category_code) {
+        matchStage.$or = [
+          { categoryNormalized: body.candidate_category_code },
+          { categoryRaw: body.candidate_category_code }
+        ];
+      }
       if (body.quota_code) matchStage.quotaNameSnapshot = body.quota_code;
       if (body.institute_name)
         matchStage.instituteNameSnapshot = body.institute_name;

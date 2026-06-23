@@ -79,6 +79,8 @@ const STATE_ALIASES: Record<string, string> = {
 
 @Injectable()
 export class AiChatService {
+  private stateSlugCache = new Map<string, string>();
+
   constructor(
     private readonly predictorService: PredictorService,
     private readonly geminiService: GeminiService,
@@ -86,7 +88,9 @@ export class AiChatService {
   ) {}
 
   private async executeTool(name: string, args: any, userId: string): Promise<any> {
+    console.log(`[AiChatService.executeTool] Tool executed: "${name}" by User ID: "${userId}". Args:`, JSON.stringify(args, null, 2));
     try {
+      let result: any;
       switch (name) {
         case 'predict_colleges': {
           const payload: Record<string, any> = {
@@ -98,9 +102,35 @@ export class AiChatService {
           if (args.category) {
             payload.candidate_category_code = args.category;
           }
-          return args.isStateCounselling && args.state
-            ? await this.predictorService.predictState(args.state, payload)
-            : await this.predictorService.predictAi(payload);
+          let predictionResult: any;
+          if (args.isStateCounselling && args.state) {
+            const stateSlug = await this.resolveStateSlug(args.state);
+            console.log(`[AiChatService.executeTool] Resolving state "${args.state}" to slug "${stateSlug || args.state}" for state prediction.`);
+            predictionResult = await this.predictorService.predictState(stateSlug || args.state, payload);
+          } else {
+            predictionResult = await this.predictorService.predictAi(payload);
+          }
+
+          if (predictionResult && predictionResult.data) {
+            const simplifiedData = predictionResult.data.map((card: any) => ({
+              name: card.name,
+              course: card.courseCode,
+              state: card.state,
+              rounds: card.rounds,
+              quota: card.quotaCodes,
+              closingRank: card.closingRank,
+              rankGap: card.rankGap,
+              bucket: card.bucket,
+            }));
+            result = {
+              success: predictionResult.success,
+              summary: predictionResult.summary,
+              data: simplifiedData.slice(0, 30),
+            };
+          } else {
+            result = predictionResult;
+          }
+          break;
         }
 
         case 'search_allotment_records': {
@@ -122,7 +152,7 @@ export class AiChatService {
             if (args.minRank) match.rank.gte = Number(args.minRank);
             if (args.maxRank) match.rank.lte = Number(args.maxRank);
           }
-          return await this.prisma.allotmentRecord.findMany({
+          result = await this.prisma.allotmentRecord.findMany({
             where: match,
             take: 15,
             select: {
@@ -137,106 +167,123 @@ export class AiChatService {
               feeAmount: true,
             }
           });
+          break;
         }
 
         case 'get_user_profile': {
           const user = await this.prisma.user.findUnique({
             where: { id: userId }
           });
-          if (!user) return { error: 'User not found' };
-          return {
-            id: user.id,
-            phone: user.phone,
-            email: user.email,
-            name: user.name,
-            state: user.state,
-            city: user.city,
-            country: user.country,
-            gender: user.Gender,
-            category: user.Category,
-            dob: user.dob,
-            prefExam: user.PrefExam,
-            rank: user.Rank,
-            score: user.Score,
-            isProfileComplete: user.isProfileComplete,
-          };
+          if (!user) {
+            result = { error: 'User not found' };
+          } else {
+            result = {
+              id: user.id,
+              phone: user.phone,
+              email: user.email,
+              name: user.name,
+              state: user.state,
+              city: user.city,
+              country: user.country,
+              gender: user.Gender,
+              category: user.Category,
+              dob: user.dob,
+              prefExam: user.PrefExam,
+              rank: user.Rank,
+              score: user.Score,
+              isProfileComplete: user.isProfileComplete,
+            };
+          }
+          break;
         }
 
         case 'manage_choice_list': {
           const { action, listName, counselling, collegeName, course, quota, category } = args;
           if (action === 'list_all') {
-            return await this.prisma.choiceList.findMany({
+            result = await this.prisma.choiceList.findMany({
               where: { userId },
               select: { id: true, name: true, Caunselling: true }
             });
-          }
-
-          if (action === 'get') {
-            if (!listName) return { error: 'listName required for action=get' };
-            const list = await this.prisma.choiceList.findFirst({
-              where: { userId, name: listName },
-              include: { ChoiceListDetails: true }
-            });
-            return list || { message: 'No choice list found with that name' };
-          }
-
-          if (action === 'add') {
-            if (!listName) return { error: 'listName required' };
-            if (!collegeName) return { error: 'collegeName required' };
-            let list = await this.prisma.choiceList.findFirst({
-              where: { userId, name: listName }
-            });
-            if (!list) {
-              list = await this.prisma.choiceList.create({
-                data: {
-                  userId,
-                  name: listName,
-                  Caunselling: counselling || 'All India MCC'
-                }
+          } else if (action === 'get') {
+            if (!listName) {
+              result = { error: 'listName required for action=get' };
+            } else {
+              const list = await this.prisma.choiceList.findFirst({
+                where: { userId, name: listName },
+                include: { ChoiceListDetails: true }
               });
+              result = list || { message: 'No choice list found with that name' };
             }
-            const detailName = `${listName}_${collegeName}_${course || 'MBBS'}`;
-            const existing = await this.prisma.choiceListDetails.findFirst({
-              where: { choiceListId: list.id, name: detailName }
-            });
-            if (existing) return { message: 'Choice already exists in list', choice: existing };
-
-            const choice = await this.prisma.choiceListDetails.create({
-              data: {
-                choiceListId: list.id,
-                name: detailName,
-                Caunselling: list.Caunselling,
-                Institute: collegeName,
-                Course: course || 'MBBS',
-                Quota: quota || 'AIQ',
-                Catagory: category || 'UR'
+          } else if (action === 'add') {
+            if (!listName) {
+              result = { error: 'listName required' };
+            } else if (!collegeName) {
+              result = { error: 'collegeName required' };
+            } else {
+              let list = await this.prisma.choiceList.findFirst({
+                where: { userId, name: listName }
+              });
+              if (!list) {
+                list = await this.prisma.choiceList.create({
+                  data: {
+                    userId,
+                    name: listName,
+                    Caunselling: counselling || 'All India MCC'
+                  }
+                });
               }
-            });
-            return { message: 'Successfully added to choice list', choice };
+              const detailName = `${listName}_${collegeName}_${course || 'MBBS'}`;
+              const existing = await this.prisma.choiceListDetails.findFirst({
+                where: { choiceListId: list.id, name: detailName }
+              });
+              if (existing) {
+                result = { message: 'Choice already exists in list', choice: existing };
+              } else {
+                const choice = await this.prisma.choiceListDetails.create({
+                  data: {
+                    choiceListId: list.id,
+                    name: detailName,
+                    Caunselling: list.Caunselling,
+                    Institute: collegeName,
+                    Course: course || 'MBBS',
+                    Quota: quota || 'AIQ',
+                    Catagory: category || 'UR'
+                  }
+                });
+                result = { message: 'Successfully added to choice list', choice };
+              }
+            }
+          } else if (action === 'remove') {
+            if (!listName) {
+              result = { error: 'listName required' };
+            } else if (!collegeName) {
+              result = { error: 'collegeName required' };
+            } else {
+              const list = await this.prisma.choiceList.findFirst({
+                where: { userId, name: listName }
+              });
+              if (!list) {
+                result = { error: 'Choice list not found' };
+              } else {
+                const detailName = `${listName}_${collegeName}_${course || 'MBBS'}`;
+                const deleted = await this.prisma.choiceListDetails.deleteMany({
+                  where: { choiceListId: list.id, name: detailName }
+                });
+                result = { message: 'Successfully removed from choice list', count: deleted.count };
+              }
+            }
+          } else {
+            result = { error: 'Invalid action' };
           }
-
-          if (action === 'remove') {
-            if (!listName) return { error: 'listName required' };
-            if (!collegeName) return { error: 'collegeName required' };
-            const list = await this.prisma.choiceList.findFirst({
-              where: { userId, name: listName }
-            });
-            if (!list) return { error: 'Choice list not found' };
-
-            const detailName = `${listName}_${collegeName}_${course || 'MBBS'}`;
-            const deleted = await this.prisma.choiceListDetails.deleteMany({
-              where: { choiceListId: list.id, name: detailName }
-            });
-            return { message: 'Successfully removed from choice list', count: deleted.count };
-          }
-          return { error: 'Invalid action' };
+          break;
         }
 
         case 'get_packages': {
-          return await this.prisma.userPackage.findMany({
+          result = await this.prisma.userPackage.findMany({
             where: { userId },
             include: { package: true }
           });
+          break;
         }
 
         case 'search_institutes': {
@@ -251,7 +298,7 @@ export class AiChatService {
           if (args.state) {
             where.state = { contains: args.state, mode: 'insensitive' };
           }
-          return await this.prisma.institute.findMany({
+          result = await this.prisma.institute.findMany({
             where,
             take: 15,
             select: {
@@ -263,13 +310,16 @@ export class AiChatService {
               fee: true,
             }
           });
+          break;
         }
 
         default:
-          return { error: `Tool ${name} not found` };
+          result = { error: `Tool ${name} not found` };
       }
+      console.log(`[AiChatService.executeTool] Tool "${name}" output sample (first 1000 chars):`, JSON.stringify(result).substring(0, 1000));
+      return result;
     } catch (e: any) {
-      console.error(`Error executing tool ${name}:`, e);
+      console.error(`[AiChatService.executeTool] Error executing tool "${name}":`, e);
       return { error: e.message };
     }
   }
@@ -279,7 +329,10 @@ export class AiChatService {
     basePrompt: string,
     userSummary?: string,
     recentMessages?: any[],
+    allowedToolNames?: string[],
   ): Promise<string> {
+    console.log(`[AiChatService.generateAiText] Generating AI Text for User ID: "${userId}". Allowed tools:`, allowedToolNames || 'ALL');
+    console.log(`[AiChatService.generateAiText] Base prompt sample (first 500 chars): "${basePrompt.substring(0, 500)}..."`);
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -313,116 +366,127 @@ export class AiChatService {
     const finalPrompt = `${basePrompt}${contextBlock}`;
 
     // Define function declarations for tools
-    const tools = [
+    const allTools = [
       {
-        functionDeclarations: [
-          {
-            name: 'predict_colleges',
-            description: 'Predict matching colleges based on NEET rank, category, course, counselling level, and quota preference. Rank must be provided.',
-            parameters: {
-              type: 'OBJECT',
-              properties: {
-                rank: { type: 'INTEGER', description: 'NEET All India Rank (AIR)' },
-                category: { type: 'STRING', description: 'Category code (e.g. UR, OBC, EWS, SC, ST)' },
-                course: { type: 'STRING', description: 'Preferred course (e.g. MBBS, BDS)' },
-                isStateCounselling: { type: 'BOOLEAN', description: 'Whether to use State counselling instead of All India MCC counselling' },
-                state: { type: 'STRING', description: 'State name/code (if isStateCounselling is true)' },
-                quota: { type: 'STRING', description: 'Quota preference (e.g. AIQ, AIIMS_OPEN, DEEMED, STATE_QUOTA)' },
-              },
-              required: ['rank'],
-            },
+        name: 'predict_colleges',
+        description: 'Predict matching colleges based on NEET rank, category, course, counselling level, and quota preference. Rank must be provided.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            rank: { type: 'INTEGER', description: 'NEET All India Rank (AIR)' },
+            category: { type: 'STRING', description: 'Category code (e.g. UR, OBC, EWS, SC, ST)' },
+            course: { type: 'STRING', description: 'Preferred course (e.g. MBBS, BDS)' },
+            isStateCounselling: { type: 'BOOLEAN', description: 'Whether to use State counselling instead of All India MCC counselling' },
+            state: { type: 'STRING', description: 'State name/code (if isStateCounselling is true)' },
+            quota: { type: 'STRING', description: 'Quota preference (e.g. AIQ, AIIMS_OPEN, DEEMED, STATE_QUOTA)' },
           },
-          {
-            name: 'search_allotment_records',
-            description: 'Query raw allotment records in the database with custom filters (e.g., search by college name, round, rank range, fee, category, course, quota). Use this when student asks about specific college cutoffs or fee info.',
-            parameters: {
-              type: 'OBJECT',
-              properties: {
-                collegeName: { type: 'STRING', description: 'Full or partial name of the college' },
-                course: { type: 'STRING', description: 'Course name/code (e.g. MBBS, BDS)' },
-                quota: { type: 'STRING', description: 'Quota code or name' },
-                category: { type: 'STRING', description: 'Category name or code' },
-                minRank: { type: 'INTEGER', description: 'Minimum rank' },
-                maxRank: { type: 'INTEGER', description: 'Maximum rank' },
-              },
-            },
-          },
-          {
-            name: 'get_user_profile',
-            description: "Get the currently logged-in student's profile details (such as rank, category, home state, score, preferences).",
-            parameters: {
-              type: 'OBJECT',
-              properties: {},
-            },
-          },
-          {
-            name: 'manage_choice_list',
-            description: "Retrieve, list, create, add, or remove choices from the student's choice list. Perfect for managing their preferred college options.",
-            parameters: {
-              type: 'OBJECT',
-              properties: {
-                action: {
-                  type: 'STRING',
-                  description: "Action to perform: 'get' (retrieve list by name), 'add' (add college to list), 'remove' (remove college from list), 'list_all' (list all choice lists).",
-                },
-                listName: { type: 'STRING', description: 'Name of the choice list' },
-                counselling: { type: 'STRING', description: "Counselling type (required for action='add' if creating a list)" },
-                collegeName: { type: 'STRING', description: 'Name of the college to add or remove' },
-                course: { type: 'STRING', description: "Course code (e.g. MBBS, BDS) for action='add'" },
-                quota: { type: 'STRING', description: "Quota code (e.g. AIQ) for action='add'" },
-                category: { type: 'STRING', description: "Category (e.g. UR) for action='add'" },
-              },
-              required: ['action'],
-            },
-          },
-          {
-            name: 'get_packages',
-            description: "Check the student's purchased packages, active payment status, and subscription details.",
-            parameters: {
-              type: 'OBJECT',
-              properties: {},
-            },
-          },
-          {
-            name: 'search_institutes',
-            description: 'Search detailed information about medical colleges/institutes (beds, seats, fee structures, types, state references).',
-            parameters: {
-              type: 'OBJECT',
-              properties: {
-                query: { type: 'STRING', description: 'Search query (name, city, state, or type)' },
-                state: { type: 'STRING', description: 'State name to filter by' },
-              },
-            },
-          },
-        ],
+          required: ['rank'],
+        },
       },
-    ] as any;
+      {
+        name: 'search_allotment_records',
+        description: 'Query raw allotment records in the database with custom filters (e.g., search by college name, round, rank range, fee, category, course, quota). Use this when student asks about specific college cutoffs or fee info.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            collegeName: { type: 'STRING', description: 'Full or partial name of the college' },
+            course: { type: 'STRING', description: 'Course name/code (e.g. MBBS, BDS)' },
+            quota: { type: 'STRING', description: 'Quota code or name' },
+            category: { type: 'STRING', description: 'Category name or code' },
+            minRank: { type: 'INTEGER', description: 'Minimum rank' },
+            maxRank: { type: 'INTEGER', description: 'Maximum rank' },
+          },
+        },
+      },
+      {
+        name: 'get_user_profile',
+        description: "Get the currently logged-in student's profile details (such as rank, category, home state, score, preferences).",
+        parameters: {
+          type: 'OBJECT',
+          properties: {},
+        },
+      },
+      {
+        name: 'manage_choice_list',
+        description: "Retrieve, list, create, add, or remove choices from the student's choice list. Perfect for managing their preferred college options.",
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            action: {
+              type: 'STRING',
+              description: "Action to perform: 'get' (retrieve list by name), 'add' (add college to list), 'remove' (remove college from list), 'list_all' (list all choice lists).",
+            },
+            listName: { type: 'STRING', description: 'Name of the choice list' },
+            counselling: { type: 'STRING', description: "Counselling type (required for action='add' if creating a list)" },
+            collegeName: { type: 'STRING', description: 'Name of the college to add or remove' },
+            course: { type: 'STRING', description: "Course code (e.g. MBBS, BDS) for action='add'" },
+            quota: { type: 'STRING', description: "Quota code (e.g. AIQ) for action='add'" },
+            category: { type: 'STRING', description: "Category (e.g. UR) for action='add'" },
+          },
+          required: ['action'],
+        },
+      },
+      {
+        name: 'get_packages',
+        description: "Check the student's purchased packages, active payment status, and subscription details.",
+        parameters: {
+          type: 'OBJECT',
+          properties: {},
+        },
+      },
+      {
+        name: 'search_institutes',
+        description: 'Search detailed information about medical colleges/institutes (beds, seats, fee structures, types, state references).',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            query: { type: 'STRING', description: 'Search query (name, city, state, or type)' },
+            state: { type: 'STRING', description: 'State name to filter by' },
+          },
+        },
+      },
+    ];
+
+    const filteredDeclarations = allowedToolNames
+      ? allTools.filter((t) => allowedToolNames.includes(t.name))
+      : allTools;
+
+    const tools = filteredDeclarations.length > 0
+      ? ([{ functionDeclarations: filteredDeclarations }] as any)
+      : undefined;
 
     let contents: any[] = [{ role: 'user', parts: [{ text: finalPrompt }] }];
     let loopCount = 0;
     const maxLoops = 5;
 
     while (loopCount < maxLoops) {
+      console.log(`[AiChatService.generateAiText] Model invocation loop: ${loopCount + 1}/${maxLoops}. Input contents count: ${contents.length}`);
       const response = await this.geminiService.ai.models.generateContent({
         model: this.geminiService.model,
         contents,
-        config: { tools },
+        ...(tools ? { config: { tools } } : {}),
       });
 
       const candidate = response.candidates?.[0];
       const parts = candidate?.content?.parts || [];
       const functionCalls = parts.filter((p: any) => p.functionCall) as any[];
 
+      console.log(`[AiChatService.generateAiText] Candidate response parts:`, JSON.stringify(parts, null, 2));
+
       if (!functionCalls || functionCalls.length === 0) {
-        return response.text || '';
+        const textResp = response.text || '';
+        console.log(`[AiChatService.generateAiText] No tool calls found. Final text response sample (first 500 chars): "${textResp.substring(0, 500)}..."`);
+        return textResp;
       }
 
+      console.log(`[AiChatService.generateAiText] Loop ${loopCount + 1}: Found ${functionCalls.length} tool calls to execute.`);
       const responseParts: any[] = [];
       for (const call of functionCalls) {
         const name = call.functionCall?.name;
         const args = call.functionCall?.args;
         if (!name) continue;
 
+        console.log(`[AiChatService.generateAiText] Loop ${loopCount + 1}: Calling tool "${name}" with args:`, JSON.stringify(args));
         const result = await this.executeTool(name, args, userId);
         responseParts.push({
           functionResponse: {
@@ -445,6 +509,7 @@ export class AiChatService {
       loopCount++;
     }
 
+    console.log(`[AiChatService.generateAiText] Reached max loop iterations.`);
     return '';
   }
 
@@ -473,7 +538,7 @@ ${message}
 Write a helpful answer.
 `;
 
-      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages);
+      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages, []);
 
       return (
         answer?.trim() ||
@@ -508,7 +573,7 @@ User question:
 ${message}
 `;
 
-      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages);
+      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages, ['search_institutes', 'search_allotment_records']);
 
       return (
         answer?.trim() ||
@@ -548,7 +613,7 @@ Rules:
 Student question:
 ${message}
 `;
-      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages);
+      const answer = await this.generateAiText(userId, aiPrompt, userSummary, recentMessages, ['predict_colleges', 'search_allotment_records', 'get_user_profile', 'manage_choice_list', 'get_packages', 'search_institutes']);
 
       return (
         answer?.trim() ||
@@ -722,8 +787,9 @@ private detectIntent(message: string): ChatIntent {
   return 'general_counselling';
 }
 
-async chat(userId: string, message: string, chatHistoryId?: string) {
+  async chat(userId: string, message: string, chatHistoryId?: string) {
     const trimmed = message.trim();
+    console.log(`[AiChatService.chat] Incoming message for User: "${userId}", ChatHistoryId: "${chatHistoryId}". Message: "${trimmed}"`);
 
     if (!trimmed) {
       const user = await this.prisma.user.findUnique({
@@ -741,15 +807,19 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
       where: { id: userId },
     });
     if (!user) {
+      console.log(`[AiChatService.chat] User not found for ID: "${userId}"`);
       throw new UnauthorizedException('User not found.');
     }
+    console.log(`[AiChatService.chat] User details fetched: Name: "${user.name}", Category: "${user.Category}", Rank: ${user.Rank}, State: "${user.state}"`);
 
     if (!user.isAiEnabled) {
+      console.log(`[AiChatService.chat] User isAiEnabled is false. Throwing Forbidden.`);
       throw new ForbiddenException('AI features are not enabled for your account.');
     }
 
     if (user.isAiCreditSystem) {
       if (user.aiCredits <= 0) {
+        console.log(`[AiChatService.chat] User is out of AI credits (${user.aiCredits}).`);
         throw new ForbiddenException('You have run out of AI credits. Please recharge.');
       }
     }
@@ -761,6 +831,7 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
         where: { id: historyId },
       });
       if (!history || history.userId !== userId) {
+        console.log(`[AiChatService.chat] Chat history not found or unauthorized for historyId: "${historyId}"`);
         throw new NotFoundException('Chat history not found.');
       }
     } else {
@@ -771,6 +842,7 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
         },
       });
       historyId = newHistory.id;
+      console.log(`[AiChatService.chat] Created new chat history: "${historyId}" with title: "${newHistory.title}"`);
     }
 
     // 3. Save user message to database
@@ -788,9 +860,11 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
       orderBy: { createdAt: 'asc' },
       take: 20,
     });
+    console.log(`[AiChatService.chat] Fetched ${recentMessages.length} recent messages for historyId: "${historyId}"`);
 
     // 5. Run standard logic
     const extracted = this.extractCounsellingInput(trimmed);
+    console.log(`[AiChatService.chat] Extracted fields from message text:`, JSON.stringify(extracted, null, 2));
 
     // Merge student stats from their profile as fallbacks if missing from query
     if (!extracted.rank && user.Rank) {
@@ -808,12 +882,15 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
     if (!extracted.course && user.PrefExam && user.PrefExam !== 'N/A') {
       extracted.course = user.PrefExam;
     }
+    console.log(`[AiChatService.chat] Merged extracted inputs (after user profile fallback):`, JSON.stringify(extracted, null, 2));
 
     const intent = this.detectIntent(trimmed);
+    console.log(`[AiChatService.chat] Detected message intent: "${intent}"`);
 
     let responseData: any = {};
 
     if (intent === 'exam_date') {
+      console.log(`[AiChatService.chat] Directing to exam_date flow`);
       const answer = await this.answerExamDateQuestion(userId, trimmed, user.aiUserSummurry || undefined, recentMessages);
       responseData = {
         success: true,
@@ -823,6 +900,7 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
         answer,
       };
     } else if (intent === 'college_info') {
+      console.log(`[AiChatService.chat] Directing to college_info flow`);
       const answer = await this.answerCollegeInfoQuestion(userId, trimmed, user.aiUserSummurry || undefined, recentMessages);
       responseData = {
         success: true,
@@ -832,6 +910,7 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
         answer,
       };
     } else if (intent === 'general_counselling') {
+      console.log(`[AiChatService.chat] Directing to general_counselling flow`);
       const answer = await this.answerGeneralCounsellingQuestion(userId, trimmed, user.aiUserSummurry || undefined, recentMessages);
       responseData = {
         success: true,
@@ -842,6 +921,7 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
       };
     } else {
       // Prediction logic
+      console.log(`[AiChatService.chat] Directing to prediction flow`);
       let prediction: any = null;
       let rawCards: any[] = [];
       let cards: any[] = [];
@@ -858,19 +938,39 @@ async chat(userId: string, message: string, chatHistoryId?: string) {
           predictorPayload.candidate_category_code = extracted.category;
         }
 
-        prediction =
-          extracted.scope === 'STATE' && extracted.state
-            ? await this.predictorService.predictState(extracted.state, predictorPayload)
-            : await this.predictorService.predictAi(predictorPayload);
+        console.log(`[AiChatService.chat] Prediction Payload:`, JSON.stringify(predictorPayload, null, 2));
+        if (extracted.scope === 'STATE' && extracted.state) {
+          const stateSlug = await this.resolveStateSlug(extracted.state);
+          console.log(`[AiChatService.chat] Resolving state "${extracted.state}" to slug "${stateSlug || extracted.state}" for state prediction.`);
+          prediction = await this.predictorService.predictState(stateSlug || extracted.state, predictorPayload);
+        } else {
+          console.log(`[AiChatService.chat] Executing predictAi`);
+          prediction = await this.predictorService.predictAi(predictorPayload);
+        }
 
         rawCards = prediction?.data || [];
+        console.log(`[AiChatService.chat] Predictor returned ${rawCards.length} raw cards. Status: ${prediction?.success}. Message if failed: ${prediction?.message}`);
         cards = this.filterSpecialQuotaCards(rawCards, trimmed);
+        console.log(`[AiChatService.chat] Filtered special quota cards. Remaining visible cards: ${cards.length}`);
+      } else {
+        console.log(`[AiChatService.chat] No rank extracted or fallback found. Skipping prediction DB query.`);
       }
 
       let aiAnswer = '';
       try {
         const hiddenCount = rawCards.length - cards.length;
         const missingFieldsList = ['rank', 'category', 'course', 'counselling_type', 'quota'].filter(f => !extracted[f === 'counselling_type' ? 'scope' : f]);
+
+        const simplifiedCardsForPrompt = cards.slice(0, 15).map((card: any) => ({
+          name: card.name,
+          course: card.courseCode,
+          state: card.state,
+          rounds: card.rounds,
+          quota: card.quotaCodes,
+          closingRank: card.closingRank,
+          rankGap: card.rankGap,
+          bucket: card.bucket,
+        }));
 
         const aiPrompt = `
 You are NEETal AI Counsellor, a highly professional, encouraging, and expert medical counselling advisor for Indian students.
@@ -912,7 +1012,7 @@ ${JSON.stringify(
 )}
 
 Visible predictor result:
-${JSON.stringify(cards.slice(0, 15), null, 2)}
+${JSON.stringify(simplifiedCardsForPrompt, null, 2)}
 
 Now write the final answer. If you have predictor results, structure it like this:
 
@@ -939,15 +1039,17 @@ Explain the result in 2-3 short lines, mentioning any default assumptions you ma
 - Mention that this is not guaranteed admission.
 `;
 
-        const geminiAnswer = await this.generateAiText(userId, aiPrompt, user.aiUserSummurry || undefined, recentMessages);
+        console.log(`[AiChatService.chat] Invoking generateAiText for prediction explanation...`);
+        const geminiAnswer = await this.generateAiText(userId, aiPrompt, user.aiUserSummurry || undefined, recentMessages, ['manage_choice_list', 'get_packages', 'get_user_profile']);
         if (geminiAnswer?.trim()) {
           aiAnswer = geminiAnswer.trim();
         }
       } catch (error) {
-        console.error('Gemini explanation failed:', error);
+        console.error('[AiChatService.chat] Gemini explanation failed:', error);
       }
 
       if (!aiAnswer) {
+        console.log(`[AiChatService.chat] Gemini explanation was empty. Falling back to buildHumanAnswer (static templates).`);
         aiAnswer = this.buildHumanAnswer(
           extracted,
           cards,
@@ -996,6 +1098,7 @@ Explain the result in 2-3 short lines, mentioning any default assumptions you ma
           },
         },
       });
+      console.log(`[AiChatService.chat] Deducted 1 credit. Remaining credits: ${remainingCredits}`);
     }
 
     // 8. Auto-summarize & Title Update asynchronously in the background
@@ -1008,6 +1111,7 @@ Explain the result in 2-3 short lines, mentioning any default assumptions you ma
       }
     });
 
+    console.log(`[AiChatService.chat] Returning response. Answer length: ${responseData.answer?.length || 0}`);
     return {
       ...responseData,
       chatHistoryId: historyId,
@@ -1045,26 +1149,101 @@ Explain the result in 2-3 short lines, mentioning any default assumptions you ma
   };
 }
   private extractRank(message: string): number | undefined {
-    const patterns = [
-      /(?:rank|air|neet rank|all india rank)\s*(?:is|=|:)?\s*([0-9][0-9,]*)/i,
-      /([0-9][0-9,]*)\s*(?:rank|air)/i,
+    const cleanMsg = message.replace(/,/g, '');
+    
+    // 1. Context patterns with optional multipliers
+    const contextPatterns = [
+      /(?:rank|air|neet rank|all india rank)\s*(?:is|=|:)?\s*([0-9]+(?:\.[0-9]+)?)\s*[-]?\s*(k|lakhs?|lacs?|l)?\b/i,
+      /\b([0-9]+(?:\.[0-9]+)?)\s*[-]?\s*(k|lakhs?|lacs?|l)?\s*(?:rank|air)\b/i
     ];
 
-    for (const pattern of patterns) {
-      const match = message.match(pattern);
-      if (match?.[1]) {
-        const value = Number(match[1].replace(/,/g, ''));
-        if (Number.isFinite(value) && value > 0) return value;
+    for (const pattern of contextPatterns) {
+      const match = cleanMsg.match(pattern);
+      if (match) {
+        const numStr = match[1];
+        const suffix = match[2];
+        let val = parseFloat(numStr);
+        if (Number.isFinite(val) && val > 0) {
+          if (suffix) {
+            const s = suffix.toLowerCase();
+            if (s === 'k') val *= 1000;
+            else if (s === 'l' || s.startsWith('lakh') || s.startsWith('lac')) val *= 100000;
+          }
+          return Math.round(val);
+        }
       }
     }
 
-    const looseNumbers = message.match(/\b[0-9][0-9,]{3,}\b/g);
-    if (looseNumbers?.length) {
-      const value = Number(looseNumbers[0].replace(/,/g, ''));
-      if (Number.isFinite(value) && value > 0) return value;
+    // 2. Loose patterns: numbers with multipliers anywhere in the message
+    // e.g. "40k" or "1.2 Lakh"
+    const looseMultiplierPattern = /\b([0-9]+(?:\.[0-9]+)?)\s*[-]?\s*(k|lakhs?|lacs?|l)\b/i;
+    const looseMultMatch = cleanMsg.match(looseMultiplierPattern);
+    if (looseMultMatch) {
+      const numStr = looseMultMatch[1];
+      const suffix = looseMultMatch[2];
+      let val = parseFloat(numStr);
+      if (Number.isFinite(val) && val > 0) {
+        const s = suffix.toLowerCase();
+        if (s === 'k') val *= 1000;
+        else if (s === 'l' || s.startsWith('lakh') || s.startsWith('lac')) val *= 100000;
+        return Math.round(val);
+      }
+    }
+
+    // 3. Loose pure numbers: e.g. "120000" or "40000"
+    const loosePureNumbers = cleanMsg.match(/\b([0-9]{4,})\b/g); // 4 or more digits, e.g. >= 1000
+    if (loosePureNumbers?.length) {
+      const val = Number(loosePureNumbers[0]);
+      if (Number.isFinite(val) && val > 0) return val;
     }
 
     return undefined;
+  }
+
+  private async resolveStateSlug(stateInput?: string): Promise<string | undefined> {
+    if (!stateInput) return undefined;
+    const cacheKey = stateInput.trim().toLowerCase();
+    if (this.stateSlugCache.has(cacheKey)) {
+      console.log(`[AiChatService.resolveStateSlug] Cache hit for "${stateInput}" -> "${this.stateSlugCache.get(cacheKey)}"`);
+      return this.stateSlugCache.get(cacheKey);
+    }
+    
+    // First normalize the input using STATE_ALIASES if possible
+    let normalizedState = stateInput.trim();
+    const lower = normalizedState.toLowerCase();
+    
+    // Check if it matches an alias
+    const entries = Object.entries(STATE_ALIASES).sort((a, b) => b[0].length - a[0].length);
+    for (const [alias, state] of entries) {
+      const pattern = new RegExp(`(^|\\s)${alias.replace(/ /g, '\\s+')}($|\\s)`, 'i');
+      if (pattern.test(lower)) {
+        normalizedState = state;
+        break;
+      }
+    }
+
+    // Now query the DB
+    const stateRecord = await this.prisma.state.findFirst({
+      where: {
+        OR: [
+          { name: { equals: normalizedState, mode: 'insensitive' } },
+          { slug: { equals: normalizedState.toLowerCase().replace(/\s+/g, '-'), mode: 'insensitive' } },
+          { code: { equals: normalizedState, mode: 'insensitive' } }
+        ]
+      }
+    });
+
+    let slug: string;
+    if (stateRecord) {
+      slug = stateRecord.slug;
+    } else {
+      // Fallback: kebab-case
+      slug = normalizedState.toLowerCase().replace(/\s+/g, '-');
+    }
+
+    this.stateSlugCache.set(cacheKey, slug);
+    console.log(`[AiChatService.resolveStateSlug] Cache miss for "${stateInput}". Querying DB -> resolved to "${slug}"`);
+    return slug;
   }
 
   private extractCategory(lower: string): string | undefined {
