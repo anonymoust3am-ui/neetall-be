@@ -294,11 +294,11 @@ export class PredictorService {
             : null;
         const imageUrl =
           instituteData && instituteData.coverUrl
-            ? `url('/data/${encodeURI(instituteData.coverUrl)}')`
+            ? `url('/api/data/${encodeURI(instituteData.coverUrl)}')`
             : getGradient(bucket);
         const logoUrl =
           instituteData && instituteData.logoUrl
-            ? `/data/${encodeURI(instituteData.logoUrl)}`
+            ? `/api/data/${encodeURI(instituteData.logoUrl)}`
             : null;
 
         return {
@@ -447,11 +447,11 @@ export class PredictorService {
             : null;
         const imageUrl =
           instituteData && instituteData.coverUrl
-            ? `url('/data/${encodeURI(instituteData.coverUrl)}')`
+            ? `url('/api/data/${encodeURI(instituteData.coverUrl)}')`
             : getGradient(bucket);
         const logoUrl =
           instituteData && instituteData.logoUrl
-            ? `/data/${encodeURI(instituteData.logoUrl)}`
+            ? `/api/data/${encodeURI(instituteData.logoUrl)}`
             : null;
 
         return {
