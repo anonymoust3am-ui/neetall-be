@@ -487,7 +487,7 @@ export class AuthService {
   private formatUserResponse(user: any): ProfileResponseDto {
     let profilePicUrl = user.profilePic;
     if (profilePicUrl && !profilePicUrl.startsWith('http://') && !profilePicUrl.startsWith('https://')) {
-      profilePicUrl = profilePicUrl.startsWith('/profile/') ? profilePicUrl : `/profile/${profilePicUrl.replace(/^\//, '')}`;
+      profilePicUrl = profilePicUrl.startsWith('/data/') ? profilePicUrl : `/data/${profilePicUrl.replace(/^\//, '')}`;
     }
 
     return {
