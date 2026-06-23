@@ -40,7 +40,7 @@ const ALL_PROFILE_FIELDS = [
 
 @Injectable()
 export class ProfileService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /**
    * 📋 COMPLETE PROFILE - Onboarding step
@@ -201,11 +201,11 @@ export class ProfileService {
     const completedFields = ALL_PROFILE_FIELDS.filter((field) => {
       const value =
         user[
-          field === 'category'
-            ? 'Category'
-            : field === 'gender'
-              ? 'Gender'
-              : field
+        field === 'category'
+          ? 'Category'
+          : field === 'gender'
+            ? 'Gender'
+            : field
         ];
       return value && value !== 'N/A';
     });
@@ -545,11 +545,11 @@ export class ProfileService {
     return REQUIRED_PROFILE_FIELDS.every((field) => {
       const value =
         user[
-          field === 'category'
-            ? 'Category'
-            : field === 'gender'
-              ? 'Gender'
-              : field
+        field === 'category'
+          ? 'Category'
+          : field === 'gender'
+            ? 'Gender'
+            : field
         ];
       return !!value && value !== 'N/A';
     });
@@ -608,7 +608,7 @@ export class ProfileService {
     }
     const filePath = join(uploadDir, fileName);
     writeFileSync(filePath, file.buffer);
-    return `images/profile/${fileName}`;
+    return `api/data/images/profile/${fileName}`;
   }
 
   /**
