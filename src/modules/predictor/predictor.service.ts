@@ -12,7 +12,7 @@ import {
 
 @Injectable()
 export class PredictorService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // Simple in-memory cache for static options
   private optionsCache = new Map<string, any>();
@@ -217,7 +217,7 @@ export class PredictorService {
 
       const matchStage: any = {
         counsellingLevel: 'ALL_INDIA',
-        rank: { $gte: minRank, $lte: maxRank },
+        aiRank: { $gte: minRank, $lte: maxRank },
       };
 
       if (
@@ -236,7 +236,7 @@ export class PredictorService {
           { $match: matchStage },
           {
             $addFields: {
-              rankDist: { $abs: { $subtract: ['$rank', inputRank] } },
+              rankDist: { $abs: { $subtract: ['$aiRank', inputRank] } },
             },
           },
           { $sort: { rankDist: 1 } },
@@ -245,10 +245,10 @@ export class PredictorService {
               _id: '$instituteNameSnapshot',
               instituteId: { $first: '$instituteId' },
               courseCode: { $first: '$courseNameSnapshot' },
-              openingRank: { $min: '$rank' },
-              closingRank: { $max: '$rank' },
-              rankGap: { $first: { $subtract: ['$rank', inputRank] } }, // Dist to nearest
-              nearestRank: { $first: '$rank' },
+              openingRank: { $min: '$aiRank' },
+              closingRank: { $max: '$aiRank' },
+              rankGap: { $first: { $subtract: ['$aiRank', inputRank] } }, // Dist to nearest
+              nearestRank: { $first: '$aiRank' },
               rounds: { $addToSet: '$roundNo' },
               quotaCodes: { $addToSet: '$quotaNameSnapshot' },
               rawQuotaCodes: { $addToSet: '$quotaNameSnapshot' },
@@ -257,7 +257,7 @@ export class PredictorService {
               allottedCategoryCodes: { $addToSet: '$categoryDisplay' },
               similarCandidates: {
                 $push: {
-                  rank_num: '$rank',
+                  rank_num: '$aiRank',
                   round_no: '$roundNo',
                   candidate_category_code: '$categoryRaw',
                   allotted_category_code: '$categoryDisplay',
@@ -364,7 +364,7 @@ export class PredictorService {
       const matchStage: any = {
         counsellingLevel: { $in: ['STATE', 'PRIVATE_MANAGEMENT', 'OTHER'] },
         instituteStateSlugSnapshot: stateSlug,
-        rank: { $gte: minRank, $lte: maxRank },
+        aiRank: { $gte: minRank, $lte: maxRank },
       };
 
       if (
@@ -385,7 +385,7 @@ export class PredictorService {
           { $match: matchStage },
           {
             $addFields: {
-              rankDist: { $abs: { $subtract: ['$rank', inputRank] } },
+              rankDist: { $abs: { $subtract: ['$aiRank', inputRank] } },
             },
           },
           { $sort: { rankDist: 1 } },
@@ -395,12 +395,12 @@ export class PredictorService {
               instituteId: { $first: '$instituteId' },
               courseCode: { $first: '$courseNameSnapshot' },
               state: { $first: '$instituteStateSnapshot' },
-              openingRank: { $min: '$rank' },
-              closingRank: { $max: '$rank' },
+              openingRank: { $min: '$aiRank' },
+              closingRank: { $max: '$aiRank' },
               counsellingRankOpening: { $min: '$counsellingRank' },
               counsellingRankClosing: { $max: '$counsellingRank' },
-              rankGap: { $first: { $subtract: ['$rank', inputRank] } },
-              nearestRank: { $first: '$rank' },
+              rankGap: { $first: { $subtract: ['$aiRank', inputRank] } },
+              nearestRank: { $first: '$aiRank' },
               rounds: { $addToSet: '$roundNo' },
               rawQuotaCodes: { $addToSet: '$quotaNameSnapshot' },
               rawCategoryCodes: { $addToSet: '$categoryRaw' },
@@ -410,7 +410,7 @@ export class PredictorService {
               totalSimilarRows: { $sum: 1 },
               similarCandidates: {
                 $push: {
-                  rank_num: '$rank',
+                  rank_num: '$aiRank',
                   counselling_rank: '$counsellingRank',
                   round_no: '$roundNo',
                   candidate_category_code: '$categoryRaw',

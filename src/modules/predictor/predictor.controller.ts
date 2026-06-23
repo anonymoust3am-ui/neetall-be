@@ -5,24 +5,7 @@ import { readFileSync } from 'fs';
 
 @Controller()
 export class PredictorController {
-  constructor(private readonly predictorService: PredictorService) {}
-
-  // ==========================================
-  // UI Route
-  // ==========================================
-  @Get('predictor-ui')
-  getPredictorUI() {
-    // Serve the legacy HTML layout wrapped in an endpoint for easy access
-    try {
-      const htmlPath = join(
-        process.cwd(),
-        'src/modules/predictor/predictor.html',
-      );
-      return readFileSync(htmlPath, 'utf8');
-    } catch (e) {
-      return 'UI File not found.';
-    }
-  }
+  constructor(private readonly predictorService: PredictorService) { }
 
   // ==========================================
   // Options (Dropdowns) APIs
