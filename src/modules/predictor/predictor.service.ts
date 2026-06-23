@@ -8,6 +8,8 @@ import {
   getLogoColor,
   balancedCards,
   shortName,
+  mapCategoryCode,
+  getCategoryFlags,
 } from './predictor.utils';
 
 @Injectable()
@@ -227,9 +229,69 @@ export class PredictorService {
         matchStage.roundNo = Number(body.round_no);
       if (body.course_code) matchStage.courseNameSnapshot = body.course_code;
       if (body.candidate_category_code) {
+        const { normalized, base } = mapCategoryCode(body.candidate_category_code);
+        const flags = getCategoryFlags(body.candidate_category_code);
+
+        matchStage.isPwd = flags.isPwd;
+
+        const andConditions: any[] = [];
+
+        // PwD/PH filter
+        if (flags.isPwd) {
+          andConditions.push({ categoryRaw: { $regex: 'ph|pwd|handicapped', $options: 'i' } });
+        } else {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'ph|pwd|handicapped', $options: 'i' } } });
+        }
+
+        // Orphan filter
+        if (flags.isOrphan) {
+          andConditions.push({ categoryRaw: { $regex: 'orphan', $options: 'i' } });
+        } else {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'orphan', $options: 'i' } } });
+        }
+
+        // Minority filter
+        if (flags.isMinority) {
+          andConditions.push({ categoryRaw: { $regex: 'minority', $options: 'i' } });
+        } else {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'minority', $options: 'i' } } });
+        }
+
+        // Defence filter
+        if (flags.isDefence) {
+          andConditions.push({ categoryRaw: { $regex: 'def|defence', $options: 'i' } });
+        } else {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'def|defence', $options: 'i' } } });
+        }
+
+        // OBC vs SEBC filter
+        if (base === 'OBC') {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'sebc', $options: 'i' } } });
+        }
+
+        if (andConditions.length > 0) {
+          matchStage.$and = andConditions;
+        }
+
+        const possibleCategories = Array.from(new Set([
+          normalized,
+          base,
+          body.candidate_category_code,
+          body.candidate_category_code.toUpperCase(),
+          body.candidate_category_code.toLowerCase(),
+        ]));
+
         matchStage.$or = [
-          { categoryNormalized: body.candidate_category_code },
-          { categoryRaw: body.candidate_category_code }
+          { categoryNormalized: normalized },
+          { categoryNormalized: { $in: possibleCategories } },
+          { categoryRaw: { $in: possibleCategories } },
+          { categoryDisplay: { $in: possibleCategories } }
+        ];
+      } else {
+        matchStage.isPwd = false;
+        matchStage.isMinority = false;
+        matchStage.$and = [
+          { categoryRaw: { $not: { $regex: 'ph|pwd|handicapped|orphan|def|defence|minority', $options: 'i' } } }
         ];
       }
       if (body.quota_code) matchStage.quotaNameSnapshot = body.quota_code;
@@ -378,9 +440,69 @@ export class PredictorService {
         matchStage.roundNo = Number(body.round_no);
       if (body.course_code) matchStage.courseNameSnapshot = body.course_code;
       if (body.candidate_category_code) {
+        const { normalized, base } = mapCategoryCode(body.candidate_category_code);
+        const flags = getCategoryFlags(body.candidate_category_code);
+
+        matchStage.isPwd = flags.isPwd;
+
+        const andConditions: any[] = [];
+
+        // PwD/PH filter
+        if (flags.isPwd) {
+          andConditions.push({ categoryRaw: { $regex: 'ph|pwd|handicapped', $options: 'i' } });
+        } else {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'ph|pwd|handicapped', $options: 'i' } } });
+        }
+
+        // Orphan filter
+        if (flags.isOrphan) {
+          andConditions.push({ categoryRaw: { $regex: 'orphan', $options: 'i' } });
+        } else {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'orphan', $options: 'i' } } });
+        }
+
+        // Minority filter
+        if (flags.isMinority) {
+          andConditions.push({ categoryRaw: { $regex: 'minority', $options: 'i' } });
+        } else {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'minority', $options: 'i' } } });
+        }
+
+        // Defence filter
+        if (flags.isDefence) {
+          andConditions.push({ categoryRaw: { $regex: 'def|defence', $options: 'i' } });
+        } else {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'def|defence', $options: 'i' } } });
+        }
+
+        // OBC vs SEBC filter
+        if (base === 'OBC') {
+          andConditions.push({ categoryRaw: { $not: { $regex: 'sebc', $options: 'i' } } });
+        }
+
+        if (andConditions.length > 0) {
+          matchStage.$and = andConditions;
+        }
+
+        const possibleCategories = Array.from(new Set([
+          normalized,
+          base,
+          body.candidate_category_code,
+          body.candidate_category_code.toUpperCase(),
+          body.candidate_category_code.toLowerCase(),
+        ]));
+
         matchStage.$or = [
-          { categoryNormalized: body.candidate_category_code },
-          { categoryRaw: body.candidate_category_code }
+          { categoryNormalized: normalized },
+          { categoryNormalized: { $in: possibleCategories } },
+          { categoryRaw: { $in: possibleCategories } },
+          { categoryDisplay: { $in: possibleCategories } }
+        ];
+      } else {
+        matchStage.isPwd = false;
+        matchStage.isMinority = false;
+        matchStage.$and = [
+          { categoryRaw: { $not: { $regex: 'ph|pwd|handicapped|orphan|def|defence|minority', $options: 'i' } } }
         ];
       }
       if (body.quota_code) matchStage.quotaNameSnapshot = body.quota_code;

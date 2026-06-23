@@ -207,3 +207,35 @@ export function expandUpCodeList(value: string | null): string | null {
   const expanded = parts.map((x) => expandUpCategoryCode(x)).filter(Boolean);
   return expanded.join(', ');
 }
+
+export function mapCategoryCode(code: string | null): { normalized: string; base: string } {
+  if (!code) return { normalized: 'OPEN', base: 'OPEN' };
+  const lower = code.trim().toLowerCase();
+  let base = lower
+    .replace(/-?pwd/g, '')
+    .replace(/-?ph/g, '')
+    .replace(/handicapped/g, '')
+    .replace(/-?orphan/g, '')
+    .replace(/-?minority/g, '')
+    .trim();
+  let normalized = base.toUpperCase();
+  if (normalized === 'UR' || normalized === 'GENERAL' || normalized === 'GEN') {
+    normalized = 'OPEN';
+  }
+  return { normalized, base: base.toUpperCase() };
+}
+
+export function getCategoryFlags(code: string | null): {
+  isPwd: boolean;
+  isOrphan: boolean;
+  isMinority: boolean;
+  isDefence: boolean;
+} {
+  const lower = (code || '').trim().toLowerCase();
+  return {
+    isPwd: lower.includes('pwd') || lower.includes('ph') || lower.includes('handicapped'),
+    isOrphan: lower.includes('orphan'),
+    isMinority: lower.includes('minority'),
+    isDefence: lower.includes('def') || lower.includes('defence')
+  };
+}
