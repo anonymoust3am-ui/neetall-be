@@ -24,4 +24,10 @@ export class GetInstitutesQueryDto {
   @IsInt()
   @Min(1)
   page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  offset?: number;
 }

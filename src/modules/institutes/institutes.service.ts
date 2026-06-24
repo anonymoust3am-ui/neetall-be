@@ -24,6 +24,7 @@ export class InstituteService {
 
   private readonly cacheDir = path.join(process.cwd(), 'cache', 'institutes');
   private readonly CACHE_TTL = 1000 * 60 * 60; // 1 hour
+  private cachedTotal = 1149;
 
   constructor(
     private readonly httpService: HttpService,
@@ -116,6 +117,8 @@ export class InstituteService {
           data: {
             institutes,
             total: institutes.length,
+            page_size: institutes.length,
+            page: 1,
           },
         };
       } catch (error) {
@@ -144,8 +147,14 @@ export class InstituteService {
         params.university_id = queryDto.university_id;
       }
 
-      // Page defaults to 1
-      params.page = queryDto.page || 1;
+      // Map offset/page to Zynerd's offset parameter
+      if (queryDto.offset !== undefined && queryDto.offset !== null) {
+        params.offset = queryDto.offset;
+      } else if (queryDto.page) {
+        params.offset = (queryDto.page - 1) * 50;
+      } else {
+        params.offset = 0;
+      }
 
       this.logger.debug(
         `Fetching institutes from: ${url} with params:`,
@@ -160,7 +169,21 @@ export class InstituteService {
       );
 
       this.logger.debug(`Institutes fetched successfully`);
-      return this.maskUrls(response.data);
+      const responseData = response.data;
+      if (responseData && responseData.data) {
+        if (typeof responseData.data.total === 'number') {
+          this.cachedTotal = responseData.data.total;
+        }
+
+        const currentPage = queryDto.offset !== undefined && queryDto.offset !== null
+          ? Math.floor(queryDto.offset / 50) + 1
+          : (queryDto.page || 1);
+
+        responseData.data.total = responseData.data.total ?? this.cachedTotal;
+        responseData.data.page_size = responseData.data.page_size ?? 50;
+        responseData.data.page = currentPage;
+      }
+      return this.maskUrls(responseData);
     } catch (error) {
       this.logger.error(
         `Error fetching institutes: ${error.message}`,
