@@ -40,6 +40,7 @@
     "dotenv": "^17.4.2",
     "firebase-admin": "^13.8.0",
     "install": "^0.13.0",
+    "mongodb": "^7.5.0",
     "mysql2": "^3.22.3",
     "razorpay": "^2.9.6",
     "reflect-metadata": "^0.2.2",

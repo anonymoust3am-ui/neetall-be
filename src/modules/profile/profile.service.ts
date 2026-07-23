@@ -617,7 +617,7 @@ export class ProfileService {
     }
     const filePath = join(uploadDir, fileName);
     writeFileSync(filePath, file.buffer);
-    return `api/data/images/profile/${fileName}`;
+    return `/data/images/profile/${fileName}`;
   }
 
   /**
