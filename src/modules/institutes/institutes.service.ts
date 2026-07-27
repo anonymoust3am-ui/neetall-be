@@ -375,8 +375,107 @@ export class InstituteService {
   }
 
   /**
+   * Fetch an institute photo cleanly via photo number or filename
+   */
+  async getInstitutePhoto(
+    instituteId: number,
+    filename: string,
+  ): Promise<{ data: any; contentType: string }> {
+    const cacheKey = `photo_${instituteId}_${filename}`;
+    const cacheFilePath = path.join(this.cacheDir, `${cacheKey}.bin`);
+    const cacheMetaPath = path.join(this.cacheDir, `${cacheKey}.json`);
+
+    // 1. Check disk cache (30 days cache)
+    const LONG_CACHE_TTL = 1000 * 60 * 60 * 24 * 30;
+    if (fs.existsSync(cacheFilePath) && fs.existsSync(cacheMetaPath)) {
+      try {
+        const meta = JSON.parse(fs.readFileSync(cacheMetaPath, 'utf-8'));
+        if (Date.now() - meta.timestamp < LONG_CACHE_TTL) {
+          const data = fs.readFileSync(cacheFilePath);
+          return { data, contentType: meta.contentType };
+        }
+      } catch (e) {
+        // ignore cache error
+      }
+    }
+
+    // 2. Locate original Zynerd photo URL from institute details
+    let targetZynerdPath: string | null = null;
+    const numMatch =
+      filename.match(/photo-(\d+)/i) || filename.match(/(\d+)/);
+    const photoNum = numMatch ? parseInt(numMatch[1], 10) : null;
+
+    try {
+      const details = await this.getInstituteDetails(instituteId);
+      const imageUrls: string[] = details?.data?.image_urls || [];
+
+      if (photoNum && photoNum <= imageUrls.length && photoNum > 0) {
+        targetZynerdPath = imageUrls[photoNum - 1];
+      } else if (imageUrls.length > 0) {
+        targetZynerdPath = imageUrls[0];
+      }
+    } catch (e) {
+      // ignore details fetch error
+    }
+
+    if (targetZynerdPath) {
+      try {
+        const prefix = 'https://public.zynerd.com/';
+        const pathStr = targetZynerdPath.startsWith(prefix)
+          ? targetZynerdPath.substring(prefix.length)
+          : targetZynerdPath;
+        const resource = await this.proxyResource(pathStr);
+
+        // Store in cache
+        try {
+          if (!fs.existsSync(this.cacheDir)) {
+            fs.mkdirSync(this.cacheDir, { recursive: true });
+          }
+          fs.writeFileSync(cacheFilePath, Buffer.from(resource.data));
+          fs.writeFileSync(
+            cacheMetaPath,
+            JSON.stringify({
+              contentType: resource.contentType,
+              timestamp: Date.now(),
+            }),
+          );
+        } catch (e) {
+          // ignore cache write error
+        }
+
+        return resource;
+      } catch (e) {
+        // proxy attempt failed, fallback below
+      }
+    }
+
+    // 3. Fallback to local image in data/images/<instituteId>/
+    const instDir = path.join(
+      process.cwd(),
+      'data',
+      'images',
+      instituteId.toString(),
+    );
+    if (fs.existsSync(instDir)) {
+      const files = fs.readdirSync(instDir);
+      const cover =
+        files.find((f) => f.startsWith('cover_')) ||
+        files.find((f) => f.startsWith('logo_')) ||
+        files[0];
+      if (cover) {
+        const data = fs.readFileSync(path.join(instDir, cover));
+        const ext = path.extname(cover).toLowerCase();
+        const contentType = ext === '.png' ? 'image/png' : 'image/jpeg';
+        return { data, contentType };
+      }
+    }
+
+    throw new HttpException('Photo not found', HttpStatus.NOT_FOUND);
+  }
+
+  /**
    * Replace Zynerd URLs with direct static image URLs if downloaded locally,
-   * or clean server asset proxy URLs (/api/institutes/assets/*) for detail images.
+   * or clean server asset proxy URLs for detail images.
    */
   private maskUrls(data: any): any {
     if (data === null || data === undefined) return data;
@@ -449,11 +548,26 @@ export class InstituteService {
             }
           }
 
-          // Detail images/photos not downloaded on disk use server asset endpoint (no "proxy" keyword)
-          return `${appUrl}/api/institutes/assets/${encodeURI(relPath)}`;
+          // Detail photos -> Format clean URL like /institutes/1516/photos/photo-11.jpg
+          const matchPhotoNum =
+            decodedFilename.match(/photo\s*(\d+)/i) ||
+            decodedFilename.match(/(\d+)/);
+          const extMatch = decodedFilename.match(/\.(jpg|jpeg|png|webp|avif)/i);
+          const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+
+          if (matchPhotoNum) {
+            const num = matchPhotoNum[1];
+            return `${appUrl}/institutes/${instituteId}/photos/photo-${num}.${ext}`;
+          }
+
+          const slug = decodedFilename
+            .replace(/[^a-zA-Z0-9.-]/g, '-')
+            .replace(/-+/g, '-')
+            .toLowerCase();
+          return `${appUrl}/institutes/${instituteId}/photos/${slug}`;
         }
 
-        return `${appUrl}/api/institutes/assets/${encodeURI(relPath)}`;
+        return `${appUrl}/data/${encodeURI(relPath)}`;
       };
 
       const transform = (obj: any): any => {

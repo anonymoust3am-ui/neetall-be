@@ -85,6 +85,27 @@ export class InstituteController {
   }
 
   /**
+   * GET /institutes/:id/photos/:filename
+   * Clean RESTful endpoint to fetch gallery photo for an institute
+   */
+  @Get(':id/photos/:filename')
+  async getPhoto(
+    @Param('id') id: string,
+    @Param('filename') filename: string,
+    @Res() res: express.Response,
+  ) {
+    const instituteId = parseInt(id, 10);
+    const resource = await this.instituteService.getInstitutePhoto(
+      instituteId,
+      filename,
+    );
+    if (resource.contentType) {
+      res.set('Content-Type', resource.contentType);
+    }
+    res.send(resource.data);
+  }
+
+  /**
    * GET /institutes/:id
    * Get detailed information about a specific institute
    * Path Parameter:
