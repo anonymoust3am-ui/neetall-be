@@ -10,6 +10,8 @@
 /prisma/migrate.ts
 /prisma/seed.ts
 /test
+scratch
+scratch/test_url_resolution.js
 # Logs
 logs
 *.log
@@ -71,3 +73,4 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+tsconfig.build.tsbuildinfo

@@ -334,7 +334,7 @@ export class InstituteService {
   }
 
   /**
-   * Replace Zynerd URLs with local static image URLs if available, or proxy URLs as fallback
+   * Replace all Zynerd URLs with direct static image URLs (no proxying)
    */
   private maskUrls(data: any): any {
     if (!data) return data;
@@ -347,39 +347,79 @@ export class InstituteService {
         if (!zynerdUrl.startsWith(zynerdPublicPrefix)) return zynerdUrl;
 
         const relPath = zynerdUrl.substring(zynerdPublicPrefix.length);
-        const parts = relPath.split('/');
+        const rawParts = relPath.split('/');
 
-        if (parts.length >= 4 && parts[0] === 'institutes') {
-          const instituteId = parts[1];
-          const type = parts[2];
-          const filename = parts[3];
+        if (rawParts.length >= 3 && rawParts[0] === 'institutes') {
+          const instituteId = rawParts[1];
+          const category = rawParts[2]; // 'logo', 'cover', 'photos', etc.
+          const rawFilename = rawParts.slice(3).join('/'); // 'Photo 3.png' or '155.png'
+          const decodedFilename = decodeURIComponent(rawFilename);
 
-          const instDir = path.join(process.cwd(), 'data', 'images', instituteId);
+          const instDir = path.join(
+            process.cwd(),
+            'data',
+            'images',
+            instituteId,
+          );
           if (fs.existsSync(instDir)) {
-            const target1 = `${type}_${filename}`;
-            if (fs.existsSync(path.join(instDir, target1))) {
-              return `${appUrl}/data/images/${instituteId}/${target1}`;
+            const files = fs.readdirSync(instDir);
+
+            // 1. Exact match (decoded or raw)
+            let matchedFile = files.find(
+              (f) => f === decodedFilename || f === rawFilename,
+            );
+
+            // 2. category_filename (e.g. logo_155.png or cover_1509.jpg)
+            if (!matchedFile) {
+              const catFile = `${category}_${decodedFilename}`;
+              matchedFile = files.find((f) => f === catFile);
             }
-            if (fs.existsSync(path.join(instDir, filename))) {
-              return `${appUrl}/data/images/${instituteId}/${filename}`;
+
+            // 3. category_instituteId.ext (e.g. logo_1519.png or cover_1519.jpg)
+            if (!matchedFile) {
+              const ext = path.extname(decodedFilename);
+              const catInst = `${category}_${instituteId}${ext}`;
+              matchedFile = files.find((f) => f === catInst);
             }
-            const ext = path.extname(filename);
-            const target3 = `${type}_${instituteId}${ext}`;
-            if (fs.existsSync(path.join(instDir, target3))) {
-              return `${appUrl}/data/images/${instituteId}/${target3}`;
-            }
-            try {
-              const files = fs.readdirSync(instDir);
-              const matchingFile = files.find((f) => f.startsWith(`${type}_`));
-              if (matchingFile) {
-                return `${appUrl}/data/images/${instituteId}/${matchingFile}`;
+
+            // 4. Match by category prefix/keyword
+            if (!matchedFile) {
+              if (
+                category === 'photos' ||
+                category === 'photo' ||
+                category === 'gallery'
+              ) {
+                matchedFile = files.find(
+                  (f) =>
+                    f.toLowerCase().includes('photo') ||
+                    f.toLowerCase().includes('banner') ||
+                    f.startsWith('cover_'),
+                );
+              } else if (category === 'logo') {
+                matchedFile = files.find((f) => f.startsWith('logo_'));
+              } else if (category === 'cover') {
+                matchedFile = files.find((f) => f.startsWith('cover_'));
               }
-            } catch (e) {
-              // ignore directory read error
+            }
+
+            // 5. Fallback to any file in directory if directory is not empty
+            if (!matchedFile && files.length > 0) {
+              matchedFile = files[0];
+            }
+
+            if (matchedFile) {
+              return `${appUrl}/data/images/${instituteId}/${encodeURIComponent(matchedFile)}`;
             }
           }
+
+          // Direct fallback url without proxy
+          const fallbackFilename = rawFilename
+            ? rawFilename
+            : `${category}_${instituteId}`;
+          return `${appUrl}/data/images/${instituteId}/${fallbackFilename}`;
         }
-        return `${appUrl}/institutes/proxy?path=${encodeURI(relPath)}`;
+
+        return `${appUrl}/data/${relPath}`;
       };
 
       const stringified = JSON.stringify(data);
