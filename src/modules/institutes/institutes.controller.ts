@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Res,
+  Req,
 } from '@nestjs/common';
 import * as express from 'express';
 import { InstituteService } from './institutes.service';
@@ -42,15 +43,26 @@ export class InstituteController {
   }
 
   /**
-   * GET /institutes/assets/*
+   * GET /institutes/assets/*path
    * Fetch an institute asset from Zynerd with disk caching (served cleanly under /assets/)
    */
-  @Get('assets/*')
+  @Get('assets/*path')
   async getAsset(
-    @Param('0') wildcardPath: string,
+    @Req() req: express.Request,
     @Res() res: express.Response,
   ) {
-    const resource = await this.instituteService.proxyResource(wildcardPath);
+    const reqUrl = req.originalUrl || req.url;
+    const prefix = '/institutes/assets/';
+    const idx = reqUrl.indexOf(prefix);
+    let pathStr = '';
+    if (idx !== -1) {
+      pathStr = reqUrl.substring(idx + prefix.length);
+    } else {
+      const p = (req.params as any).path || (req.params as any)[0] || '';
+      pathStr = Array.isArray(p) ? p.join('/') : p;
+    }
+
+    const resource = await this.instituteService.proxyResource(pathStr);
     if (resource.contentType) {
       res.set('Content-Type', resource.contentType);
     }

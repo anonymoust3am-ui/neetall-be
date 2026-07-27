@@ -254,7 +254,13 @@ export class InstituteService {
       const cleanPath = pathStr.startsWith('/')
         ? pathStr.substring(1)
         : pathStr;
-      const url = `https://public.zynerd.com/${encodeURI(cleanPath)}`;
+      let decodedPath = cleanPath;
+      try {
+        decodedPath = decodeURI(cleanPath);
+      } catch (e) {
+        // use raw cleanPath if decode fails
+      }
+      const url = `https://public.zynerd.com/${encodeURI(decodedPath)}`;
       this.logger.debug(
         `Proxying resource from: ${url} (Retries left: ${retries})`,
       );
