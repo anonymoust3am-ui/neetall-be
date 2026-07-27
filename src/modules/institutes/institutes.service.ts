@@ -334,21 +334,59 @@ export class InstituteService {
   }
 
   /**
-   * Mask Zynerd URLs with our proxy URL
+   * Replace Zynerd URLs with local static image URLs if available, or proxy URLs as fallback
    */
   private maskUrls(data: any): any {
     if (!data) return data;
 
     try {
-      const zynerdPublicUrl = 'https://public.zynerd.com';
-      // Use environment variable for app URL or default to relative if needed.
       const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
-      const proxyBaseUrl = `${appUrl}/institutes/proxy?path=`;
+      const zynerdPublicPrefix = 'https://public.zynerd.com/';
+
+      const resolveZynerdUrl = (zynerdUrl: string): string => {
+        if (!zynerdUrl.startsWith(zynerdPublicPrefix)) return zynerdUrl;
+
+        const relPath = zynerdUrl.substring(zynerdPublicPrefix.length);
+        const parts = relPath.split('/');
+
+        if (parts.length >= 4 && parts[0] === 'institutes') {
+          const instituteId = parts[1];
+          const type = parts[2];
+          const filename = parts[3];
+
+          const instDir = path.join(process.cwd(), 'data', 'images', instituteId);
+          if (fs.existsSync(instDir)) {
+            const target1 = `${type}_${filename}`;
+            if (fs.existsSync(path.join(instDir, target1))) {
+              return `${appUrl}/data/images/${instituteId}/${target1}`;
+            }
+            if (fs.existsSync(path.join(instDir, filename))) {
+              return `${appUrl}/data/images/${instituteId}/${filename}`;
+            }
+            const ext = path.extname(filename);
+            const target3 = `${type}_${instituteId}${ext}`;
+            if (fs.existsSync(path.join(instDir, target3))) {
+              return `${appUrl}/data/images/${instituteId}/${target3}`;
+            }
+            try {
+              const files = fs.readdirSync(instDir);
+              const matchingFile = files.find((f) => f.startsWith(`${type}_`));
+              if (matchingFile) {
+                return `${appUrl}/data/images/${instituteId}/${matchingFile}`;
+              }
+            } catch (e) {
+              // ignore directory read error
+            }
+          }
+        }
+        return `${appUrl}/institutes/proxy?path=${encodeURI(relPath)}`;
+      };
 
       const stringified = JSON.stringify(data);
-      const masked = stringified
-        .split(zynerdPublicUrl + '/')
-        .join(proxyBaseUrl);
+      const masked = stringified.replace(
+        /https:\/\/public\.zynerd\.com\/[^\s"'\\]+/g,
+        (matchedUrl) => resolveZynerdUrl(matchedUrl),
+      );
 
       return JSON.parse(masked);
     } catch (error) {
