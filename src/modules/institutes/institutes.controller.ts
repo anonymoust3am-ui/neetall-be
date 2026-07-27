@@ -42,6 +42,22 @@ export class InstituteController {
   }
 
   /**
+   * GET /institutes/assets/*
+   * Fetch an institute asset from Zynerd with disk caching (served cleanly under /assets/)
+   */
+  @Get('assets/*')
+  async getAsset(
+    @Param('0') wildcardPath: string,
+    @Res() res: express.Response,
+  ) {
+    const resource = await this.instituteService.proxyResource(wildcardPath);
+    if (resource.contentType) {
+      res.set('Content-Type', resource.contentType);
+    }
+    res.send(resource.data);
+  }
+
+  /**
    * GET /institutes/proxy
    * Proxy a resource from Zynerd
    * Query Parameter:

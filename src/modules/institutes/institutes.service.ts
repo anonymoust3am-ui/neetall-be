@@ -334,7 +334,8 @@ export class InstituteService {
   }
 
   /**
-   * Replace all Zynerd URLs with direct static image URLs (no proxying)
+   * Replace Zynerd URLs with direct static image URLs if downloaded locally,
+   * or clean server asset proxy URLs (/api/institutes/assets/*) for detail images.
    */
   private maskUrls(data: any): any {
     if (data === null || data === undefined) return data;
@@ -366,7 +367,7 @@ export class InstituteService {
 
             let matchedFile: string | undefined;
 
-            // 1. PRIORITIZE CLEAN STANDARD FILENAMES: logo_<instituteId>.* and cover_<instituteId>.*
+            // 1. Check for downloaded logo or cover on disk
             if (category === 'logo') {
               matchedFile = files.find(
                 (f) =>
@@ -385,7 +386,7 @@ export class InstituteService {
               );
             }
 
-            // 2. Exact match for raw, decoded, or encoded filename
+            // 2. Exact match for specific file downloaded on disk
             if (!matchedFile) {
               const encodedFilename = encodeURIComponent(decodedFilename);
               const findFile = (target: string) =>
@@ -399,31 +400,6 @@ export class InstituteService {
                 findFile(encodedFilename);
             }
 
-            // 3. Category fallback
-            if (!matchedFile) {
-              if (category === 'logo') {
-                matchedFile = files.find((f) => f.startsWith('logo_'));
-              } else if (category === 'cover' || category === 'banner') {
-                matchedFile = files.find((f) => f.startsWith('cover_'));
-              } else if (
-                category === 'photos' ||
-                category === 'photo' ||
-                category === 'gallery'
-              ) {
-                matchedFile =
-                  files.find(
-                    (f) =>
-                      f === `cover_${instituteId}.jpg` ||
-                      f === `cover_${instituteId}.png`,
-                  ) || files.find((f) => f.startsWith('cover_'));
-              }
-            }
-
-            // 4. Fallback to any file in directory if category match is not found
-            if (!matchedFile && files.length > 0) {
-              matchedFile = files[0];
-            }
-
             if (matchedFile) {
               const finalFileName = matchedFile.includes('%')
                 ? matchedFile
@@ -432,12 +408,11 @@ export class InstituteService {
             }
           }
 
-          // Standard fallback static URL
-          const stdExt = category === 'logo' ? 'png' : 'jpg';
-          return `${appUrl}/data/images/${instituteId}/${category}_${instituteId}.${stdExt}`;
+          // Detail images/photos not downloaded on disk use server asset endpoint (no "proxy" keyword)
+          return `${appUrl}/api/institutes/assets/${encodeURI(relPath)}`;
         }
 
-        return `${appUrl}/data/${encodeURI(relPath)}`;
+        return `${appUrl}/api/institutes/assets/${encodeURI(relPath)}`;
       };
 
       const transform = (obj: any): any => {
