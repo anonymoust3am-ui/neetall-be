@@ -6,12 +6,18 @@ import { PrismaService } from '../../prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import * as https from 'https';
 
 @Injectable()
 export class InstituteService {
   private readonly logger = new Logger(InstituteService.name);
   private readonly baseUrl = 'https://open.zynerd.com/public';
   private readonly timeout = 30000; // 30 seconds
+  private readonly httpsAgent = new https.Agent({
+    keepAlive: true,
+    family: 4, // Force IPv4 to prevent Cloudflare/Cloudfront IPv6 ECONNRESET
+    maxSockets: 50,
+  });
   private readonly userAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -274,6 +280,7 @@ export class InstituteService {
         this.httpService.get(url, {
           responseType: 'arraybuffer',
           timeout: this.timeout,
+          httpsAgent: this.httpsAgent,
           headers: {
             'User-Agent': this.getRandomUserAgent(),
             Accept:
@@ -399,23 +406,29 @@ export class InstituteService {
       }
     }
 
-    // 2. Locate original Zynerd photo URL from institute details
+    // 2. Locate original Zynerd photo URL from raw unmasked institute details
     let targetZynerdPath: string | null = null;
     const numMatch =
       filename.match(/photo-(\d+)/i) || filename.match(/(\d+)/);
     const photoNum = numMatch ? parseInt(numMatch[1], 10) : null;
 
     try {
-      const details = await this.getInstituteDetails(instituteId);
-      const imageUrls: string[] = details?.data?.image_urls || [];
+      const url = `${this.baseUrl}/institutes/${instituteId}/details`;
+      const response = await firstValueFrom(
+        this.httpService.get(url, {
+          timeout: this.timeout,
+          httpsAgent: this.httpsAgent,
+        }),
+      );
+      const rawImageUrls: string[] = response.data?.data?.image_urls || [];
 
-      if (photoNum && photoNum <= imageUrls.length && photoNum > 0) {
-        targetZynerdPath = imageUrls[photoNum - 1];
-      } else if (imageUrls.length > 0) {
-        targetZynerdPath = imageUrls[0];
+      if (photoNum && photoNum <= rawImageUrls.length && photoNum > 0) {
+        targetZynerdPath = rawImageUrls[photoNum - 1];
+      } else if (rawImageUrls.length > 0) {
+        targetZynerdPath = rawImageUrls[0];
       }
     } catch (e) {
-      // ignore details fetch error
+      this.logger.error(`Error fetching raw details for photo: ${e.message}`);
     }
 
     if (targetZynerdPath) {

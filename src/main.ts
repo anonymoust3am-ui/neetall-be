@@ -13,12 +13,6 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'data'), {
     prefix: '/api/data/',
   });
-  // app.use((req, res, next) => {
-  //   if (req.url.startsWith('/institutes/') && !req.url.startsWith('/api/')) {
-  //     req.url = '/api' + req.url;
-  //   }
-  //   next();
-  // });
   app.enableCors({
     origin: [
       process.env.FRONTEND_URL
