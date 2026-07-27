@@ -337,7 +337,7 @@ export class InstituteService {
    * Replace all Zynerd URLs with direct static image URLs (no proxying)
    */
   private maskUrls(data: any): any {
-    if (!data) return data;
+    if (data === null || data === undefined) return data;
 
     try {
       const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
@@ -351,8 +351,8 @@ export class InstituteService {
 
         if (rawParts.length >= 3 && rawParts[0] === 'institutes') {
           const instituteId = rawParts[1];
-          const category = rawParts[2]; // 'logo', 'cover', 'photos', etc.
-          const rawFilename = rawParts.slice(3).join('/'); // 'Photo 3.png' or '155.png'
+          const category = rawParts[2]; // 'logo', 'cover', 'banner', 'photos', etc.
+          const rawFilename = rawParts.slice(3).join('/');
           const decodedFilename = decodeURIComponent(rawFilename);
 
           const instDir = path.join(
@@ -364,71 +364,101 @@ export class InstituteService {
           if (fs.existsSync(instDir)) {
             const files = fs.readdirSync(instDir);
 
-            // 1. Exact match (decoded or raw)
-            let matchedFile = files.find(
-              (f) => f === decodedFilename || f === rawFilename,
-            );
+            let matchedFile: string | undefined;
 
-            // 2. category_filename (e.g. logo_155.png or cover_1509.jpg)
-            if (!matchedFile) {
-              const catFile = `${category}_${decodedFilename}`;
-              matchedFile = files.find((f) => f === catFile);
+            // 1. PRIORITIZE CLEAN STANDARD FILENAMES: logo_<instituteId>.* and cover_<instituteId>.*
+            if (category === 'logo') {
+              matchedFile = files.find(
+                (f) =>
+                  f === `logo_${instituteId}.png` ||
+                  f === `logo_${instituteId}.jpg` ||
+                  f === `logo_${instituteId}.jpeg` ||
+                  f === `logo_${instituteId}.webp`,
+              );
+            } else if (category === 'cover' || category === 'banner') {
+              matchedFile = files.find(
+                (f) =>
+                  f === `cover_${instituteId}.jpg` ||
+                  f === `cover_${instituteId}.png` ||
+                  f === `cover_${instituteId}.jpeg` ||
+                  f === `cover_${instituteId}.webp`,
+              );
             }
 
-            // 3. category_instituteId.ext (e.g. logo_1519.png or cover_1519.jpg)
+            // 2. Exact match for raw, decoded, or encoded filename
             if (!matchedFile) {
-              const ext = path.extname(decodedFilename);
-              const catInst = `${category}_${instituteId}${ext}`;
-              matchedFile = files.find((f) => f === catInst);
+              const encodedFilename = encodeURIComponent(decodedFilename);
+              const findFile = (target: string) =>
+                files.find(
+                  (f) =>
+                    f === target || f.toLowerCase() === target.toLowerCase(),
+                );
+              matchedFile =
+                findFile(rawFilename) ||
+                findFile(decodedFilename) ||
+                findFile(encodedFilename);
             }
 
-            // 4. Match by category prefix/keyword
+            // 3. Category fallback
             if (!matchedFile) {
-              if (
+              if (category === 'logo') {
+                matchedFile = files.find((f) => f.startsWith('logo_'));
+              } else if (category === 'cover' || category === 'banner') {
+                matchedFile = files.find((f) => f.startsWith('cover_'));
+              } else if (
                 category === 'photos' ||
                 category === 'photo' ||
                 category === 'gallery'
               ) {
-                matchedFile = files.find(
-                  (f) =>
-                    f.toLowerCase().includes('photo') ||
-                    f.toLowerCase().includes('banner') ||
-                    f.startsWith('cover_'),
-                );
-              } else if (category === 'logo') {
-                matchedFile = files.find((f) => f.startsWith('logo_'));
-              } else if (category === 'cover') {
-                matchedFile = files.find((f) => f.startsWith('cover_'));
+                matchedFile =
+                  files.find(
+                    (f) =>
+                      f === `cover_${instituteId}.jpg` ||
+                      f === `cover_${instituteId}.png`,
+                  ) || files.find((f) => f.startsWith('cover_'));
               }
             }
 
-            // 5. Fallback to any file in directory if directory is not empty
+            // 4. Fallback to any file in directory if category match is not found
             if (!matchedFile && files.length > 0) {
               matchedFile = files[0];
             }
 
             if (matchedFile) {
-              return `${appUrl}/data/images/${instituteId}/${encodeURIComponent(matchedFile)}`;
+              const finalFileName = matchedFile.includes('%')
+                ? matchedFile
+                : encodeURIComponent(matchedFile);
+              return `${appUrl}/data/images/${instituteId}/${finalFileName}`;
             }
           }
 
-          // Direct fallback url without proxy
-          const fallbackFilename = rawFilename
-            ? rawFilename
-            : `${category}_${instituteId}`;
-          return `${appUrl}/data/images/${instituteId}/${fallbackFilename}`;
+          // Standard fallback static URL
+          const stdExt = category === 'logo' ? 'png' : 'jpg';
+          return `${appUrl}/data/images/${instituteId}/${category}_${instituteId}.${stdExt}`;
         }
 
-        return `${appUrl}/data/${relPath}`;
+        return `${appUrl}/data/${encodeURI(relPath)}`;
       };
 
-      const stringified = JSON.stringify(data);
-      const masked = stringified.replace(
-        /https:\/\/public\.zynerd\.com\/[^\s"'\\]+/g,
-        (matchedUrl) => resolveZynerdUrl(matchedUrl),
-      );
+      const transform = (obj: any): any => {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj === 'string') {
+          return resolveZynerdUrl(obj);
+        }
+        if (Array.isArray(obj)) {
+          return obj.map((item) => transform(item));
+        }
+        if (typeof obj === 'object') {
+          const res: any = {};
+          for (const [k, v] of Object.entries(obj)) {
+            res[k] = transform(v);
+          }
+          return res;
+        }
+        return obj;
+      };
 
-      return JSON.parse(masked);
+      return transform(data);
     } catch (error) {
       this.logger.error(`Error masking URLs: ${error.message}`);
       return data;
