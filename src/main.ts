@@ -6,6 +6,7 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.set('etag', false);
   app.useStaticAssets(join(__dirname, '..', 'data'), {
     prefix: '/api/data/',
   });
