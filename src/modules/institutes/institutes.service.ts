@@ -226,11 +226,11 @@ export class InstituteService {
   }
 
   /**
-   * Proxy a resource from Zynerd with retry logic and disk caching
+   * Proxy a resource from Zynerd with retry logic, disk caching, and local asset fallback
    */
   async proxyResource(
     pathStr: string,
-    retries = 3,
+    retries = 5,
   ): Promise<{ data: any; contentType: string }> {
     try {
       if (!pathStr) {
@@ -241,13 +241,18 @@ export class InstituteService {
       const cacheFilePath = path.join(this.cacheDir, `${cacheKey}.bin`);
       const cacheMetaPath = path.join(this.cacheDir, `${cacheKey}.json`);
 
-      // Check disk cache
+      // Check disk cache (30 days cache for images)
+      const LONG_CACHE_TTL = 1000 * 60 * 60 * 24 * 30;
       if (fs.existsSync(cacheFilePath) && fs.existsSync(cacheMetaPath)) {
-        const meta = JSON.parse(fs.readFileSync(cacheMetaPath, 'utf-8'));
-        if (Date.now() - meta.timestamp < this.CACHE_TTL) {
-          this.logger.debug(`Serving from disk cache: ${pathStr}`);
-          const data = fs.readFileSync(cacheFilePath);
-          return { data, contentType: meta.contentType };
+        try {
+          const meta = JSON.parse(fs.readFileSync(cacheMetaPath, 'utf-8'));
+          if (Date.now() - meta.timestamp < LONG_CACHE_TTL) {
+            this.logger.debug(`Serving from disk cache: ${pathStr}`);
+            const data = fs.readFileSync(cacheFilePath);
+            return { data, contentType: meta.contentType };
+          }
+        } catch (e) {
+          // ignore cache read error
         }
       }
 
@@ -291,7 +296,7 @@ export class InstituteService {
 
       const result = {
         data: response.data,
-        contentType: response.headers['content-type'] as string,
+        contentType: (response.headers['content-type'] as string) || 'image/jpeg',
       };
 
       // Store in disk cache
@@ -324,9 +329,39 @@ export class InstituteService {
         );
         // Exponential backoff
         await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * (4 - retries)),
+          setTimeout(resolve, 500 * (6 - retries)),
         );
         return this.proxyResource(pathStr, retries - 1);
+      }
+
+      // Check for local image fallback in data/images/<instituteId>/
+      try {
+        const cleanPath = pathStr.startsWith('/')
+          ? pathStr.substring(1)
+          : pathStr;
+        const parts = cleanPath.split('/');
+        if (parts.length >= 3 && parts[0] === 'institutes') {
+          const instituteId = parts[1];
+          const instDir = path.join(process.cwd(), 'data', 'images', instituteId);
+          if (fs.existsSync(instDir)) {
+            const files = fs.readdirSync(instDir);
+            const cover =
+              files.find((f) => f.startsWith('cover_')) ||
+              files.find((f) => f.startsWith('logo_')) ||
+              files[0];
+            if (cover) {
+              this.logger.warn(
+                `Proxy failed for ${pathStr}, serving local fallback image: ${cover}`,
+              );
+              const data = fs.readFileSync(path.join(instDir, cover));
+              const ext = path.extname(cover).toLowerCase();
+              const contentType = ext === '.png' ? 'image/png' : 'image/jpeg';
+              return { data, contentType };
+            }
+          }
+        }
+      } catch (fallbackError) {
+        // ignore fallback failure and throw original error
       }
 
       this.logger.error(
